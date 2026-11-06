@@ -130,7 +130,7 @@ button:disabled{opacity:.5}
         <option value="MERCHANT">MERCHANT - ₱10</option>
       </select>
     </div>
-     <div class="row">
+<div class="row">
   <strong>Payment Method</strong>
   <select id="paymentMethod">
     <option value="">Select Payment</option>
@@ -140,10 +140,20 @@ button:disabled{opacity:.5}
   </select>
 </div>
 
-    <div class="row">
-      <strong>Total</strong>
-      <span class="total" id="total">₱0.00</span>
-    </div>
+<div class="row">
+  <strong>Cash Received</strong>
+  <input type="number" id="cashReceived" placeholder="Enter amount" min="0">
+</div>
+
+<div class="row">
+  <strong>Total</strong>
+  <span class="total" id="total">₱0.00</span>
+</div>
+
+<div class="row">
+  <strong>Change</strong>
+  <span class="total" id="change">₱0.00</span>
+</div>
 
     <button id="checkoutBtn" style="width:100%">CHECKOUT</button>
     <p id="orderMessage"></p>
@@ -707,6 +717,14 @@ ${item.flavors ? `
   }
 
   document.getElementById("total").textContent = peso(total);
+
+const cashReceived = Number(
+  document.getElementById("cashReceived").value
+) || 0;
+
+const change = Math.max(0, cashReceived - total);
+
+document.getElementById("change").textContent = peso(change);
 }
 
   
@@ -773,6 +791,7 @@ onAuthStateChanged(auth,async user=>{
 
 document.getElementById("logoutBtn").onclick=()=>signOut(auth);
   document.getElementById("discount").addEventListener("change", renderCart);
+  document.getElementById("cashReceived").addEventListener("input", renderCart);
 
 document.getElementById("checkoutBtn").onclick=()=>{
   document.getElementById("orderMessage").textContent=
