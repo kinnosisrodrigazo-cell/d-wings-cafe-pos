@@ -84,6 +84,57 @@ button:disabled{opacity:.5}
   height:20px;
   margin:0;
 }
+  .password-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.password-wrap input{
+  flex:1;
+  min-width:0;
+}
+
+.password-toggle{
+  margin:6px 0 12px;
+  padding:13px 16px;
+  background:#383838;
+  color:white;
+  border:1px solid #444;
+}
+  .order-type-options{
+  display:flex;
+  gap:10px;
+  margin:8px 0 16px;
+}
+
+.order-type-btn{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:14px;
+  border:1px solid #444;
+  border-radius:9px;
+  background:#292929;
+  color:white;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.order-type-btn input{
+  width:18px;
+  height:18px;
+  margin:0;
+  accent-color:#e7ad3e;
+}
+
+.order-type-btn:has(input:checked){
+  background:#e7ad3e;
+  color:#111;
+  border-color:#e7ad3e;
+}
 </style>
 </head>
 <body>
@@ -98,7 +149,10 @@ button:disabled{opacity:.5}
   <label>Email</label>
   <input id="email" type="email" placeholder="Enter your email">
   <label>Password</label>
+<div class="password-wrap">
   <input id="password" type="password" placeholder="Enter your password">
+  <button type="button" id="togglePassword" class="password-toggle">👁</button>
+</div>
   <button id="loginBtn" style="width:100%">SIGN IN</button>
   <p id="loginMessage"></p>
 </section>
@@ -123,7 +177,20 @@ button:disabled{opacity:.5}
   placeholder="Enter customer name"
 >
 
-    <div id="cart">No items added.</div>
+<label>ORDER TYPE</label>
+<div class="order-type-options">
+  <label class="order-type-btn">
+    <input type="radio" name="orderType" value="DINE IN" checked>
+    DINE IN
+  </label>
+
+  <label class="order-type-btn">
+    <input type="radio" name="orderType" value="TAKE OUT">
+    TAKE OUT
+  </label>
+</div>
+
+<div id="cart">No items added.</div>
 
     <div class="row">
       <strong>Discount</strong>
@@ -219,7 +286,7 @@ button:disabled{opacity:.5}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 
 import {
-  getFirestore, collection, doc, setDoc, getDoc, serverTimestamp
+  getFirestore, collection, doc, setDoc, getDoc, serverTimestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
 import {
@@ -333,7 +400,14 @@ let pendingRequiresDip = false;
 let editingCartIndex = null;
 
 const peso = n => "₱" + n.toFixed(2);
-
+function getTodayDate(){
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+}
 let selectedCategory = "Wings";
 
 function renderProducts(){
@@ -407,19 +481,19 @@ function addItem(index){
       pendingRequiresDip = true;
     }
 
-    if(product.name === "UNLI 269 WINGS"){
-      pendingIncludedItems = ["UNLIMITED RICE"];
-      pendingRequiresDip = true;
-    }
+   if(product.name === "UNLI 269 WINGS"){
+  pendingIncludedItems = ["UNLIMITED RICE"];
+  pendingRequiresDip = false;
+}
 
-    if(product.name === "UNLI 299 WINGS"){
-      pendingIncludedItems = [
-        "UNLIMITED RICE",
-        "UNLIMITED FRIES",
-        "UNLIMITED DRINKS"
-      ];
-      pendingRequiresDip = true;
-    }
+if(product.name === "UNLI 299 WINGS"){
+  pendingIncludedItems = [
+    "UNLIMITED RICE",
+    "UNLIMITED FRIES",
+    "UNLIMITED DRINKS"
+  ];
+  pendingRequiresDip = false;
+}
 
     document.getElementById("flavorTitle").textContent =
       product.name;
@@ -682,9 +756,8 @@ ${item.flavors ? `
             : null;
 
         pendingIncludedItems = [...(item.includedItems || [])];
-        pendingRequiresDip = !!item.dip ||
-          item.name.includes("+ RICE + DIP") ||
-          item.name.startsWith("UNLI");
+        pendingRequiresDip = !item.name.startsWith("UNLI") &&
+          (!!item.dip || item.name.includes("+ RICE + DIP"));
 
         document.getElementById("flavorTitle").textContent =
           "EDIT " + item.name;
@@ -795,11 +868,23 @@ async function saveSale(){
       ? cashReceived - total
       : 0;
 
-    const sale = {
-      customerName:
-        document.getElementById("customerName").value.trim() || "Walk-in",
+    if(!pendingSaleRef){
+      pendingSaleRef = doc(collection(db,"orders"));
+    }
 
-      items: cart.map(item=>({
+    const today = getTodayDate();
+    const counterRef = doc(db,"daily_counters",today);
+
+    const sale = {
+      orderDate: today,
+
+     customerName:
+  document.getElementById("customerName").value.trim() || "Walk-in",
+
+orderType:
+  document.querySelector('input[name="orderType"]:checked').value,
+
+items: cart.map(item=>({
         name: item.name,
         price: item.price,
         qty: item.qty,
@@ -822,18 +907,34 @@ async function saveSale(){
       createdAt: serverTimestamp()
     };
 
-    if(!pendingSaleRef){
-  pendingSaleRef = doc(collection(db,"orders"));
-}
+    const orderNumber = await runTransaction(db, async (transaction)=>{
+      const counterSnap = await transaction.get(counterRef);
 
-await setDoc(pendingSaleRef,sale);
+      const nextNumber = counterSnap.exists()
+        ? (counterSnap.data().lastOrderNumber || 0) + 1
+        : 1;
+
+      transaction.set(counterRef,{
+        date: today,
+        lastOrderNumber: nextNumber,
+        updatedAt: serverTimestamp()
+      });
+
+      transaction.set(pendingSaleRef,{
+        ...sale,
+        orderNumber: nextNumber
+      });
+
+      return nextNumber;
+    });
+
     saleSaved = true;
 
- document.getElementById("checkoutMessage").textContent =
-  "SALE SUCCESSFULLY SAVED!";
+    document.getElementById("checkoutMessage").textContent =
+      "SALE SUCCESSFULLY SAVED! ORDER #" + orderNumber;
 
-document.getElementById("checkoutButtons").classList.add("hidden");
-document.getElementById("newOrderBtn").classList.remove("hidden");
+    document.getElementById("checkoutButtons").classList.add("hidden");
+    document.getElementById("newOrderBtn").classList.remove("hidden");
 
   }catch(error){
     console.error("Sale saving error:",error);
@@ -844,7 +945,7 @@ document.getElementById("newOrderBtn").classList.remove("hidden");
     isSavingSale = false;
   }
 }
-async function verifyUser(user){
+  async function verifyUser(user){
   const userRef = doc(db,"users",user.uid);
   const userSnap = await getDoc(userRef);
 
@@ -873,6 +974,7 @@ pendingSaleRef = null;
 document.getElementById("checkoutModal").classList.add("hidden");
 
   document.getElementById("customerName").value = "";
+    document.querySelector('input[name="orderType"][value="DINE IN"]').checked = true;
   document.getElementById("discount").value = "none";
   document.getElementById("paymentMethod").value = "";
   document.getElementById("cashReceived").value = "";
@@ -901,7 +1003,17 @@ document.getElementById("loginBtn").onclick=async()=>{
   }catch(error){
     msg.textContent="Login failed: "+error.message;
   }
-}; 
+};
+
+document.getElementById("togglePassword").onclick = ()=>{
+  const password = document.getElementById("password");
+
+  if(password.type === "password"){
+    password.type = "text";
+  } else {
+    password.type = "password";
+  }
+};
 
 onAuthStateChanged(auth,async user=>{
   if(!user){
@@ -973,10 +1085,13 @@ function showCheckoutSummary(){
     : 0;
 
   let summary = `
-    <p><strong>Customer:</strong>
-    ${document.getElementById("customerName").value || "Walk-in"}</p>
+   <p><strong>Customer:</strong>
+${document.getElementById("customerName").value || "Walk-in"}</p>
 
-    <hr>
+<p><strong>Order Type:</strong>
+${document.querySelector('input[name="orderType"]:checked').value}</p>
+
+<hr>
 
     ${cart.map(item=>`
       <div style="margin-bottom:12px">
@@ -1075,6 +1190,7 @@ document.getElementById("newOrderBtn").onclick=()=>{
   pendingSaleRef = null;
 
   document.getElementById("customerName").value = "";
+  document.querySelector('input[name="orderType"][value="DINE IN"]').checked = true;
   document.getElementById("discount").value = "none";
   document.getElementById("paymentMethod").value = "";
   document.getElementById("cashReceived").value = "";
@@ -1090,6 +1206,15 @@ document.getElementById("newOrderBtn").onclick=()=>{
 }
 document.getElementById("checkoutBtn").onclick=()=>{
   document.getElementById("orderMessage").textContent="";
+    const customerName =
+    document.getElementById("customerName").value.trim();
+
+  if(!customerName){
+    document.getElementById("orderMessage").textContent =
+      "Please enter the customer name before checkout.";
+    document.getElementById("customerName").focus();
+    return;
+  }
 
   if(cart.length === 0){
     document.getElementById("orderMessage").textContent=
