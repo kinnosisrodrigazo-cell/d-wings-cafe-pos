@@ -163,23 +163,67 @@ function renderCart(){
     peso(cart.reduce((sum,x)=>sum+x.price*x.qty,0));
 }
 
+
+
+async function verifyUser(user){
+  const userRef = doc(db,"users",user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if(!userSnap.exists()){
+    await signOut(auth);
+    alert("Access denied: User profile not found.");
+    return;
+  }
+
+  const profile = userSnap.data();
+
+  if(profile.active !== true ||
+     !["owner","cashier"].includes(profile.role)){
+    await signOut(auth);
+    alert("Access denied: Account is inactive or unauthorized.");
+    return;
+  }
+
+  document.getElementById("userLabel").textContent =
+    user.email + " (" + profile.role.toUpperCase() + ")";
+
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+
+  renderProducts();
+}
+
 document.getElementById("loginBtn").onclick=async()=>{
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
   const msg=document.getElementById("loginMessage");
+
   msg.textContent="Signing in...";
+
   try{
     await signInWithEmailAndPassword(auth,email,password);
+    msg.textContent="";
   }catch(error){
     msg.textContent="Login failed: "+error.message;
   }
-};
+}; 
 
-onAuthStateChanged(auth,user=>{
-  document.getElementById("login").classList.toggle("hidden",!!user);
-  document.getElementById("app").classList.toggle("hidden",!user);
-  document.getElementById("userLabel").textContent=user?user.email:"POS SYSTEM";
-  if(user) renderProducts();
+onAuthStateChanged(auth,async user=>{
+  if(!user){
+    document.getElementById("login").classList.remove("hidden");
+    document.getElementById("app").classList.add("hidden");
+    document.getElementById("userLabel").textContent="POS SYSTEM";
+    return;
+  }
+
+  try{
+    await verifyUser(user);
+  }catch(error){
+    console.error(error);
+    await signOut(auth);
+    document.getElementById("loginMessage").textContent=
+      "Unable to verify account. Please try again.";
+  }
 });
 
 document.getElementById("logoutBtn").onclick=()=>signOut(auth);
