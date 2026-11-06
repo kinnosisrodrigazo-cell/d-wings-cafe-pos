@@ -148,6 +148,20 @@ button:disabled{opacity:.5}
   <div class="panel">
     <h3 id="flavorTitle">SELECT WING FLAVORS</h3>
     <p id="flavorInstruction" class="small"></p>
+<div id="includedSection" class="hidden">
+  <h4>INCLUDED IN THIS MEAL</h4>
+  <div id="includedOptions" class="grid"></div>
+</div>
+
+<div id="dipSection" class="hidden">
+  <h4>SELECT ONE DIP</h4>
+  <select id="dipChoice">
+    <option value="">Choose Dip</option>
+    <option value="Ranch">Ranch</option>
+    <option value="Garlic Mayo">Garlic Mayo</option>
+    <option value="Thousand Island">Thousand Island</option>
+  </select>
+</div>
     <div id="flavorOptions" class="grid"></div>
     <p id="flavorMessage" class="small"></p>
     <div class="row">
@@ -267,6 +281,9 @@ const wingFlavors = [
 
 let pendingProduct = null;
 let pendingRequiredFlavors = null;
+let pendingIncludedItems = [];
+let pendingRequiresDip = false;
+let editingCartIndex = null;
 
 const peso = n => "₱" + n.toFixed(2);
 
@@ -330,9 +347,32 @@ function addItem(index){
     pendingProduct = {...product, menuIndex:index};
 
     const match = product.name.match(/^(\d+)PCS/);
+
     pendingRequiredFlavors = match
       ? Number(match[1]) / 3
       : null;
+
+    pendingIncludedItems = [];
+    pendingRequiresDip = false;
+
+    if(product.name.includes("+ RICE + DIP")){
+      pendingIncludedItems = ["RICE"];
+      pendingRequiresDip = true;
+    }
+
+    if(product.name === "UNLI 269 WINGS"){
+      pendingIncludedItems = ["UNLIMITED RICE"];
+      pendingRequiresDip = true;
+    }
+
+    if(product.name === "UNLI 299 WINGS"){
+      pendingIncludedItems = [
+        "UNLIMITED RICE",
+        "UNLIMITED FRIES",
+        "UNLIMITED DRINKS"
+      ];
+      pendingRequiresDip = true;
+    }
 
     document.getElementById("flavorTitle").textContent =
       product.name;
@@ -341,6 +381,29 @@ function addItem(index){
       pendingRequiredFlavors
         ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
         : "SELECT ANY OR ALL 15 FLAVORS.";
+
+    const includedSection =
+      document.getElementById("includedSection");
+
+    includedSection.classList.toggle(
+      "hidden",
+      pendingIncludedItems.length === 0
+    );
+
+    document.getElementById("includedOptions").innerHTML =
+      pendingIncludedItems.map(item => `
+        <label class="flavor-option">
+          <input type="checkbox" checked disabled>
+          <span>${item}</span>
+        </label>
+      `).join("");
+
+    document.getElementById("dipSection").classList.toggle(
+      "hidden",
+      !pendingRequiresDip
+    );
+
+    document.getElementById("dipChoice").value = "";
 
     document.getElementById("flavorOptions").innerHTML =
       wingFlavors.map(flavor => `
@@ -356,11 +419,15 @@ function addItem(index){
         : "Select at least one flavor.";
 
     document.getElementById("confirmFlavor").disabled = true;
+
     document.getElementById("flavorModal").classList.remove("hidden");
 
     document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
       box.addEventListener("change", updateFlavorSelection);
     });
+
+    document.getElementById("dipChoice").onchange =
+      updateFlavorSelection;
 
     return;
   }
@@ -385,16 +452,25 @@ function updateFlavorSelection(){
       !box.checked;
   });
 
-  const valid = pendingRequiredFlavors === null
+  const flavorValid = pendingRequiredFlavors === null
     ? selected >= 1
     : selected === pendingRequiredFlavors;
 
-  document.getElementById("confirmFlavor").disabled = !valid;
+  const dipValid = !pendingRequiresDip ||
+    document.getElementById("dipChoice").value !== "";
 
-  document.getElementById("flavorMessage").textContent =
-    pendingRequiredFlavors
-      ? `${selected} of ${pendingRequiredFlavors} flavors selected.`
-      : `${selected} flavor(s) selected.`;
+  document.getElementById("confirmFlavor").disabled =
+    !flavorValid || !dipValid;
+
+  let message = pendingRequiredFlavors
+    ? `${selected} of ${pendingRequiredFlavors} flavors selected.`
+    : `${selected} flavor(s) selected.`;
+
+  if(pendingRequiresDip && !dipValid){
+    message += " Please select one dip.";
+  }
+
+  document.getElementById("flavorMessage").textContent = message;
 }
 
 document.getElementById("confirmFlavor").onclick = ()=>{
@@ -406,26 +482,54 @@ document.getElementById("confirmFlavor").onclick = ()=>{
     ? selectedFlavors.length >= 1
     : selectedFlavors.length === pendingRequiredFlavors;
 
+  const selectedDip = document.getElementById("dipChoice").value;
+
   if(!valid) return;
+  if(pendingRequiresDip && !selectedDip) return;
 
-  cart.push({
+    const updatedItem = {
     ...pendingProduct,
-    qty:1,
-    flavors:selectedFlavors
-  });
+    flavors:selectedFlavors,
+    includedItems:[...pendingIncludedItems],
+    dip:selectedDip || null
+  };
 
-  document.getElementById("flavorModal").classList.add("hidden");
+  if(editingCartIndex !== null){
+    cart[editingCartIndex] = updatedItem;
+  } else {
+    cart.push({
+      ...updatedItem,
+      qty:1
+    });
+  }
+
+   document.getElementById("flavorModal").classList.add("hidden");
+
+  editingCartIndex = null;
+
+  document.getElementById("confirmFlavor").textContent =
+    "CONFIRM FLAVORS";
 
   pendingProduct = null;
   pendingRequiredFlavors = null;
+  pendingIncludedItems = [];
+  pendingRequiresDip = false;
 
   renderCart();
 };
 
 document.getElementById("cancelFlavor").onclick = ()=>{
   document.getElementById("flavorModal").classList.add("hidden");
+
+  editingCartIndex = null;
+
+  document.getElementById("confirmFlavor").textContent =
+    "CONFIRM FLAVORS";
+
   pendingProduct = null;
   pendingRequiredFlavors = null;
+  pendingIncludedItems = [];
+  pendingRequiresDip = false;
 };
 
 
@@ -458,23 +562,36 @@ function renderCart(){
       <div class="row">
         <span>
           ${item.name}<br>
-          ${item.flavors ? `
+           ${item.flavors ? `
             <span class="small">
               ${item.flavors.map(flavor =>
                 flavor + (item.name.startsWith("UNLI") ? "" : " (3 pcs)")
               ).join("<br>")}
             </span><br>
           ` : ""}
+
+          ${item.includedItems?.length ? `
+            <span class="small">
+              Included: ${item.includedItems.join(", ")}
+            </span><br>
+          ` : ""}
+
+          ${item.dip ? `
+            <span class="small">
+              Dip: ${item.dip}
+            </span><br>
+          ` : ""}
           <span class="small">${peso(item.price)} × ${item.qty}</span>
         </span>
         <span>
           ${peso(item.price * item.qty)}
-          ${item.flavors ? `
-            <button class="secondary" data-remove="${i}">REMOVE</button>
-          ` : `
-            <button class="secondary" data-remove="${i}">−</button>
-            <button class="secondary" data-add="${i}">+</button>
-          `}
+${item.flavors ? `
+  <button class="secondary" data-edit="${i}">EDIT</button>
+  <button class="secondary" data-remove="${i}">REMOVE</button>
+` : `
+  <button class="secondary" data-remove="${i}">−</button>
+  <button class="secondary" data-add="${i}">+</button>
+`}
         </span>
       </div>
     `).join("");
@@ -504,6 +621,79 @@ function renderCart(){
     el.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{
       cart[Number(b.dataset.add)].qty++;
       renderCart();
+    });
+        el.querySelectorAll("[data-edit]").forEach(b=>{
+      b.onclick = ()=>{
+        const index = Number(b.dataset.edit);
+        const item = cart[index];
+
+        editingCartIndex = index;
+        pendingProduct = {...item};
+        pendingRequiredFlavors =
+          item.name.match(/^(\d+)PCS/)
+            ? Number(item.name.match(/^(\d+)PCS/)[1]) / 3
+            : null;
+
+        pendingIncludedItems = [...(item.includedItems || [])];
+        pendingRequiresDip = !!item.dip ||
+          item.name.includes("+ RICE + DIP") ||
+          item.name.startsWith("UNLI");
+
+        document.getElementById("flavorTitle").textContent =
+          "EDIT " + item.name;
+
+        document.getElementById("flavorInstruction").textContent =
+          pendingRequiredFlavors
+            ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
+            : "SELECT ANY OR ALL 15 FLAVORS.";
+
+        document.getElementById("includedSection").classList.toggle(
+          "hidden",
+          pendingIncludedItems.length === 0
+        );
+
+        document.getElementById("includedOptions").innerHTML =
+          pendingIncludedItems.map(included => `
+            <label class="flavor-option">
+              <input type="checkbox" checked disabled>
+              <span>${included}</span>
+            </label>
+          `).join("");
+
+        document.getElementById("dipSection").classList.toggle(
+          "hidden",
+          !pendingRequiresDip
+        );
+
+        document.getElementById("dipChoice").value = item.dip || "";
+
+        document.getElementById("flavorOptions").innerHTML =
+          wingFlavors.map(flavor => `
+            <label class="flavor-option">
+              <input
+                type="checkbox"
+                name="wingFlavor"
+                value="${flavor}"
+                ${item.flavors.includes(flavor) ? "checked" : ""}
+              >
+              <span>${flavor}</span>
+            </label>
+          `).join("");
+
+        document.getElementById("confirmFlavor").textContent =
+          "SAVE CHANGES";
+
+        document.getElementById("flavorModal").classList.remove("hidden");
+
+        document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
+          box.addEventListener("change", updateFlavorSelection);
+        });
+
+        document.getElementById("dipChoice").onchange =
+          updateFlavorSelection;
+
+        updateFlavorSelection();
+      };
     });
   }
 
