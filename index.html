@@ -20,6 +20,25 @@ button.secondary{background:#383838;color:white}
 button:disabled{opacity:.5}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .product{background:#292929;color:white;border:1px solid #444;padding:16px;border-radius:10px;text-align:left}
+  .category-tabs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:8px 0 14px;
+  margin-bottom:8px;
+}
+.category-btn{
+  flex:0 0 auto;
+  background:#292929;
+  color:white;
+  border:1px solid #444;
+  padding:11px 16px;
+  border-radius:20px;
+}
+.category-btn.active{
+  background:#e7ad3e;
+  color:#111;
+}
 .product strong{display:block;margin-bottom:8px}
 .price{color:#f5bd4f}
 .row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:10px 0}
@@ -53,11 +72,11 @@ button:disabled{opacity:.5}
     <button class="secondary" id="logoutBtn">Log out</button>
   </div>
 
-  <div class="panel">
+ <div class="panel">
     <h3>Products</h3>
-    <p class="small">Starter menu — we will complete your full menu next.</p>
+    <div id="categoryTabs" class="category-tabs"></div>
     <div class="grid" id="products"></div>
-  </div>
+</div>
 
   <div class="panel">
     <h3>Current Order</h3>
@@ -96,32 +115,125 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+
 const menu = [
-  {name:"UNLI 269 WINGS",price:269},
-  {name:"UNLI 299 WINGS",price:299},
-  {name:"3PCS CHICKEN",price:119},
-  {name:"3PCS CHICKEN + RICE + DIP",price:149},
-  {name:"6PCS CHICKEN",price:199},
-  {name:"6PCS CHICKEN + RICE + DIP",price:229},
-  {name:"9PCS CHICKEN",price:299},
-  {name:"9PCS CHICKEN + RICE + DIP",price:329},
-  {name:"18PCS CHICKEN",price:579},
-  {name:"24PCS CHICKEN",price:749}
+  // WINGS
+  {name:"UNLI 269 WINGS",price:269,category:"Wings"},
+  {name:"UNLI 299 WINGS",price:299,category:"Wings"},
+  {name:"3PCS CHICKEN",price:119,category:"Wings"},
+  {name:"3PCS CHICKEN + RICE + DIP",price:149,category:"Wings"},
+  {name:"6PCS CHICKEN",price:199,category:"Wings"},
+  {name:"6PCS CHICKEN + RICE + DIP",price:229,category:"Wings"},
+  {name:"9PCS CHICKEN",price:299,category:"Wings"},
+  {name:"9PCS CHICKEN + RICE + DIP",price:329,category:"Wings"},
+  {name:"18PCS CHICKEN",price:579,category:"Wings"},
+  {name:"24PCS CHICKEN",price:749,category:"Wings"},
+
+  // FRIES
+  {name:"SOUR CREAM",price:119,category:"Fries"},
+  {name:"DOUBLE BBQ",price:119,category:"Fries"},
+  {name:"DOUBLE CHEESE",price:119,category:"Fries"},
+  {name:"DOUBLE DUO",price:139,category:"Fries"},
+  {name:"TRIPLE CHEESE",price:129,category:"Fries"},
+  {name:"CHILI CHEESE",price:139,category:"Fries"},
+  {name:"CHEESY BACON",price:139,category:"Fries"},
+  {name:"MAPLE BACON",price:149,category:"Fries"},
+  {name:"TRIPLE CHEESY BACON",price:149,category:"Fries"},
+  {name:"PLAIN FRIES",price:119,category:"Fries"},
+
+  // FLOATS
+  {name:"CHOCO FLOAT",price:79,category:"Floats"},
+  {name:"COKE FLOAT",price:79,category:"Floats"},
+  {name:"COFFEE FLOAT",price:89,category:"Floats"},
+  {name:"OREO FLOAT",price:89,category:"Floats"},
+  {name:"MATCHA FLOAT",price:89,category:"Floats"},
+  {name:"LYCHEE FLOAT",price:89,category:"Floats"},
+  {name:"MANGO FLOAT",price:89,category:"Floats"},
+
+  // DRINKS
+  {name:"CHOCO BLISS",price:85,category:"Drinks"},
+  {name:"VANILLA OREO",price:95,category:"Drinks"},
+  {name:"CARAMEL BLISS",price:85,category:"Drinks"},
+  {name:"MATCHA LATTE",price:95,category:"Drinks"},
+  {name:"OREO BLAST",price:85,category:"Drinks"},
+  {name:"CARAMEL MATCHA",price:95,category:"Drinks"},
+  {name:"CHOCO OREO",price:85,category:"Drinks"},
+  {name:"STRAWBERRY MATCHA",price:95,category:"Drinks"},
+  {name:"STRAWBERRY LATTE",price:90,category:"Drinks"},
+  {name:"OREO MATCHA",price:95,category:"Drinks"},
+  {name:"STRAWBERRY CLOUD",price:90,category:"Drinks"},
+  {name:"STRAWBERRY OREO",price:95,category:"Drinks"},
+
+  // EXTRAS
+  {name:"DIP",price:25,category:"Extras"},
+  {name:"RICE",price:25,category:"Extras"},
+  {name:"TAKE OUT BOX",price:5,category:"Extras"},
+  {name:"KETCHUP",price:10,category:"Extras"},
+
+  // SANDWICH
+  {name:"SAUSAGE",price:89,category:"Sandwich"},
+
+  // CHICKEN BURGERS
+  {name:"CLASSIC",price:119,category:"Chicken Burger"},
+  {name:"GOLDEN (CHEESE)",price:139,category:"Chicken Burger"},
+  {name:"DOUBLE",price:189,category:"Chicken Burger"}
 ];
 
 let cart = [];
 
 const peso = n => "₱" + n.toFixed(2);
 
+let selectedCategory = "All";
+
 function renderProducts(){
-  document.getElementById("products").innerHTML = menu.map((p,i)=>`
-    <button class="product" data-index="${i}">
-      <strong>${p.name}</strong>
-      <span class="price">${peso(p.price)}</span>
-    </button>
-  `).join("");
+
+  const categories = [
+    "All",
+    "Wings",
+    "Fries",
+    "Floats",
+    "Drinks",
+    "Extras",
+    "Sandwich",
+    "Chicken Burger"
+  ];
+
+  document.getElementById("categoryTabs").innerHTML =
+    categories.map(category => `
+      <button
+        class="category-btn ${selectedCategory === category ? "active" : ""}"
+        data-category="${category}">
+        ${category}
+      </button>
+    `).join("");
+
+  document.querySelectorAll(".category-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      selectedCategory = btn.dataset.category;
+      renderProducts();
+    });
+  });
+
+  const filteredProducts = selectedCategory === "All"
+    ? menu
+    : menu.filter(p => p.category === selectedCategory);
+
+  document.getElementById("products").innerHTML =
+    filteredProducts.map(p => {
+      const index = menu.indexOf(p);
+
+      return `
+        <button class="product" data-index="${index}">
+          <strong>${p.name}</strong>
+          <span class="price">${peso(p.price)}</span>
+        </button>
+      `;
+    }).join("");
+
   document.querySelectorAll(".product").forEach(btn=>{
-    btn.addEventListener("click",()=>addItem(Number(btn.dataset.index)));
+    btn.addEventListener("click",()=>{
+      addItem(Number(btn.dataset.index));
+    });
   });
 }
 
