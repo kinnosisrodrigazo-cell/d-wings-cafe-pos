@@ -67,27 +67,41 @@ button:disabled{opacity:.5}
 </section>
 
 <section id="app" class="hidden">
+
   <div class="row">
     <h2>Sales Terminal</h2>
     <button class="secondary" id="logoutBtn">Log out</button>
   </div>
-
- <div class="panel">
+  <div class="panel">
     <h3>Products</h3>
     <div id="categoryTabs" class="category-tabs"></div>
     <div class="grid" id="products"></div>
-</div>
-
-  <div class="panel">
+  </div>
+   <div class="panel">
     <h3>Current Order</h3>
+
     <div id="cart">No items added.</div>
+
+    <div class="row">
+      <strong>Discount</strong>
+      <select id="discount">
+        <option value="none">No Discount</option>
+        <option value="PWD">PWD - ₱10</option>
+        <option value="MERCHANT">MERCHANT - ₱10</option>
+      </select>
+    </div>
+
     <div class="row">
       <strong>Total</strong>
       <span class="total" id="total">₱0.00</span>
     </div>
+
     <button id="checkoutBtn" style="width:100%">CHECKOUT</button>
     <p id="orderMessage"></p>
   </div>
+
+
+
 </section>
 </main>
 
@@ -245,36 +259,72 @@ function addItem(index){
   renderCart();
 }
 
+
 function renderCart(){
   const el = document.getElementById("cart");
+  const discountType = document.getElementById("discount").value;
+
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.price * item.qty, 0
+  );
+
+  // UNLI Wings are not eligible for discounts
+  const eligibleSubtotal = cart
+    .filter(item =>
+      item.name !== "UNLI 269 WINGS" &&
+      item.name !== "UNLI 299 WINGS"
+    )
+    .reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  // Only one ₱10 discount per order
+  const discountAmount =
+    discountType !== "none" && eligibleSubtotal > 0
+      ? Math.min(10, eligibleSubtotal)
+      : 0;
+
+  const total = subtotal - discountAmount;
+
   if(!cart.length){
-    el.textContent="No items added.";
+    el.textContent = "No items added.";
   } else {
-    el.innerHTML=cart.map((item,i)=>`
+    el.innerHTML = cart.map((item,i)=>`
       <div class="row">
-        <span>${item.name}<br><span class="small">${peso(item.price)} × ${item.qty}</span></span>
         <span>
-          ${peso(item.price*item.qty)}
+          ${item.name}<br>
+          <span class="small">${peso(item.price)} × ${item.qty}</span>
+        </span>
+        <span>
+          ${peso(item.price * item.qty)}
           <button class="secondary" data-remove="${i}">−</button>
           <button class="secondary" data-add="${i}">+</button>
         </span>
       </div>
     `).join("");
+
+    if(discountAmount > 0){
+      el.innerHTML += `
+        <div class="row">
+          <span class="small">${discountType} DISCOUNT</span>
+          <span class="small">-${peso(discountAmount)}</span>
+        </div>
+      `;
+    }
+
     el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
-      const i=Number(b.dataset.remove);
+      const i = Number(b.dataset.remove);
       cart[i].qty--;
-      if(cart[i].qty<=0) cart.splice(i,1);
+      if(cart[i].qty <= 0) cart.splice(i,1);
       renderCart();
     });
+
     el.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{
       cart[Number(b.dataset.add)].qty++;
       renderCart();
     });
   }
-  document.getElementById("total").textContent=
-    peso(cart.reduce((sum,x)=>sum+x.price*x.qty,0));
-}
 
+  document.getElementById("total").textContent = peso(total);
+}
 
 
 async function verifyUser(user){
@@ -339,6 +389,7 @@ onAuthStateChanged(auth,async user=>{
 });
 
 document.getElementById("logoutBtn").onclick=()=>signOut(auth);
+  document.getElementById("discount").addEventListener("change", renderCart);
 
 document.getElementById("checkoutBtn").onclick=()=>{
   document.getElementById("orderMessage").textContent=
