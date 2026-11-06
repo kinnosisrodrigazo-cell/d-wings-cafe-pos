@@ -61,6 +61,9 @@ button:disabled{opacity:.5}
 #flavorModal.hidden{
   display:none;
 }
+  #checkoutModal.hidden{
+  display:none !important;
+}
 #flavorModal .panel{
   width:100%;
   max-width:550px;
@@ -189,7 +192,32 @@ button:disabled{opacity:.5}
     </div>
   </div>
 </div>
-
+<div id="checkoutModal" class="hidden" style="
+  position:fixed;
+  inset:0;
+  z-index:1100;
+  background:rgba(0,0,0,.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  overflow-y:auto;
+">
+  <div class="panel" style="
+    width:100%;
+    max-width:550px;
+    max-height:90vh;
+    overflow-y:auto;
+  ">
+    <h2>CONFIRM ORDER</h2>
+    <div id="checkoutSummary"></div>
+    <div class="row">
+      <button class="secondary" id="cancelCheckout">CANCEL</button>
+      <button id="confirmCheckout">CONFIRM SALE</button>
+    </div>
+    <p id="checkoutMessage" class="small"></p>
+  </div>
+</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 
@@ -827,12 +855,167 @@ document.getElementById("paymentMethod").addEventListener("change", () => {
 
   renderCart();
 });
+function showCheckoutSummary(){
+  const discountType = document.getElementById("discount").value;
 
+  const subtotal = cart.reduce(
+    (sum,item)=>sum + item.price * item.qty, 0
+  );
+
+  const eligibleSubtotal = cart
+    .filter(item =>
+      item.name !== "UNLI 269 WINGS" &&
+      item.name !== "UNLI 299 WINGS"
+    )
+    .reduce((sum,item)=>sum + item.price * item.qty, 0);
+
+  const discountAmount =
+    discountType !== "none" && eligibleSubtotal > 0
+      ? Math.min(10,eligibleSubtotal)
+      : 0;
+
+  const total = subtotal - discountAmount;
+
+  const paymentMethod =
+    document.getElementById("paymentMethod").value;
+
+  const cashReceived =
+    Number(document.getElementById("cashReceived").value) || 0;
+
+  const change = paymentMethod === "CASH"
+    ? cashReceived - total
+    : 0;
+
+  let summary = `
+    <p><strong>Customer:</strong>
+    ${document.getElementById("customerName").value || "Walk-in"}</p>
+
+    <hr>
+
+    ${cart.map(item=>`
+      <div style="margin-bottom:12px">
+        <strong>${item.name}</strong><br>
+        ${item.price} × ${item.qty} =
+        ${peso(item.price * item.qty)}
+
+        ${item.flavors ? `
+          <div class="small">
+            Flavors: ${item.flavors.join(", ")}
+          </div>
+        ` : ""}
+
+        ${item.includedItems?.length ? `
+          <div class="small">
+            Included: ${item.includedItems.join(", ")}
+          </div>
+        ` : ""}
+
+        ${item.dip ? `
+          <div class="small">Dip: ${item.dip}</div>
+        ` : ""}
+      </div>
+    `).join("")}
+
+    <hr>
+
+    <div class="row">
+      <strong>Subtotal</strong>
+      <strong>${peso(subtotal)}</strong>
+    </div>
+
+    <div class="row">
+      <strong>${discountType} Discount</strong>
+      <strong>-${peso(discountAmount)}</strong>
+    </div>
+
+    <div class="row">
+      <strong>Payment</strong>
+      <strong>${paymentMethod}</strong>
+    </div>
+
+    ${paymentMethod === "CASH" ? `
+      <div class="row">
+        <strong>Cash Received</strong>
+        <strong>${peso(cashReceived)}</strong>
+      </div>
+      <div class="row">
+        <strong>Change</strong>
+        <strong>${peso(change)}</strong>
+      </div>
+    ` : ""}
+
+    <hr>
+
+    <div class="row">
+      <strong>TOTAL</strong>
+      <span class="total">${peso(total)}</span>
+    </div>
+  `;
+
+  document.getElementById("checkoutSummary").innerHTML = summary;
+
+  document.getElementById("checkoutMessage").textContent = "";
+
+  document.getElementById("checkoutModal").classList.remove("hidden");
+}
 document.getElementById("checkoutBtn").onclick=()=>{
-  document.getElementById("orderMessage").textContent=
-    "Firebase sales saving is not enabled yet. We will connect secure order storage next.";
-};
+  document.getElementById("orderMessage").textContent="";
 
+  if(cart.length === 0){
+    document.getElementById("orderMessage").textContent=
+      "Please add items to the order first.";
+    return;
+  }
+
+  const paymentMethod =
+    document.getElementById("paymentMethod").value;
+
+  if(!paymentMethod){
+    document.getElementById("orderMessage").textContent=
+      "Please select a payment method.";
+    return;
+  }
+
+  if(paymentMethod === "CASH"){
+    const cashReceived =
+      Number(document.getElementById("cashReceived").value) || 0;
+
+    const subtotal = cart.reduce(
+      (sum,item)=>sum + item.price * item.qty, 0
+    );
+
+    const eligibleSubtotal = cart
+      .filter(item =>
+        item.name !== "UNLI 269 WINGS" &&
+        item.name !== "UNLI 299 WINGS"
+      )
+      .reduce((sum,item)=>sum + item.price * item.qty, 0);
+
+    const discountType = document.getElementById("discount").value;
+
+    const discountAmount =
+      discountType !== "none" && eligibleSubtotal > 0
+        ? Math.min(10,eligibleSubtotal)
+        : 0;
+
+    const total = subtotal - discountAmount;
+
+    if(cashReceived < total){
+      document.getElementById("orderMessage").textContent=
+        "Insufficient cash received.";
+      return;
+    }
+  }
+
+  showCheckoutSummary();
+};
+document.getElementById("cancelCheckout").onclick=()=>{
+  document.getElementById("checkoutModal").classList.add("hidden");
+};
+  document.getElementById("confirmCheckout").onclick=()=>{
+  document.getElementById("checkoutMessage").textContent=
+    "Sales saving is not connected yet. No sale has been recorded.";
+};
 renderCart();
 </script>
 </body>
