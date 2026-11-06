@@ -755,10 +755,23 @@ async function verifyUser(user){
   document.getElementById("userLabel").textContent =
     user.email + " (" + profile.role.toUpperCase() + ")";
 
+  // RESET CURRENT ORDER AFTER LOGIN
+  cart = [];
+
+  document.getElementById("customerName").value = "";
+  document.getElementById("discount").value = "none";
+  document.getElementById("paymentMethod").value = "";
+  document.getElementById("cashReceived").value = "";
+
+  document.getElementById("cashReceivedRow").classList.remove("hidden");
+  document.getElementById("orderMessage").textContent = "";
+
+  renderCart();
+
   document.getElementById("login").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
 
-  renderProducts();
+    renderProducts();
 }
 
 document.getElementById("loginBtn").onclick=async()=>{
