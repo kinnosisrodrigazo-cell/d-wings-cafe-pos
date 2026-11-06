@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>D' Wings Cafe POS</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif}
+header{background:#1d1d1d;padding:18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333}
+header h2{margin:0;color:#f5bd4f}
+main{max-width:1100px;margin:auto;padding:20px}
+.panel{background:#1d1d1d;border:1px solid #333;border-radius:12px;padding:18px;margin-bottom:18px}
+input,button{padding:13px;border-radius:8px;border:1px solid #444;font-size:15px}
+input{background:#292929;color:white;width:100%;margin:6px 0 12px}
+button{background:#e7ad3e;color:#111;font-weight:bold;cursor:pointer;border:0}
+button.secondary{background:#383838;color:white}
+button:disabled{opacity:.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.product{background:#292929;color:white;border:1px solid #444;padding:16px;border-radius:10px;text-align:left}
+.product strong{display:block;margin-bottom:8px}
+.price{color:#f5bd4f}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:10px 0}
+.hidden{display:none}
+#login{max-width:400px;margin:70px auto}
+#message{color:#f5bd4f;white-space:pre-wrap}
+.total{font-size:25px;color:#f5bd4f;font-weight:bold}
+.small{color:#aaa;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h2>D' WINGS CAFE</h2>
+  <span id="userLabel" class="small">POS SYSTEM</span>
+</header>
+
+<main>
+<section id="login" class="panel">
+  <h2>Owner / Cashier Login</h2>
+  <label>Email</label>
+  <input id="email" type="email" placeholder="Enter your email">
+  <label>Password</label>
+  <input id="password" type="password" placeholder="Enter your password">
+  <button id="loginBtn" style="width:100%">SIGN IN</button>
+  <p id="loginMessage"></p>
+</section>
+
+<section id="app" class="hidden">
+  <div class="row">
+    <h2>Sales Terminal</h2>
+    <button class="secondary" id="logoutBtn">Log out</button>
+  </div>
+
+  <div class="panel">
+    <h3>Products</h3>
+    <p class="small">Starter menu — we will complete your full menu next.</p>
+    <div class="grid" id="products"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Current Order</h3>
+    <div id="cart">No items added.</div>
+    <div class="row">
+      <strong>Total</strong>
+      <span class="total" id="total">₱0.00</span>
+    </div>
+    <button id="checkoutBtn" style="width:100%">CHECKOUT</button>
+    <p id="orderMessage"></p>
+  </div>
+</section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDzlVtp5ryG-t4Nc4QhuvrIFTj6ACcXfEo",
+  authDomain: "d-wings-cafe-pos.firebaseapp.com",
+  projectId: "d-wings-cafe-pos",
+  storageBucket: "d-wings-cafe-pos.firebasestorage.app",
+  messagingSenderId: "632657204127",
+  appId: "1:632657204127:web:e4e38849000b49212463aa"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const menu = [
+  {name:"UNLI 269 WINGS",price:269},
+  {name:"UNLI 299 WINGS",price:299},
+  {name:"3PCS CHICKEN",price:119},
+  {name:"3PCS CHICKEN + RICE + DIP",price:149},
+  {name:"6PCS CHICKEN",price:199},
+  {name:"6PCS CHICKEN + RICE + DIP",price:229},
+  {name:"9PCS CHICKEN",price:299},
+  {name:"9PCS CHICKEN + RICE + DIP",price:329},
+  {name:"18PCS CHICKEN",price:579},
+  {name:"24PCS CHICKEN",price:749}
+];
+
+let cart = [];
+
+const peso = n => "₱" + n.toFixed(2);
+
+function renderProducts(){
+  document.getElementById("products").innerHTML = menu.map((p,i)=>`
+    <button class="product" data-index="${i}">
+      <strong>${p.name}</strong>
+      <span class="price">${peso(p.price)}</span>
+    </button>
+  `).join("");
+  document.querySelectorAll(".product").forEach(btn=>{
+    btn.addEventListener("click",()=>addItem(Number(btn.dataset.index)));
+  });
+}
+
+function addItem(index){
+  const product = menu[index];
+  const found = cart.find(x=>x.name===product.name);
+  if(found) found.qty++;
+  else cart.push({...product,qty:1});
+  renderCart();
+}
+
+function renderCart(){
+  const el = document.getElementById("cart");
+  if(!cart.length){
+    el.textContent="No items added.";
+  } else {
+    el.innerHTML=cart.map((item,i)=>`
+      <div class="row">
+        <span>${item.name}<br><span class="small">${peso(item.price)} × ${item.qty}</span></span>
+        <span>
+          ${peso(item.price*item.qty)}
+          <button class="secondary" data-remove="${i}">−</button>
+          <button class="secondary" data-add="${i}">+</button>
+        </span>
+      </div>
+    `).join("");
+    el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
+      const i=Number(b.dataset.remove);
+      cart[i].qty--;
+      if(cart[i].qty<=0) cart.splice(i,1);
+      renderCart();
+    });
+    el.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{
+      cart[Number(b.dataset.add)].qty++;
+      renderCart();
+    });
+  }
+  document.getElementById("total").textContent=
+    peso(cart.reduce((sum,x)=>sum+x.price*x.qty,0));
+}
+
+document.getElementById("loginBtn").onclick=async()=>{
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value;
+  const msg=document.getElementById("loginMessage");
+  msg.textContent="Signing in...";
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+  }catch(error){
+    msg.textContent="Login failed: "+error.message;
+  }
+};
+
+onAuthStateChanged(auth,user=>{
+  document.getElementById("login").classList.toggle("hidden",!!user);
+  document.getElementById("app").classList.toggle("hidden",!user);
+  document.getElementById("userLabel").textContent=user?user.email:"POS SYSTEM";
+  if(user) renderProducts();
+});
+
+document.getElementById("logoutBtn").onclick=()=>signOut(auth);
+
+document.getElementById("checkoutBtn").onclick=()=>{
+  document.getElementById("orderMessage").textContent=
+    "Firebase sales saving is not enabled yet. We will connect secure order storage next.";
+};
+
+renderCart();
+</script>
+</body>
+</html>
