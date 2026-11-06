@@ -270,20 +270,19 @@ let pendingRequiredFlavors = null;
 
 const peso = n => "₱" + n.toFixed(2);
 
-let selectedCategory = "All";
+let selectedCategory = "Wings";
 
 function renderProducts(){
 
-  const categories = [
-    "All",
-    "Wings",
-    "Fries",
-    "Floats",
-    "Drinks",
-    "Extras",
-    "Sandwich",
-    "Chicken Burger"
-  ];
+ const categories = [
+  "Wings",
+  "Fries",
+  "Floats",
+  "Drinks",
+  "Extras",
+  "Sandwich",
+  "Chicken Burger"
+];
 
   document.getElementById("categoryTabs").innerHTML =
     categories.map(category => `
@@ -301,9 +300,9 @@ function renderProducts(){
     });
   });
 
-  const filteredProducts = selectedCategory === "All"
-    ? menu
-    : menu.filter(p => p.category === selectedCategory);
+const filteredProducts = menu.filter(
+  p => p.category === selectedCategory
+);
 
   document.getElementById("products").innerHTML =
     filteredProducts.map(p => {
