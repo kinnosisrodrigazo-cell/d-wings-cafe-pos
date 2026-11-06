@@ -211,10 +211,7 @@ button:disabled{opacity:.5}
   ">
     <h2>CONFIRM ORDER</h2>
     <div id="checkoutSummary"></div>
-    <div class="row">
-      <button class="secondary" id="cancelCheckout">CANCEL</button>
-      <button id="confirmCheckout">CONFIRM SALE</button>
-    </div>
+
     <p id="checkoutMessage" class="small"></p>
   </div>
 </div>
@@ -222,7 +219,7 @@ button:disabled{opacity:.5}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 
 import {
-  getFirestore, collection, addDoc, getDoc, doc, serverTimestamp
+  getFirestore, collection, doc, setDoc, getDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
 import {
@@ -307,7 +304,10 @@ const menu = [
 ];
 
 let cart = [];
-
+let isSavingSale = false;
+let saleSaved = false;
+let pendingSaleRef = null;
+  
 const wingFlavors = [
   "CHEESE BLIZZ",
   "LEMON PEPPER",
@@ -760,7 +760,90 @@ const change = paymentMethod === "CASH"
 document.getElementById("change").textContent = peso(change);
 
 } // END OF renderCart()
+async function saveSale(){
+  if(isSavingSale || saleSaved) return;
 
+  isSavingSale = true;
+
+  try{
+    const discountType = document.getElementById("discount").value;
+    const paymentMethod = document.getElementById("paymentMethod").value;
+
+    const subtotal = cart.reduce(
+      (sum,item)=>sum + item.price * item.qty, 0
+    );
+
+    const eligibleSubtotal = cart
+      .filter(item =>
+        item.name !== "UNLI 269 WINGS" &&
+        item.name !== "UNLI 299 WINGS"
+      )
+      .reduce((sum,item)=>sum + item.price * item.qty, 0);
+
+    const discountAmount =
+      discountType !== "none" && eligibleSubtotal > 0
+        ? Math.min(10,eligibleSubtotal)
+        : 0;
+
+    const total = subtotal - discountAmount;
+
+    const cashReceived = paymentMethod === "CASH"
+      ? Number(document.getElementById("cashReceived").value) || 0
+      : 0;
+
+    const change = paymentMethod === "CASH"
+      ? cashReceived - total
+      : 0;
+
+    const sale = {
+      customerName:
+        document.getElementById("customerName").value.trim() || "Walk-in",
+
+      items: cart.map(item=>({
+        name: item.name,
+        price: item.price,
+        qty: item.qty,
+        flavors: item.flavors || [],
+        includedItems: item.includedItems || [],
+        dip: item.dip || null
+      })),
+
+      subtotal,
+      discountType,
+      discountAmount,
+      total,
+      paymentMethod,
+      cashReceived,
+      change,
+
+      cashierEmail: auth.currentUser.email,
+      cashierUid: auth.currentUser.uid,
+
+      createdAt: serverTimestamp()
+    };
+
+    if(!pendingSaleRef){
+  pendingSaleRef = doc(collection(db,"orders"));
+}
+
+await setDoc(pendingSaleRef,sale);
+    saleSaved = true;
+
+ document.getElementById("checkoutMessage").textContent =
+  "SALE SUCCESSFULLY SAVED!";
+
+document.getElementById("checkoutButtons").classList.add("hidden");
+document.getElementById("newOrderBtn").classList.remove("hidden");
+
+  }catch(error){
+    console.error("Sale saving error:",error);
+
+    document.getElementById("checkoutMessage").textContent =
+      "Unable to save sale. Please try again.";
+  }finally{
+    isSavingSale = false;
+  }
+}
 async function verifyUser(user){
   const userRef = doc(db,"users",user.uid);
   const userSnap = await getDoc(userRef);
@@ -783,8 +866,11 @@ async function verifyUser(user){
   document.getElementById("userLabel").textContent =
     user.email + " (" + profile.role.toUpperCase() + ")";
 
-  // RESET CURRENT ORDER AFTER LOGIN
-  cart = [];
+// RESET CURRENT ORDER AFTER LOGIN
+cart = [];
+saleSaved = false;
+pendingSaleRef = null;
+document.getElementById("checkoutModal").classList.add("hidden");
 
   document.getElementById("customerName").value = "";
   document.getElementById("discount").value = "none";
@@ -923,10 +1009,14 @@ function showCheckoutSummary(){
       <strong>${peso(subtotal)}</strong>
     </div>
 
-    <div class="row">
-      <strong>${discountType} Discount</strong>
-      <strong>-${peso(discountAmount)}</strong>
-    </div>
+<div class="row" id="checkoutButtons">
+  <button class="secondary" id="cancelCheckout">CANCEL</button>
+  <button id="confirmCheckout">CONFIRM SALE</button>
+</div>
+
+<button id="newOrderBtn" class="hidden" style="width:100%">
+  NEW ORDER
+</button>
 
     <div class="row">
       <strong>Payment</strong>
@@ -957,6 +1047,46 @@ function showCheckoutSummary(){
   document.getElementById("checkoutMessage").textContent = "";
 
   document.getElementById("checkoutModal").classList.remove("hidden");
+  document.getElementById("confirmCheckout").onclick=async()=>{
+  if(isSavingSale || saleSaved) return;
+
+  document.getElementById("confirmCheckout").disabled = true;
+  document.getElementById("checkoutMessage").textContent =
+    "Saving sale...";
+
+  await saveSale();
+
+   if(!saleSaved){
+    document.getElementById("confirmCheckout").disabled = false;
+  }
+};
+
+document.getElementById("cancelCheckout").onclick=()=>{
+  if(isSavingSale || saleSaved) return;
+
+  document.getElementById("checkoutModal").classList.add("hidden");
+};
+
+document.getElementById("newOrderBtn").onclick=()=>{
+  if(!saleSaved) return;
+
+  cart = [];
+  saleSaved = false;
+  pendingSaleRef = null;
+
+  document.getElementById("customerName").value = "";
+  document.getElementById("discount").value = "none";
+  document.getElementById("paymentMethod").value = "";
+  document.getElementById("cashReceived").value = "";
+
+  document.getElementById("cashReceivedRow").classList.remove("hidden");
+  document.getElementById("orderMessage").textContent = "";
+  document.getElementById("checkoutMessage").textContent = "";
+
+  document.getElementById("checkoutModal").classList.add("hidden");
+
+  renderCart();
+};
 }
 document.getElementById("checkoutBtn").onclick=()=>{
   document.getElementById("orderMessage").textContent="";
@@ -1009,13 +1139,7 @@ document.getElementById("checkoutBtn").onclick=()=>{
 
   showCheckoutSummary();
 };
-document.getElementById("cancelCheckout").onclick=()=>{
-  document.getElementById("checkoutModal").classList.add("hidden");
-};
-  document.getElementById("confirmCheckout").onclick=()=>{
-  document.getElementById("checkoutMessage").textContent=
-    "Sales saving is not connected yet. No sale has been recorded.";
-};
+
 renderCart();
 </script>
 </body>
