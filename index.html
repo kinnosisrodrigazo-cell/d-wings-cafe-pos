@@ -140,7 +140,7 @@ button:disabled{opacity:.5}
   </select>
 </div>
 
-<div class="row">
+<div class="row" id="cashReceivedRow">
   <strong>Cash Received</strong>
   <input type="number" id="cashReceived" placeholder="Enter amount" min="0">
 </div>
@@ -718,16 +718,21 @@ ${item.flavors ? `
 
   document.getElementById("total").textContent = peso(total);
 
+const paymentMethod =
+  document.getElementById("paymentMethod").value;
+
 const cashReceived = Number(
   document.getElementById("cashReceived").value
 ) || 0;
 
-const change = Math.max(0, cashReceived - total);
+const change = paymentMethod === "CASH"
+  ? Math.max(0, cashReceived - total)
+  : 0;
 
 document.getElementById("change").textContent = peso(change);
-}
 
-  
+} // END OF renderCart()
+
 async function verifyUser(user){
   const userRef = doc(db,"users",user.uid);
   const userSnap = await getDoc(userRef);
@@ -790,8 +795,25 @@ onAuthStateChanged(auth,async user=>{
 });
 
 document.getElementById("logoutBtn").onclick=()=>signOut(auth);
-  document.getElementById("discount").addEventListener("change", renderCart);
-  document.getElementById("cashReceived").addEventListener("input", renderCart);
+
+document.getElementById("discount").addEventListener("change", renderCart);
+
+document.getElementById("cashReceived").addEventListener("input", renderCart);
+
+document.getElementById("paymentMethod").addEventListener("change", () => {
+  const method = document.getElementById("paymentMethod").value;
+
+  document.getElementById("cashReceivedRow").classList.toggle(
+    "hidden",
+    method !== "CASH"
+  );
+
+  if(method !== "CASH"){
+    document.getElementById("cashReceived").value = "";
+  }
+
+  renderCart();
+});
 
 document.getElementById("checkoutBtn").onclick=()=>{
   document.getElementById("orderMessage").textContent=
