@@ -417,6 +417,25 @@ button:disabled{opacity:.5}
   color: #ffffff;
   font-weight: 500;
 }
+  @media (max-width: 600px) {
+  .category-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+  }
+
+  .category-tabs button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 1px;
+    font-size: 8px;
+    white-space: normal;
+    text-align: center;
+  }
+}
 </style>
 </head>
 <body>
