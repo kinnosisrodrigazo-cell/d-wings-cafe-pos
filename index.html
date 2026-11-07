@@ -362,6 +362,24 @@ button:disabled{opacity:.5}
     </button>
 
     <div id="dailyReport" style="margin-top:15px"></div>
+    <div class="panel" style="margin-top:15px">
+  <h3>WHOLE-DAY PAYMENT SUMMARY</h3>
+
+  <div class="row">
+    <strong>CASH RECEIVED</strong>
+    <strong class="total" id="summaryCash">₱0.00</strong>
+  </div>
+
+  <div class="row">
+    <strong>GCASH RECEIVED</strong>
+    <strong class="total" id="summaryGCash">₱0.00</strong>
+  </div>
+
+  <div class="row">
+    <strong>PAYMAYA RECEIVED</strong>
+    <strong class="total" id="summaryPayMaya">₱0.00</strong>
+  </div>
+</div>
     <button id="exportExcelBtn" class="hidden" style="width:100%;margin-top:12px">
       EXPORT TO EXCEL
     </button>
@@ -1260,15 +1278,50 @@ async function loadDailyReport(){
     const completedOrders = reportOrders.filter(order =>
       (order.status || "COMPLETED") !== "VOID"
     );
+const voidOrders = reportOrders.filter(order =>
+  (order.status || "COMPLETED") === "VOID"
+);
 
-    const voidOrders = reportOrders.filter(order =>
-      (order.status || "COMPLETED") === "VOID"
-    );
+const paymentTotals = completedOrders.reduce((totals, order) => {
+  const method = order.paymentMethod || "";
 
-    const netSales = completedOrders.reduce(
-      (sum, order) => sum + (Number(order.total) || 0),
-      0
-    );
+  if (order.firstPaymentMethod && order.secondPaymentMethod) {
+    const payments = [
+      [order.firstPaymentMethod, order.firstPaymentAmount],
+      [order.secondPaymentMethod, order.secondPaymentAmount]
+    ];
+
+    payments.forEach(([paymentMethod, amount]) => {
+      const received = Number(amount) || 0;
+
+      if (paymentMethod === "CASH") totals.cash += received;
+      if (paymentMethod === "GCASH") totals.gcash += received;
+      if (paymentMethod === "PAYMAYA") totals.paymaya += received;
+    });
+
+  } else if (method === "CASH") {
+    totals.cash += Number(order.cashReceived) || 0;
+  } else if (method === "GCASH") {
+    totals.gcash += Number(order.total) || 0;
+  } else if (method === "PAYMAYA") {
+    totals.paymaya += Number(order.total) || 0;
+  }
+
+  return totals;
+}, {
+  cash: 0,
+  gcash: 0,
+  paymaya: 0
+});
+
+document.getElementById("summaryCash").textContent = peso(paymentTotals.cash);
+document.getElementById("summaryGCash").textContent = peso(paymentTotals.gcash);
+document.getElementById("summaryPayMaya").textContent = peso(paymentTotals.paymaya);
+
+const netSales = completedOrders.reduce(
+  (sum, order) => sum + (Number(order.total) || 0),
+  0
+);
 
     const incentive = getDailyIncentive(
       selectedDate,
@@ -1403,7 +1456,37 @@ async function loadDailyReport(){
   const voidOrders = reportOrders.filter(order =>
     (order.status || "COMPLETED") === "VOID"
   );
+  const paymentTotals = completedOrders.reduce((totals, order) => {
+    const method = order.paymentMethod || "";
 
+    if (order.firstPaymentMethod && order.secondPaymentMethod) {
+      const payments = [
+        [order.firstPaymentMethod, order.firstPaymentAmount],
+        [order.secondPaymentMethod, order.secondPaymentAmount]
+      ];
+
+      payments.forEach(([paymentMethod, amount]) => {
+        const received = Number(amount) || 0;
+
+        if (paymentMethod === "CASH") totals.cash += received;
+        if (paymentMethod === "GCASH") totals.gcash += received;
+        if (paymentMethod === "PAYMAYA") totals.paymaya += received;
+      });
+
+    } else if (method === "CASH") {
+      totals.cash += Number(order.cashReceived) || 0;
+    } else if (method === "GCASH") {
+      totals.gcash += Number(order.total) || 0;
+    } else if (method === "PAYMAYA") {
+      totals.paymaya += Number(order.total) || 0;
+    }
+
+    return totals;
+  }, {
+    cash: 0,
+    gcash: 0,
+    paymaya: 0
+  });
   const netSales = completedOrders.reduce(
     (sum, order) => sum + (Number(order.total) || 0),
     0
@@ -1411,12 +1494,15 @@ async function loadDailyReport(){
 
   const incentive = getDailyIncentive(selectedDate, netSales);
 
-  const summarySheet = XLSX.utils.aoa_to_sheet([
+const summarySheet = XLSX.utils.aoa_to_sheet([
     ["D' WINGS CAFE - DAILY SALES REPORT"],
     ["Date", selectedDate],
     ["Completed Orders", completedOrders.length],
     ["VOID Orders", voidOrders.length],
     ["NET SALES", netSales],
+    ["CASH RECEIVED", paymentTotals.cash],
+    ["GCASH RECEIVED", paymentTotals.gcash],
+    ["PAYMAYA RECEIVED", paymentTotals.paymaya],
     ["INCENTIVE", incentive]
   ]);
 
