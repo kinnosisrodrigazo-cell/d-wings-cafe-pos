@@ -91,29 +91,43 @@ button:disabled{opacity:.5}
   color:#111;
 }
 .sales-layout{
-  display:grid;
-  grid-template-columns:minmax(0, 1.7fr) minmax(320px, 1fr);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
   gap:18px;
-  align-items:start;
 }
 
-#cartPanel.hidden{
-  display:block !important;
-  visibility:hidden;
+.sales-layout > .panel:first-child{
+  width:100%;
+  max-width:850px;
 }
 
 #cartPanel{
+  flex:0 0 380px;
   position:sticky;
   top:15px;
   max-height:calc(100vh - 30px);
   overflow-y:auto;
 }
 
-@media(max-width:750px){
+#cartPanel.hidden{
+  display:none !important;
+}
+
+@media(max-width:900px){
   .sales-layout{
-    grid-template-columns:1fr;
+    flex-direction:column;
   }
 
+  .sales-layout > .panel:first-child,
+  #cartPanel{
+    width:100%;
+    max-width:none;
+    flex-basis:auto;
+    position:static;
+    max-height:none;
+  }
+}
   #cartPanel{
     position:static;
     max-height:none;
