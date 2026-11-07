@@ -435,6 +435,20 @@ button:disabled{opacity:.5}
     white-space: normal;
     text-align: center;
   }
+@media (max-width: 600px) {
+  #products.fries-layout {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px;
+  }
+
+  #products.fries-layout .product {
+    min-width: 0;
+    width: 100%;
+    padding: 12px 8px;
+    font-size: 12px;
+    overflow-wrap: break-word;
+  }
 }
 </style>
 </head>
