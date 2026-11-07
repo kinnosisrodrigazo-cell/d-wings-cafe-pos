@@ -1053,6 +1053,7 @@ function startAvailabilitySync(){
 
   availabilityUnsubscribe = onSnapshot(
     availabilityRef,
+
     snapshot => {
       unavailableItems = snapshot.exists()
         ? (snapshot.data().unavailable || {})
@@ -1060,12 +1061,14 @@ function startAvailabilitySync(){
 
       renderProducts();
 
-    if(
-  !availabilitySaving &&
-  !document.getElementById("settingsModal").classList.contains("hidden")
-){
-  renderAvailabilitySettings();
-}
+      if(
+        !availabilitySaving &&
+        !document.getElementById("settingsModal").classList.contains("hidden")
+      ){
+        renderAvailabilitySettings();
+      }
+    },
+
     error => {
       console.error("Availability sync error:", error);
       alert("Unable to sync product availability. Please check your connection.");
