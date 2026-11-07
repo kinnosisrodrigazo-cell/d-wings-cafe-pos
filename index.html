@@ -168,7 +168,11 @@ button:disabled{opacity:.5}
 </head>
 <body>
 <header>
+  <div style="display:flex;align-items:center;gap:12px">
+  <img src="dwings-logo.png" alt="D' Wings Cafe Logo"
+       style="width:55px;height:55px;object-fit:contain">
   <h2>D' WINGS CAFE</h2>
+</div>
   <span id="userLabel" class="small">POS SYSTEM</span>
 </header>
 
@@ -457,9 +461,7 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
-import {
-  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDzlVtp5ryG-t4Nc4QhuvrIFTj6ACcXfEo",
@@ -473,7 +475,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
+await setPersistence(auth, browserLocalPersistence);
 
 const menu = [
   // WINGS
