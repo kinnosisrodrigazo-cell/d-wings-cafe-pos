@@ -203,8 +203,8 @@ button:disabled{opacity:.5}
     <div id="categoryTabs" class="category-tabs"></div>
     <div class="grid" id="products"></div>
   </div>
-   <div class="panel">
-    <h3>Current Order</h3>
+  <div class="panel hidden" id="cartPanel">
+    <h3>CART</h3>
      <label for="customerName">Customer Name</label>
 <input
   id="customerName"
@@ -816,6 +816,7 @@ document.getElementById("cancelFlavor").onclick = ()=>{
 
 function renderCart(){
   const el = document.getElementById("cart");
+  document.getElementById("cartPanel").classList.toggle("hidden", cart.length === 0);
   const discountType = document.getElementById("discount").value;
 
   const subtotal = cart.reduce(
