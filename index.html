@@ -876,7 +876,9 @@ if (selectedCategory === "Wings") {
 } else {
 
   productsEl.style.display = "";
-  productsEl.innerHTML = renderProductCards(filteredProducts);
+  productsEl.innerHTML = renderProductCards(
+  [...filteredProducts].sort((a, b) => Number(a.price) - Number(b.price))
+);
 
 }
 
