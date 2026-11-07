@@ -227,17 +227,64 @@ button:disabled{opacity:.5}
     </div>
 <div class="row">
   <strong>Payment Method</strong>
-  <select id="paymentMethod">
-    <option value="">Select Payment</option>
-    <option value="CASH">CASH</option>
-    <option value="GCASH">GCASH</option>
-    <option value="PAYMAYA">PAYMAYA</option>
-  </select>
 </div>
+
+<div class="order-type-options">
+  <button type="button" class="order-type-btn" id="singlePaymentBtn">
+    SINGLE PAYMENT
+  </button>
+
+  <button type="button" class="order-type-btn" id="splitPaymentBtn">
+    SPLIT PAYMENT
+  </button>
+</div>
+
+<div id="singlePaymentOptions" class="order-type-options hidden">
+  <button type="button" class="order-type-btn" data-payment="CASH">CASH</button>
+  <button type="button" class="order-type-btn" data-payment="GCASH">GCASH</button>
+  <button type="button" class="order-type-btn" data-payment="PAYMAYA">PAYMAYA</button>
+</div>
+
+<div id="splitPaymentOptions" class="order-type-options hidden">
+  <button type="button" class="order-type-btn" data-payment="GCASH + CASH">GCASH + CASH</button>
+  <button type="button" class="order-type-btn" data-payment="CASH + GCASH">CASH + GCASH</button>
+  <button type="button" class="order-type-btn" data-payment="CASH + PAYMAYA">CASH + PAYMAYA</button>
+  <button type="button" class="order-type-btn" data-payment="PAYMAYA + CASH">PAYMAYA + CASH</button>
+  <button type="button" class="order-type-btn" data-payment="PAYMAYA + GCASH">PAYMAYA + GCASH</button>
+</div>
+
+<select id="paymentMethod" class="hidden">
+  <option value="">Select Payment</option>
+  <option value="CASH">CASH</option>
+  <option value="GCASH">GCASH</option>
+  <option value="PAYMAYA">PAYMAYA</option>
+  <option value="GCASH + CASH">GCASH + CASH</option>
+  <option value="CASH + GCASH">CASH + GCASH</option>
+  <option value="CASH + PAYMAYA">CASH + PAYMAYA</option>
+  <option value="PAYMAYA + CASH">PAYMAYA + CASH</option>
+  <option value="PAYMAYA + GCASH">PAYMAYA + GCASH</option>
+</select>
 
 <div class="row" id="cashReceivedRow">
   <strong>Cash Received</strong>
   <input type="number" id="cashReceived" placeholder="Enter amount" min="0">
+</div>
+
+<div id="splitPaymentFields" class="hidden">
+  <div class="row">
+    <strong id="firstPaymentLabel">First Payment</strong>
+    <input type="number" id="firstPaymentAmount" placeholder="Enter amount" min="0">
+  </div>
+
+  <div class="row">
+    <strong id="secondPaymentLabel">Second Payment</strong>
+    <input type="number" id="secondPaymentAmount" placeholder="Enter amount" min="0">
+  </div>
+
+  <div class="row">
+    <strong>Remaining Balance</strong>
+    <span class="total" id="remainingBalance">₱0.00</span>
+  </div>
 </div>
 
 <div class="row">
@@ -1071,7 +1118,6 @@ function getDailyIncentiveInfo(date, sales){
       earned: "DOUBLE PAY",
       target: 20000,
       progress: 100,
-      message: "AMAZING WORK! DOUBLE PAY ACHIEVED!",
       next: "TOP INCENTIVE REACHED!"
     };
   }
@@ -1591,6 +1637,28 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
 });
   
 document.getElementById("discount").addEventListener("change", renderCart);
+  document.getElementById("singlePaymentBtn").onclick = () => {
+  document.getElementById("singlePaymentOptions").classList.remove("hidden");
+  document.getElementById("splitPaymentOptions").classList.add("hidden");
+};
+
+document.getElementById("splitPaymentBtn").onclick = () => {
+  document.getElementById("splitPaymentOptions").classList.remove("hidden");
+  document.getElementById("singlePaymentOptions").classList.add("hidden");
+};
+
+document.querySelectorAll("[data-payment]").forEach(button => {
+  button.onclick = () => {
+    document.getElementById("paymentMethod").value =
+      button.dataset.payment;
+
+    document.querySelectorAll("[data-payment]").forEach(option => {
+      option.classList.remove("active");
+    });
+
+    button.classList.add("active");
+  };
+});
 
 document.getElementById("cashReceived").addEventListener("input", renderCart);
 
