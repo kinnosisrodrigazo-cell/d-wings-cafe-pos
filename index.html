@@ -541,10 +541,14 @@ button:disabled{opacity:.5}
     <div class="panel" style="margin-top:15px">
   <h3>WHOLE-DAY PAYMENT SUMMARY</h3>
 
-  <div class="row">
-    <strong>CASH RECEIVED</strong>
-    <strong class="total" id="summaryCash">₱0.00</strong>
-  </div>
+   <button id="toggleSalesVisibility" class="secondary" style="width:100%;margin-bottom:12px">
+  SHOW AMOUNTS
+</button>
+
+<div class="row">
+  <strong>CASH RECEIVED</strong>
+  <strong class="total" id="summaryCash">₱0.00</strong>
+</div>
 
   <div class="row">
     <strong>GCASH RECEIVED</strong>
@@ -1598,6 +1602,34 @@ const paymentTotals = completedOrders.reduce((totals, order) => {
 document.getElementById("summaryCash").textContent = peso(paymentTotals.cash);
 document.getElementById("summaryGCash").textContent = peso(paymentTotals.gcash);
 document.getElementById("summaryPayMaya").textContent = peso(paymentTotals.paymaya);
+    const salesVisibilityBtn =
+  document.getElementById("toggleSalesVisibility");
+
+let salesAmountsVisible = false;
+
+function updateSalesVisibility(){
+  document.getElementById("summaryNetSales").textContent =
+    salesAmountsVisible ? peso(netSales) : "*****";
+
+  document.getElementById("summaryCash").textContent =
+    salesAmountsVisible ? peso(paymentTotals.cash) : "*****";
+
+  document.getElementById("summaryGCash").textContent =
+    salesAmountsVisible ? peso(paymentTotals.gcash) : "*****";
+
+  document.getElementById("summaryPayMaya").textContent =
+    salesAmountsVisible ? peso(paymentTotals.paymaya) : "*****";
+
+  salesVisibilityBtn.textContent =
+    salesAmountsVisible ? "HIDE AMOUNTS" : "SHOW AMOUNTS";
+}
+
+salesVisibilityBtn.onclick = () => {
+  salesAmountsVisible = !salesAmountsVisible;
+  updateSalesVisibility();
+};
+
+updateSalesVisibility();
 
 const netSales = completedOrders.reduce(
   (sum, order) => sum + (Number(order.total) || 0),
@@ -1627,10 +1659,10 @@ const netSales = completedOrders.reduce(
         <strong>${voidOrders.length}</strong>
       </div>
 
-      <div class="row">
-        <strong>NET SALES</strong>
-        <strong class="total">${peso(netSales)}</strong>
-      </div>
+     <div class="row">
+  <strong>NET SALES</strong>
+  <strong class="total" id="summaryNetSales">${peso(netSales)}</strong>
+</div>
 
            <div class="panel" style="border:1px solid #765b28;background:#242016">
       
@@ -2371,6 +2403,7 @@ ${document.querySelector('input[name="orderType"]:checked').value}</p>
       </div>
     ` : paymentMethod === "CASH" ? `
       <div class="row">
+      
         <strong>Cash Received</strong>
         <strong>${peso(cashReceived)}</strong>
       </div>
