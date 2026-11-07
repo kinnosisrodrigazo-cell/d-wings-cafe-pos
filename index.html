@@ -1019,6 +1019,7 @@ let editingCartIndex = null;
 
 let unavailableItems = {};
 let availabilityUnsubscribe = null;
+let availabilitySaving = false;
 
 const availabilityRef = doc(
   db,
@@ -1058,10 +1059,12 @@ function startAvailabilitySync(){
 
       renderProducts();
 
-      if(!document.getElementById("settingsModal").classList.contains("hidden")){
-        renderAvailabilitySettings();
-      }
-    },
+    if(
+  !availabilitySaving &&
+  !document.getElementById("settingsModal").classList.contains("hidden")
+){
+  renderAvailabilitySettings();
+}
     error => {
       console.error("Availability sync error:", error);
       alert("Unable to sync product availability. Please check your connection.");
@@ -1163,7 +1166,8 @@ function renderAvailabilitySettings(){
       const key = checkbox.dataset.availabilityKey;
       const newValue = checkbox.checked;
 
-      checkbox.disabled = true;
+availabilitySaving = true;
+checkbox.disabled = true;
 
       try {
         await runTransaction(db, async transaction => {
@@ -1189,9 +1193,10 @@ function renderAvailabilitySettings(){
         console.error("Availability update error:", error);
         alert("Unable to save availability. Please try again.");
         checkbox.checked = !newValue;
-      } finally {
-        checkbox.disabled = false;
-      }
+} finally {
+  availabilitySaving = false;
+  checkbox.disabled = false;
+}
     });
   });
 }
