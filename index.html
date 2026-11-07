@@ -414,16 +414,18 @@ button:disabled{opacity:.5}
   <h2>CHOOSE YOUR AVATAR</h2>
   <p>Select your profile face to continue</p>
 
-  <div class="avatar-grid">
-    <button class="avatar-option" data-avatar="👩🏽‍🦳">👩🏽‍🦳</button>
-    <button class="avatar-option" data-avatar="👩🏻‍🦱">👩🏻‍🦱</button>
-    <button class="avatar-option" data-avatar="👩🏻‍🦰">👩🏻‍🦰</button>
-    <button class="avatar-option" data-avatar="👩🏼">👩🏼</button>
-    <button class="avatar-option" data-avatar="👨🏼">👨🏼</button>
-    <button class="avatar-option" data-avatar="👨🏻">👨🏻</button>
-    <button class="avatar-option" data-avatar="👨🏽">👨🏽</button>
-    <button class="avatar-option" data-avatar="👨🏿">👨🏿</button>
-  </div>
+
+<div class="avatar-grid">
+  <button type="button" class="avatar-option" data-avatar="👩🏽‍🦳">👩🏽‍🦳</button>
+  <button type="button" class="avatar-option" data-avatar="👩🏻‍🦱">👩🏻‍🦱</button>
+  <button type="button" class="avatar-option" data-avatar="👩🏻‍🦰">👩🏻‍🦰</button>
+  <button type="button" class="avatar-option" data-avatar="👩🏼">👩🏼</button>
+  <button type="button" class="avatar-option" data-avatar="👨🏼">👨🏼</button>
+  <button type="button" class="avatar-option" data-avatar="👨🏻">👨🏻</button>
+  <button type="button" class="avatar-option" data-avatar="👨🏽">👨🏽</button>
+  <button type="button" class="avatar-option" data-avatar="👨🏿">👨🏿</button>
+</div>
+
 
   <button id="continueAvatarBtn" disabled style="width:100%">
     CONTINUE TO POS
@@ -2183,6 +2185,25 @@ document.getElementById("togglePassword").onclick = ()=>{
     password.type = "password";
   }
 };
+  
+let selectedAvatar = "";
+
+document.querySelectorAll(".avatar-option").forEach(button => {
+  button.type = "button";
+
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".avatar-option").forEach(option => {
+      option.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+
+    selectedAvatar = button.dataset.avatar;
+
+    document.getElementById("continueAvatarBtn").disabled = false;
+  });
+});
+
 
 onAuthStateChanged(auth,async user=>{
   if(!user){
