@@ -2204,6 +2204,22 @@ document.querySelectorAll(".avatar-option").forEach(button => {
   });
 });
 
+  
+document.getElementById("continueAvatarBtn").onclick = () => {
+  if (!selectedAvatar) {
+    alert("Please select an avatar first.");
+    return;
+  }
+
+  document.getElementById("avatarSelection").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+
+  document.getElementById("userLabel").textContent =
+    selectedAvatar + " " + currentUserRole.toUpperCase();
+
+  renderProducts();
+};
+
 
 onAuthStateChanged(auth,async user=>{
   if(!user){
