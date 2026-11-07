@@ -330,6 +330,37 @@ button:disabled{opacity:.5}
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:12px;
 }
+  
+/* AVATAR SELECTION */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.avatar-option {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid #333;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 38px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.avatar-option.selected {
+  border: 3px solid #d4af37;
+  background: #fff8df;
+  transform: scale(1.05);
+}
+
+#continueAvatarBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 </style>
 </head>
 <body>
@@ -360,6 +391,27 @@ button:disabled{opacity:.5}
   <button id="loginBtn" style="width:100%">SIGN IN</button>
   <p id="loginMessage"></p>
 </section>
+  
+<section id="avatarSelection" class="panel hidden">
+  <h2>CHOOSE YOUR AVATAR</h2>
+  <p>Select your profile face to continue</p>
+
+  <div class="avatar-grid">
+    <button class="avatar-option" data-avatar="👩🏽‍🦳">👩🏽‍🦳</button>
+    <button class="avatar-option" data-avatar="👩🏻‍🦱">👩🏻‍🦱</button>
+    <button class="avatar-option" data-avatar="👩🏻‍🦰">👩🏻‍🦰</button>
+    <button class="avatar-option" data-avatar="👩🏼">👩🏼</button>
+    <button class="avatar-option" data-avatar="👨🏼">👨🏼</button>
+    <button class="avatar-option" data-avatar="👨🏻">👨🏻</button>
+    <button class="avatar-option" data-avatar="👨🏽">👨🏽</button>
+    <button class="avatar-option" data-avatar="👨🏿">👨🏿</button>
+  </div>
+
+  <button id="continueAvatarBtn" disabled style="width:100%">
+    CONTINUE TO POS
+  </button>
+</section>
+
 
 <section id="app" class="hidden">
   <div class="terminal-nav">
@@ -2077,10 +2129,11 @@ document.getElementById("checkoutModal").classList.add("hidden");
   renderCart();
 
   document.getElementById("login").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
+document.getElementById("app").classList.add("hidden");
 
-    renderProducts();
+document.getElementById("avatarSelection").classList.remove("hidden");
 }
+
 
 document.getElementById("loginBtn").onclick=async()=>{
   const email=document.getElementById("email").value.trim();
@@ -2091,11 +2144,17 @@ document.getElementById("loginBtn").onclick=async()=>{
 
   try{
     await signInWithEmailAndPassword(auth,email,password);
+
     msg.textContent="";
+
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("avatarSelection").classList.remove("hidden");
+
   }catch(error){
     msg.textContent="Login failed: "+error.message;
   }
 };
+
 
 document.getElementById("togglePassword").onclick = ()=>{
   const password = document.getElementById("password");
