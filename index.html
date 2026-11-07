@@ -461,13 +461,40 @@ button:disabled{opacity:.5}
     display: flex;
     flex-wrap: nowrap;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
     gap: 2px;
+    width: 100%;
   }
 
   .category-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     height: 65px;
     flex: 1 1 0;
+    min-width: 0;
+    padding: 5px 2px;
+    gap: 4px;
+  }
+
+  .category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 25px;
+    font-size: 20px;
+  }
+
+  .category-btn span:last-child {
+    display: block;
+    width: 100%;
+    font-size: 8px;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
   }
 }
 </style>
