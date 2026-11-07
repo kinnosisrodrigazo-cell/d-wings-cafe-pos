@@ -417,14 +417,13 @@ button:disabled{opacity:.5}
   color: #ffffff;
   font-weight: 500;
 }
- @media (max-width: 600px) {
+ /* MOBILE LANDSCAPE CATEGORY ALIGNMENT */
+@media (max-width: 900px) and (orientation: landscape) {
   .category-tabs {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 2px;
-    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 4px;
   }
 
   .category-btn {
@@ -433,44 +432,26 @@ button:disabled{opacity:.5}
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 4px;
     height: 65px;
-    padding: 5px 2px;
-    flex: 1 1 0;
     min-width: 0;
-    white-space: normal;
+    padding: 4px 1px;
+    gap: 4px;
   }
 
   .category-icon {
+    width: 100%;
+    height: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    line-height: 1;
-    font-size: 20px;
   }
 
   .category-btn span:last-child {
-    display: block;
     width: 100%;
-    font-size: 8px;
-    line-height: 1.2;
+    font-size: 9px;
+    line-height: 1.1;
     text-align: center;
     overflow-wrap: anywhere;
-  }
-
-  #products.fries-layout {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px;
-  }
-
-  #products.fries-layout .product {
-    min-width: 0;
-    width: 100%;
-    padding: 12px 8px;
-    font-size: 12px;
-    overflow-wrap: break-word;
   }
 }
 </style>
