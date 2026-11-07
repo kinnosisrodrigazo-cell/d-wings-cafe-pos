@@ -1065,7 +1065,6 @@ function getDailyIncentiveInfo(date, sales){
   let earned = 0;
   let nextTarget = 10000;
   let nextReward = firstReward;
-  let message = "";
 
   if(sales >= 20000){
     return {
@@ -1082,18 +1081,15 @@ function getDailyIncentiveInfo(date, sales){
     target = 20000;
     nextTarget = 20000;
     nextReward = "DOUBLE PAY";
-    message = "GREAT JOB! ₱300 INCENTIVE UNLOCKED!";
   } else if(sales >= 10000){
     earned = `₱${firstReward} INCENTIVE EARNED`;
     target = 15000;
     nextTarget = 15000;
     nextReward = "₱300";
-    message = "WELL DONE! FIRST INCENTIVE UNLOCKED!";
   } else {
     target = 10000;
     nextTarget = 10000;
     nextReward = `₱${firstReward}`;
-    message = "KEEP PUSHING! YOUR FIRST REWARD IS WITHIN REACH!";
   }
 
   const progress = Math.min(100, (sales / target) * 100);
@@ -1105,9 +1101,8 @@ function getDailyIncentiveInfo(date, sales){
     progress,
     remaining,
     nextReward,
-    message,
     next: remaining > 0
-      ? `₱${remaining.toLocaleString("en-PH")} MORE TO UNLOCK ${nextReward}!`
+      ? `₱${remaining.toLocaleString("en-PH")} MORE TO UNLOCK INCENTIVES!`
       : "NEXT INCENTIVE UNLOCKED!"
   };
 }
@@ -1190,7 +1185,7 @@ async function loadDailyReport(){
       </div>
 
            <div class="panel" style="border:1px solid #765b28;background:#242016">
-        <h3 style="color:#f5bd4f;margin-top:0">TEAM SALES MOTIVATION</h3>
+      
 
         <p class="small">CURRENT DAILY SALES</p>
         <div class="total">${peso(netSales)}</div>
@@ -1203,8 +1198,6 @@ async function loadDailyReport(){
         <div style="height:14px;background:#444;border-radius:20px;overflow:hidden">
           <div style="height:14px;width:${incentiveInfo.progress}%;background:#e7ad3e;border-radius:20px"></div>
         </div>
-
-        <h3 style="color:#f5bd4f">${escapeHTML(incentiveInfo.message)}</h3>
 
         ${incentiveInfo.earned ? `
           <p style="color:#7de39a;font-weight:bold">
