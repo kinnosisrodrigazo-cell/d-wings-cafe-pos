@@ -378,22 +378,48 @@ button:disabled{opacity:.5}
   opacity: 0.4;
   cursor: not-allowed;
 }
+/* LIVE STAFF PRESENCE */
+.online-staff-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  gap: 2px;
+}
 
+.online-staff-avatar {
+  font-size: 25px;
+  line-height: 1.2;
+}
+
+.online-staff-status {
+  font-size: 9px;
+  color: #ffffff;
+  font-weight: 500;
+}
 </style>
 </head>
 <body>
 <header>
   <div style="display:flex;align-items:center;gap:12px">
-  <img src="dwings-logo.png" alt="D' Wings Cafe Logo"
-       style="width:55px;height:55px;object-fit:contain">
-  <h2>D' WINGS CAFE</h2>
-</div>
+    <img src="dwings-logo.png" alt="D' Wings Cafe Logo"
+         style="width:55px;height:55px;object-fit:contain">
+
+    <h2>D' WINGS CAFE</h2>
+
+    <div id="onlineStaff"
+         style="display:flex;align-items:center;gap:10px;margin-left:12px">
+    </div>
+  </div>
+
   <div style="display:flex;align-items:center;gap:10px">
-  <span id="dateTimeDisplay" class="small"
-        style="border:1px solid #fff;border-radius:30px;padding:7px 12px;white-space:nowrap">
-  </span>
-  <span id="userLabel" class="small">POS SYSTEM</span>
-</div>
+    <span id="dateTimeDisplay" class="small"
+          style="border:1px solid #fff;border-radius:30px;padding:7px 12px;white-space:nowrap">
+    </span>
+
+    <span id="userLabel" class="small">POS SYSTEM</span>
+  </div>
 </header>
 
 <main>
@@ -721,7 +747,9 @@ import {
   limit,
   updateDoc,
   serverTimestamp,
-  runTransaction
+  runTransaction,
+  onSnapshot,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
@@ -2167,9 +2195,6 @@ document.getElementById("loginBtn").onclick=async()=>{
 
     msg.textContent="";
 
-    document.getElementById("login").classList.add("hidden");
-    document.getElementById("avatarSelection").classList.remove("hidden");
-
   }catch(error){
     msg.textContent="Login failed: "+error.message;
   }
@@ -2204,30 +2229,145 @@ document.querySelectorAll(".avatar-option").forEach(button => {
   });
 });
 
-  
-document.getElementById("continueAvatarBtn").onclick = () => {
+
+// ===================================
+// D' WINGS CAFE - LIVE STAFF PRESENCE
+// ===================================
+
+let dwingsPresenceUnsubscribe = null;
+let dwingsPresenceHeartbeat = null;
+let dwingsPresenceRefreshTimer = null;
+let dwingsPresenceRef = null;
+let dwingsPresenceLatestSnapshot = null;
+
+function renderOnlineStaff() {
+  const container = document.getElementById("onlineStaff");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!dwingsPresenceLatestSnapshot) return;
+
+  dwingsPresenceLatestSnapshot.forEach(staffDoc => {
+    const staff = staffDoc.data();
+    const lastSeen = staff.lastSeen?.toMillis?.() || 0;
+
+    if (!staff.online || !lastSeen || Date.now() - lastSeen > 75000) {
+      return;
+    }
+
+    const member = document.createElement("div");
+    member.className = "online-staff-member";
+
+    const face = document.createElement("div");
+    face.className = "online-staff-avatar";
+    face.textContent = staff.avatar || "👤";
+
+    const status = document.createElement("div");
+    status.className = "online-staff-status";
+    status.textContent = "Online";
+
+    member.appendChild(face);
+    member.appendChild(status);
+    container.appendChild(member);
+  });
+}
+
+async function startStaffPresence() {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("No authenticated user.");
+  }
+
+  const staffRef = doc(db, "staffPresence", user.uid);
+  dwingsPresenceRef = staffRef;
+
+  if (dwingsPresenceUnsubscribe) {
+    dwingsPresenceUnsubscribe();
+  }
+
+  if (dwingsPresenceRefreshTimer) {
+    clearInterval(dwingsPresenceRefreshTimer);
+  }
+
+  dwingsPresenceLatestSnapshot = null;
+
+  dwingsPresenceUnsubscribe = onSnapshot(
+    collection(db, "staffPresence"),
+    snapshot => {
+      dwingsPresenceLatestSnapshot = snapshot;
+      renderOnlineStaff();
+    },
+    error => {
+      console.error("Staff presence listener error:", error);
+    }
+  );
+
+  await setDoc(staffRef, {
+    avatar: selectedAvatar,
+    role: currentUserRole,
+    online: true,
+    lastSeen: serverTimestamp()
+  }, { merge: true });
+
+  if (dwingsPresenceHeartbeat) {
+    clearInterval(dwingsPresenceHeartbeat);
+  }
+
+  dwingsPresenceHeartbeat = setInterval(async () => {
+    try {
+      await setDoc(staffRef, {
+        online: true,
+        lastSeen: serverTimestamp()
+      }, { merge: true });
+    } catch (error) {
+      console.error("Staff heartbeat error:", error);
+    }
+  }, 30000);
+
+  // Recheck stale staff locally every 5 seconds
+  dwingsPresenceRefreshTimer = setInterval(() => {
+    renderOnlineStaff();
+  }, 5000);
+}
+
+document.getElementById("continueAvatarBtn").onclick = async () => {
   if (!selectedAvatar) {
     alert("Please select an avatar first.");
     return;
   }
 
-  document.getElementById("avatarSelection").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
+  try {
+    document.getElementById("continueAvatarBtn").disabled = true;
 
-  document.getElementById("userLabel").textContent =
-    selectedAvatar + " " + currentUserRole.toUpperCase();
+    await startStaffPresence();
 
-  renderProducts();
+    document.getElementById("avatarSelection").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+
+    document.getElementById("userLabel").textContent =
+      selectedAvatar + " " + currentUserRole.toUpperCase();
+
+    renderProducts();
+
+  } catch (error) {
+    console.error("Staff presence error:", error);
+    alert("Unable to connect to staff status. Please try again.");
+  } finally {
+    document.getElementById("continueAvatarBtn").disabled = false;
+  }
 };
 
 
 onAuthStateChanged(auth,async user=>{
-  if(!user){
-    document.getElementById("login").classList.remove("hidden");
-    document.getElementById("app").classList.add("hidden");
-    document.getElementById("userLabel").textContent="POS SYSTEM";
-    return;
-  }
+ if(!user){
+  document.getElementById("login").classList.remove("hidden");
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("userLabel").textContent="POS SYSTEM";
+  document.getElementById("onlineStaff").innerHTML="";
+  return;
+}
 
   try{
     await verifyUser(user);
@@ -2239,7 +2379,37 @@ onAuthStateChanged(auth,async user=>{
   }
 });
 
-document.getElementById("logoutBtn").onclick=()=>signOut(auth);
+document.getElementById("logoutBtn").onclick = async () => {
+  try {
+    // Stop heartbeat
+    if (dwingsPresenceHeartbeat) {
+      clearInterval(dwingsPresenceHeartbeat);
+      dwingsPresenceHeartbeat = null;
+    }
+// Stop local online-list refresh
+if (dwingsPresenceRefreshTimer) {
+  clearInterval(dwingsPresenceRefreshTimer);
+  dwingsPresenceRefreshTimer = null;
+}
+    // Stop live staff listener
+    if (dwingsPresenceUnsubscribe) {
+      dwingsPresenceUnsubscribe();
+      dwingsPresenceUnsubscribe = null;
+    }
+
+    // Remove staff from online list
+    if (dwingsPresenceRef) {
+      await deleteDoc(dwingsPresenceRef);
+      dwingsPresenceRef = null;
+    }
+dwingsPresenceLatestSnapshot = null;
+document.getElementById("onlineStaff").innerHTML = "";
+  } catch (error) {
+    console.error("Logout cleanup error:", error);
+  } finally {
+    await signOut(auth);
+  }
+};
 
 document.getElementById("orderHistoryBtn").onclick = loadOrderHistory;
 
