@@ -339,15 +339,33 @@ button:disabled{opacity:.5}
   margin: 24px 0;
 }
 
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  justify-items: center;
+  margin: 24px 0;
+}
+
 .avatar-option {
-  width: 100%;
-  aspect-ratio: 1;
+  width: 58px;
+  height: 58px;
+  padding: 0;
   border: 2px solid #333;
-  border-radius: 16px;
+  border-radius: 50%;
   background: #fff;
-  font-size: 38px;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: 0.2s;
+}
+
+.avatar-option.selected {
+  border: 3px solid #d4af37;
+  background: #fff8df;
+  transform: scale(1.08);
 }
 
 .avatar-option.selected {
