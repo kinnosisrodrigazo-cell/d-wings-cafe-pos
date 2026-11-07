@@ -417,7 +417,7 @@ button:disabled{opacity:.5}
   color: #ffffff;
   font-weight: 500;
 }
- /* MOBILE LANDSCAPE CATEGORY ALIGNMENT */
+ /* MOBILE LANDSCAPE */
 @media (max-width: 900px) and (orientation: landscape) {
   .category-tabs {
     display: grid;
@@ -452,6 +452,22 @@ button:disabled{opacity:.5}
     line-height: 1.1;
     text-align: center;
     overflow-wrap: anywhere;
+  }
+}
+
+/* MOBILE PORTRAIT */
+@media (max-width: 600px) and (orientation: portrait) {
+  .category-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .category-btn {
+    height: 65px;
+    flex: 1 1 0;
   }
 }
 </style>
