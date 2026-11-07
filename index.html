@@ -294,6 +294,26 @@ button:disabled{opacity:.5}
   color:#111;
   border-color:#e7ad3e;
 }
+  .product-group{
+  margin-bottom:24px;
+}
+
+.product-section-title{
+  color:#e7ad3e;
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:1.5px;
+  margin:20px 0 12px;
+  padding:0 0 9px;
+  border-bottom:1px solid #454545;
+  text-transform:uppercase;
+}
+
+.product-group-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(145px,1fr));
+  gap:12px;
+}
 </style>
 </head>
 <body>
@@ -786,17 +806,61 @@ document.getElementById("categoryTabs").innerHTML =
     p => p.category === selectedCategory
   );
 
-  document.getElementById("products").innerHTML =
-    filteredProducts.map(p => {
-      const index = menu.indexOf(p);
+ const productsEl = document.getElementById("products");
 
-      return `
-        <button class="product" data-index="${index}">
-          <strong>${p.name}</strong>
-          <span class="price">${peso(p.price)}</span>
-        </button>
-      `;
-    }).join("");
+const renderProductCards = items => items.map(p => {
+  const index = menu.indexOf(p);
+
+  return `
+    <button class="product" data-index="${index}">
+      <strong>${p.name}</strong>
+      <span class="price">${peso(p.price)}</span>
+    </button>
+  `;
+}).join("");
+
+if (selectedCategory === "Wings") {
+
+  const unli = filteredProducts.filter(p =>
+    /^UNLI\b/i.test(p.name)
+  );
+
+  const barkada = filteredProducts.filter(p =>
+    /^(18|24)\s*PCS\b/i.test(p.name)
+  );
+
+  const soloDuo = filteredProducts.filter(p =>
+    !unli.includes(p) && !barkada.includes(p)
+  );
+
+  productsEl.innerHTML = `
+    <section class="product-group">
+      <h3 class="product-section-title">UNLI</h3>
+      <div class="product-group-grid">
+        ${renderProductCards(unli)}
+      </div>
+    </section>
+
+    <section class="product-group">
+      <h3 class="product-section-title">SOLO / DUO</h3>
+      <div class="product-group-grid">
+        ${renderProductCards(soloDuo)}
+      </div>
+    </section>
+
+    <section class="product-group">
+      <h3 class="product-section-title">BARKADA</h3>
+      <div class="product-group-grid">
+        ${renderProductCards(barkada)}
+      </div>
+    </section>
+  `;
+
+} else {
+
+  productsEl.innerHTML = renderProductCards(filteredProducts);
+
+}
 
   document.querySelectorAll(".product").forEach(btn=>{
     btn.addEventListener("click",()=>{
