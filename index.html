@@ -24,6 +24,9 @@ button:disabled{opacity:.5}
   .product-group:first-child {
   margin-top: 25px;
 }
+  #products.fries-layout {
+  grid-template-columns: repeat(5, 1fr);
+}
   #products:not(:has(.product-group)) {
   padding-top: 25px;
 }
@@ -995,9 +998,15 @@ if (selectedCategory === "Wings") {
 } else {
 
   productsEl.style.display = "";
+
+  productsEl.classList.toggle(
+    "fries-layout",
+    selectedCategory === "Fries"
+  );
+
   productsEl.innerHTML = renderProductCards(
-  [...filteredProducts].sort((a, b) => Number(a.price) - Number(b.price))
-);
+    [...filteredProducts].sort((a, b) => Number(a.price) - Number(b.price))
+  );
 
 }
 
