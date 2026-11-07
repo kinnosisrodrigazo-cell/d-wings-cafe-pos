@@ -305,6 +305,7 @@ button:disabled{opacity:.5}
     <p id="checkoutMessage" class="small"></p>
   </div>
 </div>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 
@@ -409,6 +410,9 @@ let cart = [];
 let isSavingSale = false;
 let saleSaved = false;
 let pendingSaleRef = null;
+let currentUserRole = null;
+let reportOrders = [];
+let reportDateLoaded = "";
   
 const wingFlavors = [
   "CHEESE BLIZZ",
@@ -1000,7 +1004,260 @@ ${status !== "VOID" ? `
       "<p class='small'>Unable to load order history. Please try again.</p>";
   }
 }
+function getDailyIncentive(date, sales){
+  const day = new Date(date + "T12:00:00").getDay();
 
+  if(sales >= 20000){
+    return "DOUBLE PAY";
+  }
+
+  if(sales >= 15000){
+    return "₱300 INCENTIVE";
+  }
+
+  if(sales >= 10000){
+    return (day >= 1 && day <= 4)
+      ? "₱200 INCENTIVE"
+      : "₱100 INCENTIVE";
+  }
+
+  return "NO INCENTIVE";
+}
+
+async function loadDailyReport(){
+  const selectedDate =
+    document.getElementById("reportDate").value;
+
+  const reportEl =
+    document.getElementById("dailyReport");
+
+  if(!selectedDate){
+    reportEl.innerHTML =
+      "<p class='small'>Please select a date.</p>";
+    return;
+  }
+
+  reportEl.innerHTML =
+    "<p class='small'>Loading daily report...</p>";
+
+  try{
+    const ordersQuery = query(
+      collection(db, "orders"),
+      where("orderDate", "==", selectedDate)
+    );
+
+    const snapshot = await getDocs(ordersQuery);
+
+    reportOrders = snapshot.docs.map(orderDoc => ({
+      id: orderDoc.id,
+      ...orderDoc.data()
+    }));
+
+    reportDateLoaded = selectedDate;
+
+    reportOrders.sort((a,b) =>
+      (b.createdAt?.toMillis?.() || 0) -
+      (a.createdAt?.toMillis?.() || 0)
+    );
+
+    const completedOrders = reportOrders.filter(order =>
+      (order.status || "COMPLETED") !== "VOID"
+    );
+
+    const voidOrders = reportOrders.filter(order =>
+      (order.status || "COMPLETED") === "VOID"
+    );
+
+    const netSales = completedOrders.reduce(
+      (sum, order) => sum + (Number(order.total) || 0),
+      0
+    );
+
+    const incentive = getDailyIncentive(
+      selectedDate,
+      netSales
+    );
+
+    reportEl.innerHTML = `
+      <h3>REPORT SUMMARY</h3>
+
+      <p>Date: ${escapeHTML(selectedDate)}</p>
+
+      <div class="row">
+        <strong>Completed Orders</strong>
+        <strong>${completedOrders.length}</strong>
+      </div>
+
+      <div class="row">
+        <strong>VOID Orders</strong>
+        <strong>${voidOrders.length}</strong>
+      </div>
+
+      <div class="row">
+        <strong>NET SALES</strong>
+        <strong class="total">${peso(netSales)}</strong>
+      </div>
+
+      <div class="row">
+        <strong>INCENTIVE</strong>
+        <strong>${escapeHTML(incentive)}</strong>
+      </div>
+
+      ${incentive === "DOUBLE PAY" ? `
+        <p class="small">
+          Each staff member working that day receives
+          twice their regular daily salary.
+        </p>
+      ` : ""}
+
+      <hr>
+
+      <h3>COMPLETED ORDERS</h3>
+
+      ${completedOrders.length ? completedOrders.map(order => `
+        <div class="panel">
+          <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
+          <p class="small">
+            ${escapeHTML(order.customerName || "Walk-in")} |
+            ${escapeHTML(order.orderType || "")}
+          </p>
+          ${(order.items || []).map(item => `
+            <p class="small">
+              ${escapeHTML(item.name)} × ${Number(item.qty) || 0}
+            </p>
+          `).join("")}
+          <strong>${peso(Number(order.total) || 0)}</strong>
+        </div>
+      `).join("") : "<p class='small'>No completed orders found.</p>"}
+
+      <hr>
+
+      <h3>VOID ORDERS</h3>
+
+      ${voidOrders.length ? voidOrders.map(order => `
+        <div class="panel">
+          <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
+          <p class="small">
+            ${escapeHTML(order.customerName || "Walk-in")}
+          </p>
+          <strong>${peso(Number(order.total) || 0)}</strong>
+          <p class="small">
+            VOID REASON: ${escapeHTML(order.voidReason || "Not provided")}
+          </p>
+        </div>
+      `).join("") : "<p class='small'>No VOID orders found.</p>"}
+    `;
+
+  }catch(error){
+    console.error("Daily report error:", error);
+    reportEl.innerHTML =
+      "<p class='small'>Unable to load daily report. Please try again.</p>";
+  }
+}
+  function exportDailyReport(){
+
+  if(currentUserRole !== "owner"){
+    alert("Access denied. Only the owner can export reports.");
+    return;
+  }
+
+  const selectedDate =
+    document.getElementById("reportDate").value;
+
+  if(!selectedDate){
+    alert("Please select a report date.");
+    return;
+  }
+    if(reportDateLoaded !== selectedDate){
+  alert("Please click VIEW DAILY REPORT for this date before exporting.");
+  return;
+}
+
+  if(typeof XLSX === "undefined"){
+    alert("Excel library not loaded. Please refresh the page.");
+    return;
+  }
+
+  const completedOrders = reportOrders.filter(order =>
+    (order.status || "COMPLETED") !== "VOID"
+  );
+
+  const voidOrders = reportOrders.filter(order =>
+    (order.status || "COMPLETED") === "VOID"
+  );
+
+  const netSales = completedOrders.reduce(
+    (sum, order) => sum + (Number(order.total) || 0),
+    0
+  );
+
+  const incentive = getDailyIncentive(selectedDate, netSales);
+
+  const summarySheet = XLSX.utils.aoa_to_sheet([
+    ["D' WINGS CAFE - DAILY SALES REPORT"],
+    ["Date", selectedDate],
+    ["Completed Orders", completedOrders.length],
+    ["VOID Orders", voidOrders.length],
+    ["NET SALES", netSales],
+    ["INCENTIVE", incentive]
+  ]);
+
+  const transactionRows = reportOrders.map(order => ({
+    "Order #": order.orderNumber || "LEGACY",
+    "Date": order.orderDate || selectedDate,
+    "Customer": order.customerName || "Walk-in",
+    "Order Type": order.orderType || "",
+    "Items": (order.items || []).map(item => {
+      let details = `${item.name} x${Number(item.qty) || 0}`;
+
+      if(item.flavors?.length){
+        details += " | Flavors: " + item.flavors.join(", ");
+      }
+
+      if(item.includedItems?.length){
+        details += " | Included: " + item.includedItems.join(", ");
+      }
+
+      if(item.dip){
+        details += " | Dip: " + item.dip;
+      }
+
+      return details;
+    }).join("; "),
+    "Subtotal": Number(order.subtotal) || 0,
+    "Discount Type": order.discountType || "none",
+    "Discount Amount": Number(order.discountAmount) || 0,
+    "Total": Number(order.total) || 0,
+    "Payment Method": order.paymentMethod || "",
+    "Cash Received": Number(order.cashReceived) || 0,
+    "Change": Number(order.change) || 0,
+    "Cashier": order.cashierEmail || "",
+    "Status": order.status || "COMPLETED",
+    "Void Reason": order.voidReason || ""
+  }));
+
+  const workbook = XLSX.utils.book_new();
+
+  const transactionsSheet =
+    XLSX.utils.json_to_sheet(transactionRows);
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    summarySheet,
+    "Daily Summary"
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    transactionsSheet,
+    "Transactions"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    `D_Wings_Daily_Report_${selectedDate}.xlsx`
+  );
+}
 async function saveSale(){
   if(isSavingSale || saleSaved) return;
 
@@ -1133,8 +1390,16 @@ items: cart.map(item=>({
     return;
   }
 
-  document.getElementById("userLabel").textContent =
-    user.email + " (" + profile.role.toUpperCase() + ")";
+currentUserRole = profile.role;
+
+document.getElementById("exportExcelBtn").classList.toggle(
+  "hidden",
+  currentUserRole !== "owner"
+);
+
+if(!document.getElementById("reportDate").value){
+  document.getElementById("reportDate").value = getTodayDate();
+}
 
 // RESET CURRENT ORDER AFTER LOGIN
 cart = [];
@@ -1205,6 +1470,9 @@ onAuthStateChanged(auth,async user=>{
 document.getElementById("logoutBtn").onclick=()=>signOut(auth);
 
 document.getElementById("orderHistoryBtn").onclick = loadOrderHistory;
+
+document.getElementById("viewReportBtn").onclick = loadDailyReport;
+  document.getElementById("exportExcelBtn").onclick = exportDailyReport;
   
 document.getElementById("discount").addEventListener("change", renderCart);
 
