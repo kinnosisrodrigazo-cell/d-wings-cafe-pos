@@ -123,8 +123,9 @@ button:disabled{opacity:.5}
 }
   .order-type-options{
   display:flex;
+  flex-wrap:wrap;
   gap:10px;
-  margin:8px 0 16px;
+  margin:10px 0;
 }
 
 .order-type-btn{
@@ -153,6 +154,11 @@ button:disabled{opacity:.5}
   background:#e7ad3e;
   color:#111;
   border-color:#e7ad3e;
+}
+  .order-type-btn.active{
+  background:#e7ad3e;
+  color:#111;
+  border:1px solid #e7ad3e;
 }
 </style>
 </head>
@@ -1640,11 +1646,17 @@ document.getElementById("discount").addEventListener("change", renderCart);
   document.getElementById("singlePaymentBtn").onclick = () => {
   document.getElementById("singlePaymentOptions").classList.remove("hidden");
   document.getElementById("splitPaymentOptions").classList.add("hidden");
+
+  document.getElementById("singlePaymentBtn").classList.add("active");
+  document.getElementById("splitPaymentBtn").classList.remove("active");
 };
 
 document.getElementById("splitPaymentBtn").onclick = () => {
   document.getElementById("splitPaymentOptions").classList.remove("hidden");
   document.getElementById("singlePaymentOptions").classList.add("hidden");
+
+  document.getElementById("splitPaymentBtn").classList.add("active");
+  document.getElementById("singlePaymentBtn").classList.remove("active");
 };
 
 document.querySelectorAll("[data-payment]").forEach(button => {
