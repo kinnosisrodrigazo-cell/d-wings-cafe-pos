@@ -62,6 +62,30 @@ button:disabled{opacity:.5}
   background:#e7ad3e;
   color:#111;
 }
+  .sales-layout{
+  display:grid;
+  grid-template-columns:minmax(0, 1.7fr) minmax(320px, 1fr);
+  gap:18px;
+  align-items:start;
+}
+
+#cartPanel{
+  position:sticky;
+  top:15px;
+  max-height:calc(100vh - 30px);
+  overflow-y:auto;
+}
+
+@media(max-width:750px){
+  .sales-layout{
+    grid-template-columns:1fr;
+  }
+
+  #cartPanel{
+    position:static;
+    max-height:none;
+  }
+}
 #login{max-width:400px;margin:70px auto}
   .pos-logo{
   display:block;
@@ -215,6 +239,7 @@ button:disabled{opacity:.5}
     <h2>Sales Terminal</h2>
     <button class="secondary" id="logoutBtn">Log out</button>
   </div>
+    <div class="sales-layout">
   <div class="panel">
     <h3>Products</h3>
     <div id="categoryTabs" class="category-tabs"></div>
@@ -352,7 +377,7 @@ button:disabled{opacity:.5}
     <button id="checkoutBtn" style="width:100%">CHECKOUT</button>
     <p id="orderMessage"></p>
   </div>
-
+  </div>
   </section>
  <section id="historyPage" class="hidden">
   <!-- ORDER HISTORY -->
