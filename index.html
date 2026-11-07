@@ -43,6 +43,25 @@ button:disabled{opacity:.5}
 .price{color:#f5bd4f}
 .row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:10px 0}
 .hidden{display:none}
+  .terminal-nav{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-bottom:18px;
+}
+
+.terminal-nav button{
+  padding:13px 6px;
+  font-size:13px;
+  background:#292929;
+  color:white;
+  border:1px solid #444;
+}
+
+.terminal-nav button.active{
+  background:#e7ad3e;
+  color:#111;
+}
 #login{max-width:400px;margin:70px auto}
 #message{color:#f5bd4f;white-space:pre-wrap}
 .total{font-size:25px;color:#f5bd4f;font-weight:bold}
@@ -158,7 +177,13 @@ button:disabled{opacity:.5}
 </section>
 
 <section id="app" class="hidden">
-
+  <div class="terminal-nav">
+  <button class="active" data-page="salesPage">SALES</button>
+  <button data-page="historyPage">ORDER HISTORY</button>
+  <button data-page="reportPage">DAILY SALES REPORT</button>
+</div>
+  
+<section id="salesPage">
   <div class="row">
     <h2>Sales Terminal</h2>
     <button class="secondary" id="logoutBtn">Log out</button>
@@ -228,6 +253,9 @@ button:disabled{opacity:.5}
     <button id="checkoutBtn" style="width:100%">CHECKOUT</button>
     <p id="orderMessage"></p>
   </div>
+
+  </section>
+ <section id="historyPage" class="hidden">
   <!-- ORDER HISTORY -->
   <div class="panel">
     <h3>ORDER HISTORY</h3>
@@ -237,6 +265,9 @@ button:disabled{opacity:.5}
     <div id="orderHistory" class="hidden"></div>
   </div>
 
+</section>
+
+<section id="reportPage" class="hidden">
   <!-- DAILY SALES REPORT -->
   <div class="panel">
     <h3>DAILY SALES REPORT</h3>
@@ -253,7 +284,8 @@ button:disabled{opacity:.5}
       EXPORT TO EXCEL
     </button>
   </div>
-
+  
+</section>
 </section>
 </main>
   <div id="flavorModal" class="hidden">
@@ -1202,39 +1234,38 @@ async function loadDailyReport(){
     ["INCENTIVE", incentive]
   ]);
 
-  const transactionRows = reportOrders.map(order => ({
-    "Order #": order.orderNumber || "LEGACY",
-    "Date": order.orderDate || selectedDate,
-    "Customer": order.customerName || "Walk-in",
-    "Order Type": order.orderType || "",
-    "Items": (order.items || []).map(item => {
-      let details = `${item.name} x${Number(item.qty) || 0}`;
+ const transactionRows = reportOrders.flatMap(order => {
+  const items = order.items || [];
+  const subtotal = Number(order.subtotal) || 0;
+  const discountAmount = Number(order.discountAmount) || 0;
+  const orderStatus = order.status || "COMPLETED";
 
-      if(item.flavors?.length){
-        details += " | Flavors: " + item.flavors.join(", ");
-      }
+  return items.map(item => {
+    const qty = Number(item.qty) || 0;
+    const salePrice = Number(item.price) || 0;
+    const lineSubtotal = salePrice * qty;
 
-      if(item.includedItems?.length){
-        details += " | Included: " + item.includedItems.join(", ");
-      }
+    const allocatedDiscount = subtotal > 0
+      ? discountAmount * (lineSubtotal / subtotal)
+      : 0;
 
-      if(item.dip){
-        details += " | Dip: " + item.dip;
-      }
+    const lineTotal = lineSubtotal - allocatedDiscount;
 
-      return details;
-    }).join("; "),
-    "Subtotal": Number(order.subtotal) || 0,
-    "Discount Type": order.discountType || "none",
-    "Discount Amount": Number(order.discountAmount) || 0,
-    "Total": Number(order.total) || 0,
-    "Payment Method": order.paymentMethod || "",
-    "Cash Received": Number(order.cashReceived) || 0,
-    "Change": Number(order.change) || 0,
-    "Cashier": order.cashierEmail || "",
-    "Status": order.status || "COMPLETED",
-    "Void Reason": order.voidReason || ""
-  }));
+    return {
+      "DATE": order.orderDate || selectedDate,
+      "ORDER NO.": order.orderNumber || "LEGACY",
+      "PRODUCT": item.name || "",
+      "FLAVORS": (item.flavors || []).join(", "),
+      "QTY": qty,
+      "PAYMENT METHOD": order.paymentMethod || "",
+      "SALE PRICE": salePrice,
+      "DISCOUNT": allocatedDiscount,
+      "VOID/COMPLETED": orderStatus,
+      "TOTAL SALES": orderStatus === "VOID" ? 0 : lineTotal
+    };
+  });
+});
+
 
   const workbook = XLSX.utils.book_new();
 
@@ -1473,6 +1504,19 @@ document.getElementById("orderHistoryBtn").onclick = loadOrderHistory;
 
 document.getElementById("viewReportBtn").onclick = loadDailyReport;
   document.getElementById("exportExcelBtn").onclick = exportDailyReport;
+  document.querySelectorAll(".terminal-nav button").forEach(button=>{
+  button.addEventListener("click",()=>{
+    const target = button.dataset.page;
+
+    ["salesPage","historyPage","reportPage"].forEach(id=>{
+      document.getElementById(id).classList.toggle("hidden", id !== target);
+    });
+
+    document.querySelectorAll(".terminal-nav button").forEach(navButton=>{
+      navButton.classList.toggle("active", navButton === button);
+    });
+  });
+});
   
 document.getElementById("discount").addEventListener("change", renderCart);
 
