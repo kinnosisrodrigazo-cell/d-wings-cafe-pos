@@ -1602,35 +1602,7 @@ const paymentTotals = completedOrders.reduce((totals, order) => {
 document.getElementById("summaryCash").textContent = peso(paymentTotals.cash);
 document.getElementById("summaryGCash").textContent = peso(paymentTotals.gcash);
 document.getElementById("summaryPayMaya").textContent = peso(paymentTotals.paymaya);
-    const salesVisibilityBtn =
-  document.getElementById("toggleSalesVisibility");
-
-let salesAmountsVisible = false;
-
-function updateSalesVisibility(){
-  document.getElementById("summaryNetSales").textContent =
-    salesAmountsVisible ? peso(netSales) : "*****";
-
-  document.getElementById("summaryCash").textContent =
-    salesAmountsVisible ? peso(paymentTotals.cash) : "*****";
-
-  document.getElementById("summaryGCash").textContent =
-    salesAmountsVisible ? peso(paymentTotals.gcash) : "*****";
-
-  document.getElementById("summaryPayMaya").textContent =
-    salesAmountsVisible ? peso(paymentTotals.paymaya) : "*****";
-
-  salesVisibilityBtn.textContent =
-    salesAmountsVisible ? "HIDE AMOUNTS" : "SHOW AMOUNTS";
-}
-
-salesVisibilityBtn.onclick = () => {
-  salesAmountsVisible = !salesAmountsVisible;
-  updateSalesVisibility();
-};
-
-updateSalesVisibility();
-
+   
 const netSales = completedOrders.reduce(
   (sum, order) => sum + (Number(order.total) || 0),
   0
@@ -1731,7 +1703,34 @@ const netSales = completedOrders.reduce(
         </div>
       `).join("") : "<p class='small'>No VOID orders found.</p>"}
     `;
+const salesVisibilityBtn =
+  document.getElementById("toggleSalesVisibility");
 
+let salesAmountsVisible = false;
+
+function updateSalesVisibility(){
+  document.getElementById("summaryNetSales").textContent =
+    salesAmountsVisible ? peso(netSales) : "*****";
+
+  document.getElementById("summaryCash").textContent =
+    salesAmountsVisible ? peso(paymentTotals.cash) : "*****";
+
+  document.getElementById("summaryGCash").textContent =
+    salesAmountsVisible ? peso(paymentTotals.gcash) : "*****";
+
+  document.getElementById("summaryPayMaya").textContent =
+    salesAmountsVisible ? peso(paymentTotals.paymaya) : "*****";
+
+  salesVisibilityBtn.textContent =
+    salesAmountsVisible ? "HIDE AMOUNTS" : "SHOW AMOUNTS";
+}
+
+salesVisibilityBtn.onclick = () => {
+  salesAmountsVisible = !salesAmountsVisible;
+  updateSalesVisibility();
+};
+
+updateSalesVisibility();
   }catch(error){
     console.error("Daily report error:", error);
     reportEl.innerHTML =
