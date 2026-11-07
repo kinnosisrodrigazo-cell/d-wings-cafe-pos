@@ -181,7 +181,12 @@ button:disabled{opacity:.5}
        style="width:55px;height:55px;object-fit:contain">
   <h2>D' WINGS CAFE</h2>
 </div>
+  <div style="display:flex;align-items:center;gap:10px">
+  <span id="dateTimeDisplay" class="small"
+        style="border:1px solid #fff;border-radius:30px;padding:7px 12px;white-space:nowrap">
+  </span>
   <span id="userLabel" class="small">POS SYSTEM</span>
+</div>
 </header>
 
 <main>
@@ -591,18 +596,37 @@ function getTodayDate(){
   }).format(new Date());
 }
 let selectedCategory = "Wings";
+function updateDateTime(){
+  const now = new Date();
 
+  const date = now.toLocaleDateString("en-PH", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric"
+  });
+
+  const time = now.toLocaleTimeString("en-PH", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  });
+
+  document.getElementById("dateTimeDisplay").textContent =
+    date + " • " + time;
+}
+
+updateDateTime();
+setInterval(updateDateTime, 1000);
 function renderProducts(){
-
- const categories = [
-  "Wings",
-  "Fries",
-  "Floats",
-  "Drinks",
-  "Extras",
-  "Sandwich",
-  "Chicken Burger"
-];
+  const categories = [
+    "Wings",
+    "Fries",
+    "Floats",
+    "Drinks",
+    "Extras",
+    "Sandwich",
+    "Chicken Burger"
+  ];
 
   document.getElementById("categoryTabs").innerHTML =
     categories.map(category => `
@@ -620,9 +644,9 @@ function renderProducts(){
     });
   });
 
-const filteredProducts = menu.filter(
-  p => p.category === selectedCategory
-);
+  const filteredProducts = menu.filter(
+    p => p.category === selectedCategory
+  );
 
   document.getElementById("products").innerHTML =
     filteredProducts.map(p => {
@@ -641,6 +665,7 @@ const filteredProducts = menu.filter(
       addItem(Number(btn.dataset.index));
     });
   });
+
 }
 
 function addItem(index){
