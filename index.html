@@ -121,11 +121,15 @@ button:disabled{opacity:.5}
   color:white;
   border:1px solid #444;
 }
-  .order-type-options{
+.order-type-options{
   display:flex;
   flex-wrap:wrap;
   gap:10px;
   margin:10px 0;
+}
+
+.order-type-options.hidden{
+  display:none;
 }
 
 .order-type-btn{
@@ -1644,7 +1648,6 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
   
 document.getElementById("discount").addEventListener("change", renderCart);
   document.getElementById("singlePaymentBtn").onclick = () => {
-      alert("SINGLE PAYMENT BUTTON WORKS");
   document.getElementById("singlePaymentOptions").classList.remove("hidden");
   document.getElementById("splitPaymentOptions").classList.add("hidden");
 
