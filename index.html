@@ -300,6 +300,7 @@ import {
   getDoc,
   getDocs,
   query,
+  where,
   orderBy,
   limit,
   updateDoc,
@@ -889,8 +890,8 @@ async function loadOrderHistory(){
       return `
         <div class="panel" style="margin-top:12px">
           <div class="row">
-            <strong>ORDER #${escapeHTML(order.orderNumber || "-")}</strong>
-            <strong>${escapeHTML(status)}</strong>
+            <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
+<strong>${escapeHTML(status)}</strong>
           </div>
 
          <p class="small">
@@ -922,6 +923,7 @@ ${status !== "VOID" ? `
   </button>
 ` : `
   <p class="small">This order has been voided.</p>
+  <p class="small">VOID REASON: ${escapeHTML(order.voidReason || "Not provided")}</p>
 `}
           </div>
          `;
