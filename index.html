@@ -635,12 +635,24 @@ document.getElementById("confirmFlavor").onclick = ()=>{
   };
 
   if(editingCartIndex !== null){
-    cart[editingCartIndex] = updatedItem;
-  } else {
-    cart.push({
+    cart[editingCartIndex] = {
       ...updatedItem,
-      qty:1
-    });
+      qty: cart[editingCartIndex].qty
+    };
+  } else {
+    const existingUnli = updatedItem.name.startsWith("UNLI")
+      ? cart.find(item => item.name === updatedItem.name)
+      : null;
+
+    if(existingUnli){
+      existingUnli.qty++;
+      existingUnli.flavors = [...selectedFlavors];
+    } else {
+      cart.push({
+        ...updatedItem,
+        qty:1
+      });
+    }
   }
 
    document.getElementById("flavorModal").classList.add("hidden");
@@ -725,12 +737,12 @@ function renderCart(){
         </span>
         <span>
           ${peso(item.price * item.qty)}
-${item.flavors ? `
-  <button class="secondary" data-edit="${i}">EDIT</button>
-  <button class="secondary" data-remove="${i}">REMOVE</button>
-` : `
+${item.name.startsWith("UNLI") || !item.flavors ? `
   <button class="secondary" data-remove="${i}">−</button>
   <button class="secondary" data-add="${i}">+</button>
+` : `
+  <button class="secondary" data-edit="${i}">EDIT</button>
+  <button class="secondary" data-remove="${i}">REMOVE</button>
 `}
         </span>
       </div>
@@ -745,18 +757,21 @@ ${item.flavors ? `
       `;
     }
 
-    el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
-      const i = Number(b.dataset.remove);
+   el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
+  const i = Number(b.dataset.remove);
 
-      if(cart[i].flavors){
-        cart.splice(i,1);
-      } else {
-        cart[i].qty--;
-        if(cart[i].qty <= 0) cart.splice(i,1);
-      }
+  if(cart[i].name.startsWith("UNLI") || !cart[i].flavors){
+    cart[i].qty--;
 
-      renderCart();
-    });
+    if(cart[i].qty <= 0){
+      cart.splice(i,1);
+    }
+  } else {
+    cart.splice(i,1);
+  }
+
+  renderCart();
+});
 
     el.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{
       cart[Number(b.dataset.add)].qty++;
