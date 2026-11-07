@@ -837,6 +837,7 @@ const renderProductCards = items => items.map(p => {
 }).join("");
 
 if (selectedCategory === "Wings") {
+  productsEl.style.display = "block";
 
   const unli = filteredProducts.filter(p =>
     /^UNLI\b/i.test(p.name)
@@ -875,6 +876,7 @@ if (selectedCategory === "Wings") {
 
 } else {
 
+  productsEl.style.display = "";
   productsEl.innerHTML = renderProductCards(filteredProducts);
 
 }
