@@ -24,8 +24,13 @@ button:disabled{opacity:.5}
   .product-group:first-child {
   margin-top: 25px;
 }
+ /* Fries - Mobile Portrait */
+@media (max-width: 600px) and (orientation: portrait) {
   #products.fries-layout {
-  grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 8px;
+  }
 }
   #products:not(:has(.product-group)) {
   padding-top: 25px;
