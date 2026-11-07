@@ -6,16 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#111111">
 <title>D' Wings Cafe POS</title>
-  /* UNLI HEADING */
-.product-section-title {
-  margin-top: 25px;
-  margin-bottom: 10px;
-}
 
-/* UNLI PRODUCT CARDS */
-.product-group-grid {
-  margin-top: 0;
-}
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif}
@@ -30,6 +21,9 @@ button.secondary{background:#383838;color:white}
 button:disabled{opacity:.5}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .product{background:#292929;color:white;border:1px solid #444;padding:16px;border-radius:10px;text-align:left}
+  .product-group:first-child {
+  margin-top: 25px;
+}
   .cart-actions{
   display:flex;
   flex-direction:column;
