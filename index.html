@@ -2346,8 +2346,7 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
     document.getElementById("avatarSelection").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
 
-    document.getElementById("userLabel").textContent =
-      selectedAvatar + " " + currentUserRole.toUpperCase();
+   document.getElementById("userLabel").textContent = "";
 
     renderProducts();
 
