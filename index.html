@@ -573,6 +573,7 @@ button:disabled{opacity:.5}
     </div>
   </div>
 </div>
+  
 <main>
 <section id="login" class="panel">
 <img src="dwings-logo.png" alt="D' Wings Cafe Logo" class="pos-logo">
@@ -3253,7 +3254,7 @@ document.getElementById("checkoutBtn").onclick=()=>{
 };
 
 renderCart();
-  // ===================================
+// ===================================
 // SETTINGS BUTTON
 // ===================================
 
@@ -3265,14 +3266,7 @@ document.getElementById("settingsBtn").onclick = () => {
 
   renderAvailabilitySettings();
 };
-document.getElementById("settingsBtn").onclick = () => {
-  const modal = document.getElementById("settingsModal");
 
-  modal.classList.remove("hidden");
-  modal.style.display = "flex";
-
-  renderAvailabilitySettings();
-};
 document.getElementById("closeSettingsBtn").onclick = () => {
   const modal = document.getElementById("settingsModal");
 
