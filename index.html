@@ -228,7 +228,14 @@ button:disabled{opacity:.5}
     <button id="checkoutBtn" style="width:100%">CHECKOUT</button>
     <p id="orderMessage"></p>
   </div>
-
+  <!-- ORDER HISTORY -->
+  <div class="panel">
+    <h3>ORDER HISTORY</h3>
+    <button id="orderHistoryBtn" class="secondary" style="width:100%">
+      VIEW ORDER HISTORY
+    </button>
+    <div id="orderHistory" class="hidden"></div>
+  </div>
 
 
 </section>
@@ -286,7 +293,18 @@ button:disabled{opacity:.5}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 
 import {
-  getFirestore, collection, doc, setDoc, getDoc, serverTimestamp, runTransaction
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  updateDoc,
+  serverTimestamp,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
 import {
@@ -833,6 +851,123 @@ const change = paymentMethod === "CASH"
 document.getElementById("change").textContent = peso(change);
 
 } // END OF renderCart()
+
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[char]);
+}
+
+async function loadOrderHistory(){
+  const historyEl = document.getElementById("orderHistory");
+
+  historyEl.classList.remove("hidden");
+  historyEl.innerHTML = "<p class='small'>Loading orders...</p>";
+
+  try{
+    const ordersQuery = query(
+      collection(db, "orders"),
+      orderBy("createdAt", "desc"),
+      limit(50)
+    );
+
+    const snapshot = await getDocs(ordersQuery);
+
+    if(snapshot.empty){
+      historyEl.innerHTML = "<p class='small'>No orders found.</p>";
+      return;
+    }
+
+    historyEl.innerHTML = snapshot.docs.map(orderDoc=>{
+      const order = orderDoc.data();
+      const status = order.status || "COMPLETED";
+
+      return `
+        <div class="panel" style="margin-top:12px">
+          <div class="row">
+            <strong>ORDER #${escapeHTML(order.orderNumber || "-")}</strong>
+            <strong>${escapeHTML(status)}</strong>
+          </div>
+
+         <p class="small">
+  ${escapeHTML(order.customerName || "Walk-in")}<br>
+  ${escapeHTML(order.orderDate || "")}
+</p>
+
+<div class="small">
+  ${(order.items || []).map(item => `
+    <p>
+      ${escapeHTML(item.name)} × ${Number(item.qty) || 0}
+      ${item.flavors?.length ? `<br>Flavors: ${item.flavors.map(escapeHTML).join(", ")}` : ""}
+      ${item.dip ? `<br>Dip: ${escapeHTML(item.dip)}` : ""}
+    </p>
+  `).join("")}
+</div>
+
+          <div class="row">
+            <strong>TOTAL</strong>
+           <strong>${peso(Number(order.total) || 0)}</strong>
+</div>
+
+${status !== "VOID" ? `
+  <button
+    class="secondary"
+    data-void="${orderDoc.id}"
+    style="width:100%">
+    VOID ORDER
+  </button>
+` : `
+  <p class="small">This order has been voided.</p>
+`}
+          </div>
+         `;
+    }).join("");
+
+    historyEl.querySelectorAll("[data-void]").forEach(button=>{
+      button.onclick = async()=>{
+        const reason = prompt("Enter the reason for voiding this order:");
+
+        if(reason === null) return;
+
+        if(!reason.trim()){
+          alert("Please enter a reason.");
+          return;
+        }
+
+        if(!confirm("Are you sure you want to VOID this order?")){
+          return;
+        }
+
+        try{
+          await updateDoc(
+            doc(db, "orders", button.dataset.void),
+            {
+              status: "VOID",
+              voidReason: reason.trim()
+            }
+          );
+
+          alert("Order successfully voided.");
+          await loadOrderHistory();
+
+        }catch(error){
+          console.error("Void order error:", error);
+          alert("Unable to void this order. Please try again.");
+        }
+      };
+    });
+
+  }catch(error){
+    console.error("Order history error:", error);
+    historyEl.innerHTML =
+      "<p class='small'>Unable to load order history. Please try again.</p>";
+  }
+}
+
 async function saveSale(){
   if(isSavingSale || saleSaved) return;
 
@@ -875,11 +1010,12 @@ async function saveSale(){
     const today = getTodayDate();
     const counterRef = doc(db,"daily_counters",today);
 
-    const sale = {
-      orderDate: today,
+const sale = {
+  orderDate: today,
+  status: "COMPLETED",
 
-     customerName:
-  document.getElementById("customerName").value.trim() || "Walk-in",
+  customerName:
+    document.getElementById("customerName").value.trim() || "Walk-in",
 
 orderType:
   document.querySelector('input[name="orderType"]:checked').value,
@@ -1035,6 +1171,8 @@ onAuthStateChanged(auth,async user=>{
 
 document.getElementById("logoutBtn").onclick=()=>signOut(auth);
 
+document.getElementById("orderHistoryBtn").onclick = loadOrderHistory;
+  
 document.getElementById("discount").addEventListener("change", renderCart);
 
 document.getElementById("cashReceived").addEventListener("input", renderCart);
