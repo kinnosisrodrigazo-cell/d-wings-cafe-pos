@@ -265,6 +265,28 @@ button:disabled{opacity:.5}
   color:#111;
   border:1px solid #e7ad3e;
 }
+  .dip-options{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+
+.dip-btn{
+  background:#383838;
+  color:#fff;
+  border:1px solid #555;
+  border-radius:10px;
+  padding:12px 6px;
+  font-size:13px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.dip-btn.active{
+  background:#e7ad3e;
+  color:#111;
+  border-color:#e7ad3e;
+}
 </style>
 </head>
 <body>
@@ -850,7 +872,17 @@ if(product.name === "UNLI 299 WINGS"){
 
     document.getElementById("dipChoice").onchange =
       updateFlavorSelection;
+document.querySelectorAll(".dip-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.getElementById("dipChoice").value = btn.dataset.dip;
 
+    document.querySelectorAll(".dip-btn").forEach(b => {
+      b.classList.toggle("active", b === btn);
+    });
+
+    updateFlavorSelection();
+  };
+});
     return;
   }
 
@@ -1117,6 +1149,13 @@ el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
         );
 
         document.getElementById("dipChoice").value = item.dip || "";
+
+        document.querySelectorAll(".dip-btn").forEach(btn => {
+  btn.classList.toggle(
+    "active",
+    btn.dataset.dip === (item.dip || "")
+  );
+});
 
         document.getElementById("flavorOptions").innerHTML =
           wingFlavors.map(flavor => `
