@@ -256,11 +256,19 @@ button:disabled{opacity:.5}
 </div>
 
 <div id="splitPaymentOptions" class="order-type-options hidden">
-  <button type="button" class="order-type-btn" data-payment="GCASH + CASH">GCASH + CASH</button>
-  <button type="button" class="order-type-btn" data-payment="CASH + GCASH">CASH + GCASH</button>
-  <button type="button" class="order-type-btn" data-payment="CASH + PAYMAYA">CASH + PAYMAYA</button>
-  <button type="button" class="order-type-btn" data-payment="PAYMAYA + CASH">PAYMAYA + CASH</button>
-  <button type="button" class="order-type-btn" data-payment="PAYMAYA + GCASH">PAYMAYA + GCASH</button>
+
+  <button type="button" class="order-type-btn" data-split-payment="CASH">
+    CASH
+  </button>
+
+  <button type="button" class="order-type-btn" data-split-payment="GCASH">
+    GCASH
+  </button>
+
+  <button type="button" class="order-type-btn" data-split-payment="PAYMAYA">
+    PAYMAYA
+  </button>
+
 </div>
 
 <select id="paymentMethod" class="hidden">
@@ -273,6 +281,7 @@ button:disabled{opacity:.5}
   <option value="CASH + PAYMAYA">CASH + PAYMAYA</option>
   <option value="PAYMAYA + CASH">PAYMAYA + CASH</option>
   <option value="PAYMAYA + GCASH">PAYMAYA + GCASH</option>
+  <option value="GCASH + PAYMAYA">GCASH + PAYMAYA</option>
 </select>
 
 <div class="row" id="cashReceivedRow">
@@ -281,21 +290,31 @@ button:disabled{opacity:.5}
 </div>
 
 <div id="splitPaymentFields" class="hidden">
+
   <div class="row">
     <strong id="firstPaymentLabel">First Payment</strong>
-    <input type="number" id="firstPaymentAmount" placeholder="Enter amount" min="0">
+    <input type="number" id="firstPaymentAmount"
+      placeholder="Enter amount" min="0">
   </div>
 
   <div class="row">
     <strong id="secondPaymentLabel">Second Payment</strong>
-    <input type="number" id="secondPaymentAmount" placeholder="Enter amount" min="0">
+    <input type="number" id="secondPaymentAmount"
+      placeholder="Enter amount" min="0">
   </div>
 
   <div class="row">
-    <strong>Remaining Balance</strong>
+    <strong>TOTAL PAYMENT RECEIVED</strong>
+    <span class="total" id="totalPaymentReceived">₱0.00</span>
+  </div>
+
+  <div class="row">
+    <strong>REMAINING BALANCE</strong>
     <span class="total" id="remainingBalance">₱0.00</span>
   </div>
+
 </div>
+
 
 <div class="row">
   <strong>Total</strong>
@@ -496,6 +515,7 @@ const menu = [
 ];
 
 let cart = [];
+let splitPaymentMethods = [];
 let isSavingSale = false;
 let saleSaved = false;
 let pendingSaleRef = null;
@@ -969,9 +989,30 @@ const cashReceived = Number(
   document.getElementById("cashReceived").value
 ) || 0;
 
-const change = paymentMethod === "CASH"
-  ? Math.max(0, cashReceived - total)
-  : 0;
+let change = 0;
+
+if (paymentMethod === "CASH") {
+  change = Math.max(0, cashReceived - total);
+
+} else if (splitPaymentMethods.length === 2) {
+  const firstAmount = Number(
+    document.getElementById("firstPaymentAmount").value
+  ) || 0;
+
+  const secondAmount = Number(
+    document.getElementById("secondPaymentAmount").value
+  ) || 0;
+
+  const totalReceived = firstAmount + secondAmount;
+
+  document.getElementById("totalPaymentReceived").textContent =
+    peso(totalReceived);
+
+  document.getElementById("remainingBalance").textContent =
+    peso(Math.max(0, total - totalReceived));
+
+  change = Math.max(0, totalReceived - total);
+}
 
 document.getElementById("change").textContent = peso(change);
 
@@ -1444,13 +1485,34 @@ async function saveSale(){
 
     const total = subtotal - discountAmount;
 
-    const cashReceived = paymentMethod === "CASH"
-      ? Number(document.getElementById("cashReceived").value) || 0
+    const firstPaymentMethod = splitPaymentMethods[0] || "";
+    const secondPaymentMethod = splitPaymentMethods[1] || "";
+
+    const firstPaymentAmount = splitPaymentMethods.length === 2
+      ? Number(document.getElementById("firstPaymentAmount").value) || 0
       : 0;
 
-    const change = paymentMethod === "CASH"
-      ? cashReceived - total
+    const secondPaymentAmount = splitPaymentMethods.length === 2
+      ? Number(document.getElementById("secondPaymentAmount").value) || 0
       : 0;
+
+    const totalPaymentReceived = splitPaymentMethods.length === 2
+      ? firstPaymentAmount + secondPaymentAmount
+      : paymentMethod === "CASH"
+        ? Number(document.getElementById("cashReceived").value) || 0
+        : 0;
+
+    const cashReceived = paymentMethod === "CASH"
+      ? totalPaymentReceived
+      : splitPaymentMethods.includes("CASH")
+        ? (firstPaymentMethod === "CASH"
+            ? firstPaymentAmount
+            : secondPaymentAmount)
+        : 0;
+    const onlinePaymentReceived = splitPaymentMethods.length === 2
+      ? totalPaymentReceived - cashReceived
+      : 0;
+    const change = Math.max(0, totalPaymentReceived - total);
 
     if(!pendingSaleRef){
       pendingSaleRef = doc(collection(db,"orders"));
@@ -1482,10 +1544,15 @@ items: cart.map(item=>({
       discountType,
       discountAmount,
       total,
-      paymentMethod,
+           paymentMethod,
+      firstPaymentMethod,
+      secondPaymentMethod,
+      firstPaymentAmount,
+      secondPaymentAmount,
+      totalPaymentReceived,
       cashReceived,
+      onlinePaymentReceived,
       change,
-
       cashierEmail: auth.currentUser.email,
       cashierUid: auth.currentUser.uid,
 
@@ -1569,10 +1636,27 @@ document.getElementById("checkoutModal").classList.add("hidden");
   document.getElementById("customerName").value = "";
     document.querySelector('input[name="orderType"][value="DINE IN"]').checked = true;
   document.getElementById("discount").value = "none";
-  document.getElementById("paymentMethod").value = "";
+    document.getElementById("paymentMethod").value = "";
   document.getElementById("cashReceived").value = "";
 
-  document.getElementById("cashReceivedRow").classList.remove("hidden");
+  splitPaymentMethods = [];
+
+  document.getElementById("firstPaymentAmount").value = "";
+  document.getElementById("secondPaymentAmount").value = "";
+
+  document.getElementById("cashReceivedRow").classList.add("hidden");
+  document.getElementById("splitPaymentFields").classList.add("hidden");
+
+  document.getElementById("singlePaymentOptions").classList.add("hidden");
+  document.getElementById("splitPaymentOptions").classList.add("hidden");
+
+  document.getElementById("singlePaymentBtn").classList.remove("active");
+  document.getElementById("splitPaymentBtn").classList.remove("active");
+
+  document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button => {
+    button.classList.remove("active");
+  });
+
   document.getElementById("orderMessage").textContent = "";
 
   renderCart();
@@ -1647,12 +1731,31 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
 });
   
 document.getElementById("discount").addEventListener("change", renderCart);
-  document.getElementById("singlePaymentBtn").onclick = () => {
+document.getElementById("singlePaymentBtn").onclick = () => {
   document.getElementById("singlePaymentOptions").classList.remove("hidden");
   document.getElementById("splitPaymentOptions").classList.add("hidden");
 
   document.getElementById("singlePaymentBtn").classList.add("active");
   document.getElementById("splitPaymentBtn").classList.remove("active");
+
+  splitPaymentMethods = [];
+
+  document.querySelectorAll("[data-split-payment]").forEach(button => {
+    button.classList.remove("active");
+  });
+
+  document.querySelectorAll("[data-payment]").forEach(button => {
+    button.classList.remove("active");
+  });
+
+  document.getElementById("paymentMethod").value = "";
+  document.getElementById("firstPaymentAmount").value = "";
+  document.getElementById("secondPaymentAmount").value = "";
+  document.getElementById("splitPaymentFields").classList.add("hidden");
+  document.getElementById("cashReceived").value = "";
+  document.getElementById("cashReceivedRow").classList.add("hidden");
+
+  renderCart();
 };
 
 document.getElementById("splitPaymentBtn").onclick = () => {
@@ -1661,22 +1764,93 @@ document.getElementById("splitPaymentBtn").onclick = () => {
 
   document.getElementById("splitPaymentBtn").classList.add("active");
   document.getElementById("singlePaymentBtn").classList.remove("active");
+
+  splitPaymentMethods = [];
+
+  document.querySelectorAll("[data-split-payment]").forEach(button => {
+    button.classList.remove("active");
+  });
+
+  document.querySelectorAll("[data-payment]").forEach(button => {
+    button.classList.remove("active");
+  });
+
+  document.getElementById("paymentMethod").value = "";
+  document.getElementById("cashReceived").value = "";
+  document.getElementById("cashReceivedRow").classList.add("hidden");
+  document.getElementById("firstPaymentAmount").value = "";
+  document.getElementById("secondPaymentAmount").value = "";
+  document.getElementById("splitPaymentFields").classList.add("hidden");
+
+  renderCart();
 };
 
 document.querySelectorAll("[data-payment]").forEach(button => {
   button.onclick = () => {
-    document.getElementById("paymentMethod").value =
-      button.dataset.payment;
+    const method = button.dataset.payment;
+
+    document.getElementById("paymentMethod").value = method;
 
     document.querySelectorAll("[data-payment]").forEach(option => {
       option.classList.remove("active");
     });
 
     button.classList.add("active");
+
+    document.getElementById("cashReceivedRow").classList.toggle(
+      "hidden",
+      method !== "CASH"
+    );
+
+    if (method !== "CASH") {
+      document.getElementById("cashReceived").value = "";
+    }
+
+    renderCart();
+  };
+});
+
+document.querySelectorAll("[data-split-payment]").forEach(button => {
+  button.onclick = () => {
+    const method = button.dataset.splitPayment;
+
+    if (splitPaymentMethods.includes(method)) {
+      splitPaymentMethods = splitPaymentMethods.filter(item => item !== method);
+      button.classList.remove("active");
+    } else {
+      if (splitPaymentMethods.length >= 2) return;
+
+      splitPaymentMethods.push(method);
+      button.classList.add("active");
+    }
+
+    document.getElementById("paymentMethod").value =
+      splitPaymentMethods.length === 2
+        ? splitPaymentMethods.join(" + ")
+        : "";
+
+    document.getElementById("splitPaymentFields").classList.toggle(
+      "hidden",
+      splitPaymentMethods.length !== 2
+    );
+
+    document.getElementById("firstPaymentLabel").textContent =
+      splitPaymentMethods[0]
+        ? splitPaymentMethods[0] + " RECEIVED"
+        : "First Payment";
+
+    document.getElementById("secondPaymentLabel").textContent =
+      splitPaymentMethods[1]
+        ? splitPaymentMethods[1] + " RECEIVED"
+        : "Second Payment";
+
+    renderCart();
   };
 });
 
 document.getElementById("cashReceived").addEventListener("input", renderCart);
+  document.getElementById("firstPaymentAmount").addEventListener("input", renderCart);
+document.getElementById("secondPaymentAmount").addEventListener("input", renderCart);
 
 document.getElementById("paymentMethod").addEventListener("change", () => {
   const method = document.getElementById("paymentMethod").value;
@@ -1716,12 +1890,26 @@ function showCheckoutSummary(){
   const paymentMethod =
     document.getElementById("paymentMethod").value;
 
-  const cashReceived =
+   const cashReceived =
     Number(document.getElementById("cashReceived").value) || 0;
 
-  const change = paymentMethod === "CASH"
-    ? cashReceived - total
-    : 0;
+  const firstAmount =
+    Number(document.getElementById("firstPaymentAmount").value) || 0;
+
+  const secondAmount =
+    Number(document.getElementById("secondPaymentAmount").value) || 0;
+
+  const isSplitPayment = splitPaymentMethods.length === 2;
+
+  const totalReceived = isSplitPayment
+    ? firstAmount + secondAmount
+    : cashReceived;
+
+  const change = isSplitPayment
+    ? Math.max(0, totalReceived - total)
+    : paymentMethod === "CASH"
+      ? Math.max(0, cashReceived - total)
+      : 0;
 
   let summary = `
    <p><strong>Customer:</strong>
@@ -1777,11 +1965,32 @@ ${document.querySelector('input[name="orderType"]:checked').value}</p>
       <strong>${paymentMethod}</strong>
     </div>
 
-    ${paymentMethod === "CASH" ? `
+     ${isSplitPayment ? `
+      <div class="row">
+        <strong>${splitPaymentMethods[0]} RECEIVED</strong>
+        <strong>${peso(firstAmount)}</strong>
+      </div>
+
+      <div class="row">
+        <strong>${splitPaymentMethods[1]} RECEIVED</strong>
+        <strong>${peso(secondAmount)}</strong>
+      </div>
+
+      <div class="row">
+        <strong>TOTAL PAYMENT RECEIVED</strong>
+        <strong>${peso(totalReceived)}</strong>
+      </div>
+
+      <div class="row">
+        <strong>CHANGE</strong>
+        <strong>${peso(change)}</strong>
+      </div>
+    ` : paymentMethod === "CASH" ? `
       <div class="row">
         <strong>Cash Received</strong>
         <strong>${peso(cashReceived)}</strong>
       </div>
+
       <div class="row">
         <strong>Change</strong>
         <strong>${peso(change)}</strong>
@@ -1834,8 +2043,23 @@ document.getElementById("newOrderBtn").onclick=()=>{
   document.getElementById("paymentMethod").value = "";
   document.getElementById("cashReceived").value = "";
 
-  document.getElementById("cashReceivedRow").classList.remove("hidden");
-  document.getElementById("orderMessage").textContent = "";
+  splitPaymentMethods = [];
+
+  document.getElementById("firstPaymentAmount").value = "";
+  document.getElementById("secondPaymentAmount").value = "";
+
+  document.getElementById("cashReceivedRow").classList.add("hidden");
+  document.getElementById("splitPaymentFields").classList.add("hidden");
+
+  document.getElementById("singlePaymentOptions").classList.add("hidden");
+  document.getElementById("splitPaymentOptions").classList.add("hidden");
+
+  document.getElementById("singlePaymentBtn").classList.remove("active");
+  document.getElementById("splitPaymentBtn").classList.remove("active");
+
+  document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button => {
+    button.classList.remove("active");
+  });  document.getElementById("orderMessage").textContent = "";
   document.getElementById("checkoutMessage").textContent = "";
 
   document.getElementById("checkoutModal").classList.add("hidden");
@@ -1900,7 +2124,45 @@ document.getElementById("checkoutBtn").onclick=()=>{
       return;
     }
   }
+  if(document.getElementById("splitPaymentBtn").classList.contains("active")){
+    if(splitPaymentMethods.length !== 2){
+      document.getElementById("orderMessage").textContent =
+        "Please select two payment methods.";
+      return;
+    }
 
+    const firstAmount =
+      Number(document.getElementById("firstPaymentAmount").value) || 0;
+
+    const secondAmount =
+      Number(document.getElementById("secondPaymentAmount").value) || 0;
+
+    const subtotal = cart.reduce(
+      (sum,item) => sum + item.price * item.qty, 0
+    );
+
+    const eligibleSubtotal = cart
+      .filter(item =>
+        item.name !== "UNLI 269 WINGS" &&
+        item.name !== "UNLI 299 WINGS"
+      )
+      .reduce((sum,item) => sum + item.price * item.qty, 0);
+
+    const discountType = document.getElementById("discount").value;
+
+    const discountAmount =
+      discountType !== "none" && eligibleSubtotal > 0
+        ? Math.min(10, eligibleSubtotal)
+        : 0;
+
+    const total = subtotal - discountAmount;
+
+    if(firstAmount + secondAmount < total){
+      document.getElementById("orderMessage").textContent =
+        "Insufficient payment received.";
+      return;
+    }
+  }
   showCheckoutSummary();
 };
 
