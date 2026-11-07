@@ -526,6 +526,48 @@ button:disabled{opacity:.5}
   </div>
 </header>
 
+<!-- SETTINGS BUTTON -->
+<button id="settingsBtn" type="button" style="
+  position:fixed;
+  bottom:15px;
+  left:15px;
+  z-index:900;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  font-size:24px;
+  padding:0;
+">
+  ⚙️
+</button>
+
+<!-- SETTINGS WINDOW -->
+<div id="settingsModal" class="hidden" style="
+  position:fixed;
+  inset:0;
+  z-index:1200;
+  background:rgba(0,0,0,.85);
+  padding:15px;
+  overflow-y:auto;
+  align-items:center;
+  justify-content:center;
+">
+  <div class="panel" style="width:100%;max-width:550px">
+    <div class="row">
+      <h3>SETTINGS</h3>
+      <button type="button" class="secondary" id="closeSettingsBtn">✕</button>
+    </div>
+
+    <h3>PRODUCT AVAILABILITY</h3>
+    <p class="small">
+      Tick products that are not available today.
+    </p>
+
+    <div id="availabilitySettings">
+      <p class="small">Loading products...</p>
+    </div>
+  </div>
+</div>
 <main>
 <section id="login" class="panel">
 <img src="dwings-logo.png" alt="D' Wings Cafe Logo" class="pos-logo">
@@ -966,7 +1008,188 @@ let pendingRequiredFlavors = null;
 let pendingIncludedItems = [];
 let pendingRequiresDip = false;
 let editingCartIndex = null;
+// ===================================
+// PRODUCT AVAILABILITY - FIREBASE SYNC
+// ===================================
 
+let unavailableItems = {};
+let availabilityUnsubscribe = null;
+
+const availabilityRef = doc(
+  db,
+  "settings",
+  "productAvailability"
+);
+
+function productAvailabilityKey(product){
+  return "product_" +
+    product.category + "_" +
+    product.name;
+}
+
+function wingFlavorAvailabilityKey(flavor){
+  return "flavor_" + flavor;
+}
+
+function isProductUnavailable(product){
+  return unavailableItems[productAvailabilityKey(product)] === true;
+}
+
+function isWingFlavorUnavailable(flavor){
+  return unavailableItems[wingFlavorAvailabilityKey(flavor)] === true;
+}
+
+function startAvailabilitySync(){
+  if(availabilityUnsubscribe){
+    availabilityUnsubscribe();
+  }
+
+  availabilityUnsubscribe = onSnapshot(
+    availabilityRef,
+    snapshot => {
+      unavailableItems = snapshot.exists()
+        ? (snapshot.data().unavailable || {})
+        : {};
+
+      renderProducts();
+
+      if(!document.getElementById("settingsModal").classList.contains("hidden")){
+        renderAvailabilitySettings();
+      }
+    },
+    error => {
+      console.error("Availability sync error:", error);
+      alert("Unable to sync product availability. Please check your connection.");
+    }
+  );
+}
+
+function renderAvailabilitySettings(){
+  const container = document.getElementById("availabilitySettings");
+
+  const categories = [
+    "Wings",
+    "Fries",
+    "Floats",
+    "Drinks",
+    "Extras",
+    "Sandwich",
+    "Chicken Burger"
+  ];
+
+  let html = "";
+
+  categories.forEach(category => {
+    const products = menu.filter(product => product.category === category);
+
+    html += `
+      <h4 style="color:#f5bd4f;margin:20px 0 8px">
+        ${category.toUpperCase()}
+      </h4>
+    `;
+
+    products.forEach(product => {
+      const key = productAvailabilityKey(product);
+      const unavailable = unavailableItems[key] === true;
+
+      html += `
+        <label style="
+          display:flex;
+          align-items:center;
+          gap:10px;
+          padding:10px;
+          margin-bottom:6px;
+          background:#292929;
+          border-radius:8px;
+        ">
+          <input
+            type="checkbox"
+            data-availability-key="${key}"
+            ${unavailable ? "checked" : ""}
+            style="width:20px;height:20px;margin:0"
+          >
+          <span>${product.name}</span>
+          <span style="margin-left:auto;color:${unavailable ? "#ff7777" : "#7de39a"};font-size:12px">
+            ${unavailable ? "NOT AVAILABLE" : "AVAILABLE"}
+          </span>
+        </label>
+      `;
+    });
+  });
+
+  html += `
+    <h4 style="color:#f5bd4f;margin:20px 0 8px">
+      INDIVIDUAL WINGS FLAVORS
+    </h4>
+  `;
+
+  wingFlavors.forEach(flavor => {
+    const key = wingFlavorAvailabilityKey(flavor);
+    const unavailable = unavailableItems[key] === true;
+
+    html += `
+      <label style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:10px;
+        margin-bottom:6px;
+        background:#292929;
+        border-radius:8px;
+      ">
+        <input
+          type="checkbox"
+          data-availability-key="${key}"
+          ${unavailable ? "checked" : ""}
+          style="width:20px;height:20px;margin:0"
+        >
+        <span>${flavor}</span>
+        <span style="margin-left:auto;color:${unavailable ? "#ff7777" : "#7de39a"};font-size:12px">
+          ${unavailable ? "NOT AVAILABLE" : "AVAILABLE"}
+        </span>
+      </label>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  container.querySelectorAll("[data-availability-key]").forEach(checkbox => {
+    checkbox.addEventListener("change", async () => {
+      const key = checkbox.dataset.availabilityKey;
+      const newValue = checkbox.checked;
+
+      checkbox.disabled = true;
+
+      try {
+        await runTransaction(db, async transaction => {
+          const snapshot = await transaction.get(availabilityRef);
+
+          const updated = snapshot.exists()
+            ? { ...(snapshot.data().unavailable || {}) }
+            : {};
+
+          if(newValue){
+            updated[key] = true;
+          } else {
+            delete updated[key];
+          }
+
+          transaction.set(availabilityRef, {
+            unavailable: updated,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+        });
+
+      } catch(error) {
+        console.error("Availability update error:", error);
+        alert("Unable to save availability. Please try again.");
+        checkbox.checked = !newValue;
+      } finally {
+        checkbox.disabled = false;
+      }
+    });
+  });
+}
 const peso = n => "₱" + n.toFixed(2);
 function getTodayDate(){
   return new Intl.DateTimeFormat("en-CA", {
@@ -1033,11 +1256,20 @@ document.getElementById("categoryTabs").innerHTML =
 
 const renderProductCards = items => items.map(p => {
   const index = menu.indexOf(p);
+  const unavailable = isProductUnavailable(p);
 
   return `
-    <button class="product" data-index="${index}">
+    <button
+      class="product"
+      data-index="${index}"
+      ${unavailable ? "disabled" : ""}
+      style="${unavailable ? "opacity:.45;border:1px solid #ff5555;" : ""}"
+    >
       <strong>${p.name}</strong>
-      <span class="price">${peso(p.price)}</span>
+      ${unavailable
+        ? '<span style="color:#ff7777;font-size:12px">NOT AVAILABLE</span>'
+        : `<span class="price">${peso(p.price)}</span>`
+      }
     </button>
   `;
 }).join("");
@@ -1105,7 +1337,10 @@ if (selectedCategory === "Wings") {
 
 function addItem(index){
   const product = menu[index];
-
+if(isProductUnavailable(product)){
+  alert(product.name + " is currently NOT AVAILABLE.");
+  return;
+}
   if(product.category === "Wings"){
     pendingProduct = {...product, menuIndex:index};
 
@@ -1168,13 +1403,28 @@ if(product.name === "UNLI 299 WINGS"){
 
     document.getElementById("dipChoice").value = "";
 
-    document.getElementById("flavorOptions").innerHTML =
-      wingFlavors.map(flavor => `
-        <label class="flavor-option">
-          <input type="checkbox" name="wingFlavor" value="${flavor}">
-          <span>${flavor}</span>
-        </label>
-      `).join("");
+document.getElementById("flavorOptions").innerHTML =
+  wingFlavors.map(flavor => {
+    const unavailable = isWingFlavorUnavailable(flavor);
+
+    return `
+      <label class="flavor-option">
+        <input
+          type="checkbox"
+          name="wingFlavor"
+          value="${flavor}"
+          ${unavailable ? "disabled" : ""}
+        >
+        <span>
+          ${flavor}
+          ${unavailable
+            ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
+            : ''
+          }
+        </span>
+      </label>
+    `;
+  }).join("");
 
     document.getElementById("flavorMessage").textContent =
       pendingRequiredFlavors
@@ -1218,12 +1468,17 @@ function updateFlavorSelection(){
     'input[name="wingFlavor"]:checked'
   ).length;
 
-  document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
-    box.disabled =
+document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
+  const unavailable = isWingFlavorUnavailable(box.value);
+
+  box.disabled =
+    (!box.checked && unavailable) ||
+    (
       pendingRequiredFlavors !== null &&
       selected >= pendingRequiredFlavors &&
-      !box.checked;
-  });
+      !box.checked
+    );
+});
 
   const flavorValid = pendingRequiredFlavors === null
     ? selected >= 1
@@ -1479,27 +1734,39 @@ el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
   );
 });
 
-        document.getElementById("flavorOptions").innerHTML =
-          wingFlavors.map(flavor => `
-            <label class="flavor-option">
-              <input
-                type="checkbox"
-                name="wingFlavor"
-                value="${flavor}"
-                ${item.flavors.includes(flavor) ? "checked" : ""}
-              >
-              <span>${flavor}</span>
-            </label>
-          `).join("");
+document.getElementById("flavorOptions").innerHTML =
+  wingFlavors.map(flavor => {
+    const unavailable = isWingFlavorUnavailable(flavor);
+    const selected = item.flavors.includes(flavor);
 
-        document.getElementById("confirmFlavor").textContent =
-          "SAVE CHANGES";
+    return `
+      <label class="flavor-option">
+        <input
+          type="checkbox"
+          name="wingFlavor"
+          value="${flavor}"
+          ${selected ? "checked" : ""}
+          ${unavailable && !selected ? "disabled" : ""}
+        >
+        <span>
+          ${flavor}
+          ${unavailable
+            ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
+            : ''
+          }
+        </span>
+      </label>
+    `;
+  }).join("");
 
-        document.getElementById("flavorModal").classList.remove("hidden");
+document.getElementById("confirmFlavor").textContent =
+  "SAVE CHANGES";
 
-        document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
-          box.addEventListener("change", updateFlavorSelection);
-        });
+document.getElementById("flavorModal").classList.remove("hidden");
+
+document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
+  box.addEventListener("change", updateFlavorSelection);
+});
 
         document.getElementById("dipChoice").onchange =
           updateFlavorSelection;
@@ -2451,6 +2718,7 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
     document.getElementById("continueAvatarBtn").disabled = true;
 
     await startStaffPresence();
+    startAvailabilitySync();
 
     document.getElementById("avatarSelection").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
@@ -2975,6 +3243,25 @@ document.getElementById("checkoutBtn").onclick=()=>{
 };
 
 renderCart();
+  // ===================================
+// SETTINGS BUTTON
+// ===================================
+
+document.getElementById("settingsBtn").onclick = () => {
+  const modal = document.getElementById("settingsModal");
+
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
+
+  renderAvailabilitySettings();
+};
+
+document.getElementById("closeSettingsBtn").onclick = () => {
+  const modal = document.getElementById("settingsModal");
+
+  modal.classList.add("hidden");
+  modal.style.display = "none";
+};
 </script>
 </body>
 </html>
