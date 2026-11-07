@@ -3257,7 +3257,14 @@ document.getElementById("settingsBtn").onclick = () => {
 
   renderAvailabilitySettings();
 };
+document.getElementById("settingsBtn").onclick = () => {
+  const modal = document.getElementById("settingsModal");
 
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
+
+  renderAvailabilitySettings();
+};
 document.getElementById("closeSettingsBtn").onclick = () => {
   const modal = document.getElementById("settingsModal");
 
