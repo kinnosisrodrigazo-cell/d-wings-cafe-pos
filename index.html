@@ -90,11 +90,16 @@ button:disabled{opacity:.5}
   background:#e7ad3e;
   color:#111;
 }
-  .sales-layout{
+.sales-layout{
   display:grid;
   grid-template-columns:minmax(0, 1.7fr) minmax(320px, 1fr);
   gap:18px;
   align-items:start;
+}
+
+#cartPanel.hidden{
+  display:block !important;
+  visibility:hidden;
 }
 
 #cartPanel{
