@@ -3207,7 +3207,7 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
     startOrderQueue();
 
     document.getElementById("avatarSelection").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
+document.getElementById("app")?.classList.remove("hidden");
 
    document.getElementById("userLabel").textContent = "";
 
