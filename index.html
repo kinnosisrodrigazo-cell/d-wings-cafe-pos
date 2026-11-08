@@ -1210,11 +1210,12 @@ try {
     } finally {
       availabilitySaving = false;
 
-      const container = document.getElementById("availabilitySettings");
-      const savedScrollPosition = container.scrollTop;
+const container = document.getElementById("availabilitySettings");
 
-      renderAvailabilitySettings();
-      renderProducts();
+renderAvailabilitySettings();
+renderProducts();
+
+container.scrollTop = 0;
 
       container.scrollTop = savedScrollPosition;
     }
