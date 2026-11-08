@@ -3250,9 +3250,16 @@ onAuthStateChanged(auth, async user => {
       availabilityUnsubscribe = null;
     }
 
-    document.getElementById("login").classList.remove("hidden");
-    document.getElementById("app")?.classList.add("hidden");
-    document.getElementById("avatarSelection").classList.add("hidden");
+document.getElementById("login").classList.remove("hidden");
+document.getElementById("app").classList.add("hidden");
+
+document.getElementById("queuePage").classList.add("hidden");
+document.querySelector(".terminal-nav").classList.add("hidden");
+document.getElementById("salesPage").classList.add("hidden");
+document.getElementById("historyPage").classList.add("hidden");
+document.getElementById("reportPage").classList.add("hidden");
+
+document.getElementById("avatarSelection").classList.add("hidden");
     document.getElementById("userLabel").textContent = "POS SYSTEM";
     document.getElementById("onlineStaff").innerHTML = "";
 
