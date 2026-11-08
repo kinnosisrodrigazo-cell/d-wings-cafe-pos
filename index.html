@@ -2571,20 +2571,26 @@ document.getElementById("avatarSelection").classList.remove("hidden");
 }
 
 
-document.getElementById("loginBtn").onclick=async()=>{
-  const email=document.getElementById("email").value.trim();
-  const password=document.getElementById("password").value;
-  const msg=document.getElementById("loginMessage");
+document.getElementById("loginBtn").onclick = async () => {
+  const button = document.getElementById("loginBtn");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const msg = document.getElementById("loginMessage");
 
-  msg.textContent="Signing in...";
+  if (button.disabled) return;
 
-  try{
-    await signInWithEmailAndPassword(auth,email,password);
+  button.disabled = true;
+  msg.textContent = "Signing in...";
 
-    msg.textContent="";
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    msg.textContent = "";
 
-  }catch(error){
-    msg.textContent="Login failed: "+error.message;
+  } catch (error) {
+    msg.textContent = "Login failed: " + error.message;
+
+  } finally {
+    button.disabled = false;
   }
 };
 
