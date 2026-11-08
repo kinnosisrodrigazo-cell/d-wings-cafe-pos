@@ -2835,8 +2835,7 @@ document.getElementById("app")?.classList.add("hidden");
 document.querySelector(".terminal-nav").style.display = "none";
 
 document.getElementById("avatarSelection").classList.remove("hidden");
-
-
+}
 document.getElementById("loginBtn").onclick = async () => {
   const button = document.getElementById("loginBtn");
   const email = document.getElementById("email").value.trim();
@@ -3262,8 +3261,7 @@ onAuthStateChanged(auth, async user => {
 
 document.getElementById("login").classList.remove("hidden");
 document.getElementById("app").classList.add("hidden");
-document.getElementById("app").style.display = "none";
-    document.querySelector(".terminal-nav").style.display = "none";
+document.querySelector(".terminal-nav").style.display = "none";
 document.getElementById("queuePage").classList.add("hidden");
 document.querySelector(".terminal-nav").classList.add("hidden");
 document.getElementById("salesPage").classList.add("hidden");
