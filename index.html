@@ -3210,6 +3210,12 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
 document.getElementById("avatarSelection").classList.add("hidden");
 document.getElementById("app").classList.remove("hidden");
 document.getElementById("salesPage").classList.remove("hidden");
+document.getElementById("historyPage").classList.add("hidden");
+document.getElementById("reportPage").classList.add("hidden");
+
+document.querySelectorAll(".terminal-nav button").forEach(button => {
+  button.classList.toggle("active", button.dataset.page === "salesPage");
+});
 
    document.getElementById("userLabel").textContent = "";
 
