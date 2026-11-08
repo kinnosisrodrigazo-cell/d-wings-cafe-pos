@@ -602,10 +602,11 @@ button:disabled{opacity:.5}
   </div>
 </header>
 
+
 <!-- SETTINGS BUTTON -->
 <button id="settingsBtn" type="button" style="
   position:fixed;
-  bottom:15px;
+  bottom:75px;
   left:15px;
   z-index:900;
   width:52px;
@@ -619,6 +620,25 @@ button:disabled{opacity:.5}
 ">
   ⚙️
 </button>
+
+<!-- LOGOUT BUTTON -->
+<button id="logoutBtn" type="button" title="Log out" style="
+  position:fixed;
+  bottom:15px;
+  left:15px;
+  z-index:900;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  font-size:22px;
+  padding:0;
+  background:#000000;
+  border:1px solid #444444;
+  color:#aaaaaa;
+">
+  ↪
+</button>
+
 
 <!-- SETTINGS WINDOW -->
 <div id="settingsModal" class="hidden" style="
@@ -709,7 +729,6 @@ button:disabled{opacity:.5}
 <section id="salesPage" class="hidden">
   <div class="row">
     <h2>Sales Terminal</h2>
-    <button class="secondary" id="logoutBtn">Log out</button>
   </div>
     <div class="sales-layout">
   <div class="panel">
