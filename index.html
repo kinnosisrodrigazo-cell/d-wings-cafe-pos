@@ -117,11 +117,29 @@ button:disabled{opacity:.5}
 .price{color:#f5bd4f}
 .row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:10px 0}
 .hidden{display:none}
-  .terminal-nav{
-  display:grid;
- grid-template-columns:repeat(4,1fr);
-  gap:8px;
-  margin-bottom:18px;
+.terminal-nav button{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-height:62px;
+  padding:7px 2px;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.2px;
+  line-height:1.2;
+  background:#292929;
+  color:white;
+  border:1px solid #444;
+  border-radius:9px;
+  text-align:center;
+}
+
+.terminal-nav button svg{
+  width:17px;
+  height:17px;
+  flex-shrink:0;
 }
 .terminal-nav button{
   display:flex;
@@ -3272,7 +3290,7 @@ document.getElementById("app").classList.remove("hidden");
 document.getElementById("queuePage").classList.add("hidden");
 document.getElementById("salesPage").classList.remove("hidden");
 
-document.querySelector(".terminal-nav").style.display = "flex";
+document.querySelector(".terminal-nav").style.display = "grid";
 
 document.getElementById("historyPage").classList.add("hidden");
 document.getElementById("reportPage").classList.add("hidden");
