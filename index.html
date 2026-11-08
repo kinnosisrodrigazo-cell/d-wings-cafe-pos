@@ -537,6 +537,47 @@ button:disabled{opacity:.5}
     overflow-wrap: anywhere;
   }
 }
+  /* ===================================
+   D' WINGS CAFE - ORDER QUEUE
+=================================== */
+
+#activeOrderQueue {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 12px 4px;
+  align-items: stretch;
+  scroll-behavior: smooth;
+}
+
+.order-queue-card {
+  flex: 0 0 280px;
+  min-height: 180px;
+  background: #1b1b1b;
+  color: #ffffff;
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 16px;
+  touch-action: pan-x;
+  user-select: none;
+}
+
+.order-queue-card .queue-status {
+  color: #e7ad3e;
+  font-weight: bold;
+}
+
+.order-queue-card .queue-timer {
+  font-size: 24px;
+  font-weight: bold;
+  color: #e7ad3e;
+  margin-top: 12px;
+}
+
+.order-queue-card .queue-items {
+  margin-top: 12px;
+  line-height: 1.6;
+}
 </style>
 </head>
 <body>
@@ -652,12 +693,20 @@ button:disabled{opacity:.5}
 
 <section id="app" class="hidden">
   <div class="terminal-nav">
-  <button class="active" data-page="salesPage">SALES</button>
-  <button data-page="historyPage">ORDER HISTORY</button>
-  <button data-page="reportPage">DAILY SALES REPORT</button>
-</div>
+    <button class="active" data-page="queuePage">ORDER QUEUE</button>
+    <button data-page="salesPage">SALES</button>
+    <button data-page="historyPage">ORDER HISTORY</button>
+    <button data-page="reportPage">DAILY SALES REPORT</button>
+  </div>
+
+ <section id="queuePage">
+    <div class="panel">
+      <h3>ORDER QUEUE</h3>
+      <div id="activeOrderQueue"></div>
+    </div>
+  </section>
   
-<section id="salesPage">
+<section id="salesPage" class="hidden">
   <div class="row">
     <h2>Sales Terminal</h2>
     <button class="secondary" id="logoutBtn">Log out</button>
@@ -963,6 +1012,7 @@ import {
   limit,
   updateDoc,
   serverTimestamp,
+  Timestamp,
   runTransaction,
   onSnapshot,
   deleteDoc,
@@ -2004,7 +2054,19 @@ ${status !== "VOID" ? `
     style="width:100%">
     VOID ORDER
   </button>
+
+  ${order.servingStatus === "COMPLETED" ? `
+    <button
+      class="secondary"
+      data-restore="${orderDoc.id}"
+      style="width:100%; margin-top:8px">
+      RESTORE TO QUEUE
+    </button>
+  ` : ""}
 ` : `
+  <p class="small">This order has been voided.</p>
+  <p class="small">VOID REASON: ${escapeHTML(order.voidReason || "Not provided")}</p>
+`}
   <p class="small">This order has been voided.</p>
   <p class="small">VOID REASON: ${escapeHTML(order.voidReason || "Not provided")}</p>
 `}
@@ -2045,7 +2107,34 @@ ${status !== "VOID" ? `
         }
       };
     });
+    historyEl.querySelectorAll("[data-restore]").forEach(button=>{
+      button.onclick = async()=>{
+        if(!confirm("Restore this order to the active queue?")){
+          return;
+        }
 
+        try{
+          await updateDoc(
+            doc(db, "orders", button.dataset.restore),
+            {
+              servingStatus: "PENDING",
+              completedAt: null,
+              servingDuration: null,
+              restoredAt: serverTimestamp(),
+              restoredBy: auth.currentUser?.email || "",
+              restoredByUid: auth.currentUser?.uid || ""
+            }
+          );
+
+          alert("Order successfully restored to the queue.");
+          await loadOrderHistory();
+
+        }catch(error){
+          console.error("Restore order error:", error);
+          alert("Unable to restore order. Please try again.");
+        }
+      };
+    });
   }catch(error){
     console.error("Order history error:", error);
     historyEl.innerHTML =
@@ -2415,7 +2504,25 @@ const summarySheet = XLSX.utils.aoa_to_sheet([
     ["PAYMAYA RECEIVED", paymentTotals.paymaya],
     ["INCENTIVE", incentive]
   ]);
+const formatReportTime = value =>
+  value?.toDate
+    ? value.toDate().toLocaleString("en-PH")
+    : "";
 
+const formatServingDuration = seconds => {
+  if(seconds === null || seconds === undefined) return "";
+
+  const totalSeconds = Number(seconds) || 0;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  return (
+    String(hours).padStart(2,"0") + ":" +
+    String(minutes).padStart(2,"0") + ":" +
+    String(remainingSeconds).padStart(2,"0")
+  );
+};
  const transactionRows = reportOrders.flatMap(order => {
   const items = order.items || [];
   const subtotal = Number(order.subtotal) || 0;
@@ -2442,8 +2549,15 @@ const summarySheet = XLSX.utils.aoa_to_sheet([
       "PAYMENT METHOD": order.paymentMethod || "",
       "SALE PRICE": salePrice,
       "DISCOUNT": allocatedDiscount,
-      "VOID/COMPLETED": orderStatus,
-      "TOTAL SALES": orderStatus === "VOID" ? 0 : lineTotal
+ "VOID/COMPLETED": orderStatus,
+"TOTAL SALES": orderStatus === "VOID" ? 0 : lineTotal,
+"ORDER TIME": formatReportTime(order.orderTime || order.createdAt),
+"COMPLETION TIME": formatReportTime(order.completedAt),
+"SERVING DURATION": formatServingDuration(order.servingDuration),
+"ORDER TYPE": order.orderType || "",
+"ORDER STATUS": order.servingStatus || "",
+"RESTORATION TIME": formatReportTime(order.restoredAt),
+"STAFF": order.completedBy || order.cashierEmail || ""
     };
   });
 });
@@ -2537,6 +2651,13 @@ async function saveSale(){
 const sale = {
   orderDate: today,
   status: "COMPLETED",
+
+  // ORDER QUEUE TRACKING
+  servingStatus: "PENDING",
+  orderTime: serverTimestamp(),
+  completedAt: null,
+  servingDuration: null,
+  restoredAt: null,
 
   customerName:
     document.getElementById("customerName").value.trim() || "Walk-in",
@@ -2743,7 +2864,196 @@ let dwingsPresenceHeartbeat = null;
 let dwingsPresenceRefreshTimer = null;
 let dwingsPresenceRef = null;
 let dwingsPresenceLatestSnapshot = null;
+// ORDER QUEUE
+let orderQueueUnsubscribe = null;
+let orderQueueTimer = null;
+let activeQueueOrders = [];
+  // ===================================
+// D' WINGS CAFE - REAL-TIME ORDER QUEUE
+// ===================================
 
+function startOrderQueue(){
+
+  if(orderQueueUnsubscribe){
+    orderQueueUnsubscribe();
+    orderQueueUnsubscribe = null;
+  }
+
+  const ordersQuery = query(
+    collection(db, "orders"),
+    where("servingStatus", "==", "PENDING")
+  );
+
+  orderQueueUnsubscribe = onSnapshot(
+    ordersQuery,
+    snapshot => {
+
+     activeQueueOrders = snapshot.docs
+  .map(orderDoc => ({
+    id: orderDoc.id,
+    ...orderDoc.data()
+  }))
+  .filter(order => order.status !== "VOID");
+
+      activeQueueOrders.sort((a,b) =>
+        (a.orderTime?.toMillis?.() || a.createdAt?.toMillis?.() || 0) -
+        (b.orderTime?.toMillis?.() || b.createdAt?.toMillis?.() || 0)
+      );
+
+      renderOrderQueue();
+    },
+    error => {
+      console.error("Order queue listener error:", error);
+    }
+  );
+
+  if(orderQueueTimer){
+    clearInterval(orderQueueTimer);
+  }
+
+orderQueueTimer = setInterval(() => {
+  updateQueueTimers();
+}, 1000);
+}
+
+function renderOrderQueue(){
+  const container = document.getElementById("activeOrderQueue");
+  if(!container) return;
+
+  if(activeQueueOrders.length === 0){
+    container.innerHTML =
+      "<p class='small'>No pending orders.</p>";
+    return;
+  }
+
+  container.innerHTML = activeQueueOrders.map(order => {
+    const orderTimestamp =
+      order.orderTime || order.createdAt;
+
+    const orderDate = orderTimestamp?.toDate
+      ? orderTimestamp.toDate()
+      : null;
+
+    const orderTimeText = orderDate
+      ? orderDate.toLocaleTimeString("en-PH", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        })
+      : "Waiting for time...";
+
+    const itemsHTML = (order.items || []).map(item => `
+      <div>
+        ${escapeHTML(item.name || "")}
+        × ${Number(item.qty) || 0}
+      </div>
+    `).join("");
+
+    return `
+      <div class="order-queue-card"
+           data-order-id="${order.id}">
+
+        <div class="row">
+          <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
+          <span class="queue-status">PENDING</span>
+        </div>
+
+        <div class="queue-items">
+          ${itemsHTML}
+        </div>
+
+        <p class="small">
+          ${escapeHTML(order.orderType || "")}
+        </p>
+
+        <p class="small">
+          ORDER TIME: ${orderTimeText}
+        </p>
+
+        <div class="queue-timer"
+             data-order-time="${orderTimestamp?.toMillis?.() || 0}">
+          00:00:00
+        </div>
+
+      </div>
+    `;
+  }).join("");
+
+  container.querySelectorAll(".order-queue-card").forEach(card => {
+    let startX = 0;
+    let startY = 0;
+
+    card.addEventListener("pointerdown", event => {
+      startX = event.clientX;
+      startY = event.clientY;
+    });
+
+    card.addEventListener("pointerup", event => {
+      const deltaX = Math.abs(event.clientX - startX);
+      const deltaY = Math.abs(event.clientY - startY);
+
+      if(deltaY > 90 && deltaY > deltaX * 1.5){
+        completeQueuedOrder(card.dataset.orderId);
+      }
+    });
+  });
+
+  updateQueueTimers();
+}
+async function completeQueuedOrder(orderId){
+
+  const order = activeQueueOrders.find(item => item.id === orderId);
+
+  if(!order || order.servingStatus !== "PENDING" || order.completing) return;
+
+  const orderTimestamp = order.orderTime || order.createdAt;
+  const orderTimeMillis = orderTimestamp?.toMillis?.();
+
+if(!orderTimeMillis){
+  alert("Order time is missing. Unable to complete this order.");
+  return;
+}
+
+order.completing = true;
+ const completedAt = Timestamp.now();
+  const servingDuration = Math.max(
+    0,
+    Math.floor((completedAt.getTime() - orderTimeMillis) / 1000)
+  );
+
+  try{
+    await updateDoc(doc(db, "orders", orderId), {
+      servingStatus: "COMPLETED",
+     completedAt: serverTimestamp(),
+      servingDuration: servingDuration,
+      completedBy: auth.currentUser?.email || "",
+      completedByUid: auth.currentUser?.uid || ""
+    });
+
+  }catch(error){
+    console.error("Order completion error:", error);
+    alert("Unable to complete order. Please try again.");
+        order.completing = false;
+  }
+}
+function updateQueueTimers(){
+  document.querySelectorAll(".queue-timer").forEach(timer => {
+    const startTime = Number(timer.dataset.orderTime);
+
+    if(!startTime) return;
+
+    const elapsed = Math.max(0, Date.now() - startTime);
+
+    const hours = Math.floor(elapsed / 3600000);
+    const minutes = Math.floor((elapsed % 3600000) / 60000);
+    const seconds = Math.floor((elapsed % 60000) / 1000);
+
+    timer.textContent =
+      String(hours).padStart(2,"0") + ":" +
+      String(minutes).padStart(2,"0") + ":" +
+      String(seconds).padStart(2,"0");
+  });
+}
 function renderOnlineStaff() {
   const container = document.getElementById("onlineStaff");
   if (!container) return;
@@ -2847,6 +3157,7 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
 
     await startStaffPresence();
     startAvailabilitySync();
+    startOrderQueue();
 
     document.getElementById("avatarSelection").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
@@ -2866,6 +3177,18 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
 
 onAuthStateChanged(auth, async user => {
   if (!user) {
+        if (orderQueueUnsubscribe) {
+      orderQueueUnsubscribe();
+      orderQueueUnsubscribe = null;
+    }
+
+    if (orderQueueTimer) {
+      clearInterval(orderQueueTimer);
+      orderQueueTimer = null;
+    }
+
+    activeQueueOrders = [];
+    document.getElementById("activeOrderQueue").innerHTML = "";
 
     if (availabilityUnsubscribe) {
       availabilityUnsubscribe();
@@ -2931,7 +3254,7 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
   button.addEventListener("click",()=>{
     const target = button.dataset.page;
 
-    ["salesPage","historyPage","reportPage"].forEach(id=>{
+   ["queuePage","salesPage","historyPage","reportPage"].forEach(id=>{
       document.getElementById(id).classList.toggle("hidden", id !== target);
     });
 
