@@ -711,9 +711,9 @@ button:disabled{opacity:.5}
 </section>
 
 
-<section id="queuePage">
-  <div class="panel">
+<div id="app" class="hidden">
 
+<section id="queuePage">
     <div class="row" style="align-items:center;justify-content:space-between">
       <h3 style="margin:0">ORDER QUEUE</h3>
       <span id="queueCount" class="small">NO PENDING ORDERS</span>
@@ -960,7 +960,8 @@ button:disabled{opacity:.5}
   </div>
   
 </section>
-</section>
+
+</div>
 </main>
   <div id="flavorModal" class="hidden">
   <div class="panel">
@@ -3206,8 +3207,9 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
     startAvailabilitySync();
     startOrderQueue();
 
-    document.getElementById("avatarSelection").classList.add("hidden");
-document.getElementById("app")?.classList.remove("hidden");
+document.getElementById("avatarSelection").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+document.getElementById("salesPage").classList.remove("hidden");
 
    document.getElementById("userLabel").textContent = "";
 
