@@ -711,20 +711,32 @@ button:disabled{opacity:.5}
 </section>
 
 
-<section id="app" class="hidden">
-  <div class="terminal-nav">
-    <button class="active" data-page="queuePage">ORDER QUEUE</button>
-    <button data-page="salesPage">SALES</button>
-    <button data-page="historyPage">ORDER HISTORY</button>
-    <button data-page="reportPage">DAILY SALES REPORT</button>
-  </div>
+<section id="queuePage">
+  <div class="panel">
 
- <section id="queuePage">
-    <div class="panel">
-      <h3>ORDER QUEUE</h3>
-      <div id="activeOrderQueue"></div>
+    <div class="row" style="align-items:center;justify-content:space-between">
+      <h3 style="margin:0">ORDER QUEUE</h3>
+      <span id="queueCount" class="small">NO PENDING ORDERS</span>
     </div>
-  </section>
+
+    <div id="queueIndicator" style="
+      height:2px;
+      width:100%;
+      background:#239b57;
+      margin-top:10px;
+      border-radius:2px;
+    "></div>
+
+    <div id="activeOrderQueue"></div>
+
+  </div>
+</section>
+
+<div class="terminal-nav">
+  <button class="active" data-page="salesPage">SALES</button>
+  <button data-page="historyPage">ORDER HISTORY</button>
+  <button data-page="reportPage">DAILY SALES REPORT</button>
+</div>
   
 <section id="salesPage" class="hidden">
   <div class="row">
@@ -2936,6 +2948,21 @@ orderQueueTimer = setInterval(() => {
 function renderOrderQueue(){
   const container = document.getElementById("activeOrderQueue");
   if(!container) return;
+  const queueCount = document.getElementById("queueCount");
+const queueIndicator = document.getElementById("queueIndicator");
+
+const pendingCount = activeQueueOrders.length;
+
+if(queueCount){
+  queueCount.textContent = pendingCount > 0
+    ? pendingCount + " PENDING"
+    : "NO PENDING ORDERS";
+}
+
+if(queueIndicator){
+  queueIndicator.style.background =
+    pendingCount > 0 ? "#d64545" : "#239b57";
+}
 
   if(activeQueueOrders.length === 0){
     container.innerHTML =
@@ -3271,7 +3298,7 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
   button.addEventListener("click",()=>{
     const target = button.dataset.page;
 
-   ["queuePage","salesPage","historyPage","reportPage"].forEach(id=>{
+["salesPage","historyPage","reportPage"].forEach(id=>{
       document.getElementById(id).classList.toggle("hidden", id !== target);
     });
 
