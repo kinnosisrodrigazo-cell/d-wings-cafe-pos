@@ -3209,6 +3209,7 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
 
 document.getElementById("avatarSelection").classList.add("hidden");
 document.getElementById("app").classList.remove("hidden");
+    document.getElementById("app").style.display = "";
 document.getElementById("salesPage").classList.remove("hidden");
 document.getElementById("historyPage").classList.add("hidden");
 document.getElementById("reportPage").classList.add("hidden");
@@ -3252,7 +3253,7 @@ onAuthStateChanged(auth, async user => {
 
 document.getElementById("login").classList.remove("hidden");
 document.getElementById("app").classList.add("hidden");
-
+document.getElementById("app").style.display = "none";
 document.getElementById("queuePage").classList.add("hidden");
 document.querySelector(".terminal-nav").classList.add("hidden");
 document.getElementById("salesPage").classList.add("hidden");
