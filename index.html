@@ -2781,10 +2781,14 @@ items: cart.map(item=>({
 
 currentUserRole = profile.role;
 
-document.getElementById("exportExcelBtn").classList.toggle(
-  "hidden",
-  currentUserRole !== "owner"
-);
+const exportBtn = document.getElementById("exportExcelBtn");
+
+if(exportBtn){
+  exportBtn.classList.toggle(
+    "hidden",
+    currentUserRole !== "owner"
+  );
+}
 
 if(!document.getElementById("reportDate").value){
   document.getElementById("reportDate").value = getTodayDate();
