@@ -1165,43 +1165,57 @@ function renderAvailabilitySettings(){
 
   container.innerHTML = html;
 
-  container.querySelectorAll("[data-availability-key]").forEach(checkbox => {
-    checkbox.addEventListener("change", async () => {
-      const key = checkbox.dataset.availabilityKey;
-      const newValue = checkbox.checked;
+container.querySelectorAll("[data-availability-key]").forEach(checkbox => {
+  checkbox.addEventListener("change", async () => {
+    const key = checkbox.dataset.availabilityKey;
+    const newValue = checkbox.checked;
 
+    availabilitySaving = true;
 
+    try {
+      await runTransaction(db, async transaction => {
+        const snapshot = await transaction.get(availabilityRef);
 
-      try {
-        await runTransaction(db, async transaction => {
-          const snapshot = await transaction.get(availabilityRef);
+        const updated = snapshot.exists()
+          ? { ...(snapshot.data().unavailable || {}) }
+          : {};
 
-          const updated = snapshot.exists()
-            ? { ...(snapshot.data().unavailable || {}) }
-            : {};
+        if (newValue) {
+          updated[key] = true;
+        } else {
+          delete updated[key];
+        }
 
-          if(newValue){
-            updated[key] = true;
-          } else {
-            delete updated[key];
-          }
+        transaction.set(availabilityRef, {
+          unavailable: updated,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      });
 
-          transaction.set(availabilityRef, {
-            unavailable: updated,
-            updatedAt: serverTimestamp()
-          }, { merge: true });
-        });
+      if (newValue) {
+        unavailableItems[key] = true;
+      } else {
+        delete unavailableItems[key];
+      }
 
-      } catch(error) {
-        console.error("Availability update error:", error);
-        alert("Unable to save availability. Please try again.");
-        checkbox.checked = !newValue;
-} finally {
-  availabilitySaving = false;
-}
-    });
+    } catch (error) {
+      console.error("Availability update error:", error);
+      alert("Unable to save availability. Please try again.");
+
+    } finally {
+      availabilitySaving = false;
+
+      const container = document.getElementById("availabilitySettings");
+      const savedScrollPosition = container.scrollTop;
+
+      renderAvailabilitySettings();
+
+      container.scrollTop = savedScrollPosition;
+    }
   });
+});
 }
+  
 const peso = n => "₱" + n.toFixed(2);
 function getTodayDate(){
   return new Intl.DateTimeFormat("en-CA", {
@@ -2754,21 +2768,29 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
 };
 
 
-onAuthStateChanged(auth,async user=>{
- if(!user){
-  document.getElementById("login").classList.remove("hidden");
-  document.getElementById("app").classList.add("hidden");
-  document.getElementById("userLabel").textContent="POS SYSTEM";
-  document.getElementById("onlineStaff").innerHTML="";
-  return;
-}
+onAuthStateChanged(auth, async user => {
+  if (!user) {
 
-  try{
+    if (availabilityUnsubscribe) {
+      availabilityUnsubscribe();
+      availabilityUnsubscribe = null;
+    }
+
+    document.getElementById("login").classList.remove("hidden");
+    document.getElementById("app").classList.add("hidden");
+    document.getElementById("avatarSelection").classList.add("hidden");
+    document.getElementById("userLabel").textContent = "POS SYSTEM";
+    document.getElementById("onlineStaff").innerHTML = "";
+
+    return;
+  }
+
+  try {
     await verifyUser(user);
-  }catch(error){
+  } catch (error) {
     console.error(error);
     await signOut(auth);
-    document.getElementById("loginMessage").textContent=
+    document.getElementById("loginMessage").textContent =
       "Unable to verify account. Please try again.";
   }
 });
