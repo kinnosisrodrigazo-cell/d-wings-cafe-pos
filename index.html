@@ -732,7 +732,7 @@ button:disabled{opacity:.5}
   </div>
 </section>
 
-<div class="terminal-nav hidden">
+<div class="terminal-nav" style="display:none">
   <button class="active" data-page="salesPage">SALES</button>
   <button data-page="historyPage">ORDER HISTORY</button>
   <button data-page="reportPage">DAILY SALES REPORT</button>
@@ -2829,10 +2829,12 @@ document.getElementById("checkoutModal").classList.add("hidden");
 
   renderCart();
 
-  document.getElementById("login").classList.add("hidden");
+document.getElementById("login").classList.add("hidden");
 document.getElementById("app")?.classList.add("hidden");
+
+document.querySelector(".terminal-nav").style.display = "none";
+
 document.getElementById("avatarSelection").classList.remove("hidden");
-}
 
 
 document.getElementById("loginBtn").onclick = async () => {
@@ -3213,7 +3215,7 @@ document.getElementById("app").classList.remove("hidden");
 document.getElementById("queuePage").classList.remove("hidden");
 document.getElementById("salesPage").classList.remove("hidden");
 
-document.querySelector(".terminal-nav").classList.remove("hidden");
+document.querySelector(".terminal-nav").style.display = "flex";
 
 document.getElementById("historyPage").classList.add("hidden");
 document.getElementById("reportPage").classList.add("hidden");
@@ -3237,7 +3239,10 @@ document.querySelectorAll(".terminal-nav button").forEach(button => {
 
 onAuthStateChanged(auth, async user => {
   if (!user) {
-        if (orderQueueUnsubscribe) {
+
+    document.querySelector(".terminal-nav").style.display = "none";
+
+    if (orderQueueUnsubscribe) {
       orderQueueUnsubscribe();
       orderQueueUnsubscribe = null;
     }
