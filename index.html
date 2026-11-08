@@ -281,22 +281,57 @@ button:disabled{opacity:.5}
   font-weight:bold;
 }
 
-.order-type-btn input{
-  width:18px;
-  height:18px;
-  margin:0;
-  accent-color:#e7ad3e;
+.order-type-options {
+  display:flex;
+  gap:10px;
 }
 
-.order-type-btn:has(input:checked){
-  background:#e7ad3e;
-  color:#111;
-  border-color:#e7ad3e;
+.order-type-btn {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  background:#000000;
+  color:#ffffff;
+  border:1px solid #444444;
+  border-radius:10px;
+  padding:12px;
+  cursor:pointer;
+  flex:1;
 }
-  .order-type-btn.active{
-  background:#e7ad3e;
-  color:#111;
-  border:1px solid #e7ad3e;
+
+.order-type-btn input {
+  display:none;
+}
+
+.order-check {
+  display:none;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:#168bff;
+  color:#ffffff;
+  font-size:13px;
+  font-weight:bold;
+  align-items:center;
+  justify-content:center;
+}
+
+.order-type-btn:has(input:checked) .order-check {
+  display:inline-flex;
+}
+
+.order-type-btn:has(input:checked) {
+  background:#000000;
+  color:#ffffff;
+  border-color:#168bff;
+}
+
+.order-type-btn.active {
+  background:#000000;
+  color:#ffffff;
+  border:1px solid #444444;
 }
   .dip-options{
   display:grid;
@@ -645,12 +680,14 @@ button:disabled{opacity:.5}
 <div class="order-type-options">
   <label class="order-type-btn">
     <input type="radio" name="orderType" value="DINE IN" checked>
-    DINE IN
+    <span>DINE IN</span>
+    <span class="order-check">✓</span>
   </label>
 
   <label class="order-type-btn">
     <input type="radio" name="orderType" value="TAKE OUT">
-    TAKE OUT
+    <span>TAKE OUT</span>
+    <span class="order-check">✓</span>
   </label>
 </div>
 
