@@ -1300,13 +1300,24 @@ const renderProductCards = items => items.map(p => {
       class="product"
       data-index="${index}"
       ${unavailable ? "disabled" : ""}
-      style="${unavailable ? "opacity:.45;border:1px solid #ff5555;" : ""}"
+      style="
+        position:relative;
+        ${unavailable ? "opacity:.45;border:1px solid #ff5555;" : ""}
+      "
     >
       <strong>${p.name}</strong>
-      ${unavailable
-        ? '<span style="color:#ff7777;font-size:12px">NOT AVAILABLE</span>'
-        : `<span class="price">${peso(p.price)}</span>`
-      }
+
+      <span style="
+        position:absolute;
+        bottom:6px;
+        right:8px;
+        color:${unavailable ? "#ff3333" : "#22aa55"};
+        font-size:9px;
+        font-weight:600;
+        letter-spacing:.4px;
+      ">
+        ${unavailable ? "NOT AVAILABLE" : "AVAILABLE"}
+      </span>
     </button>
   `;
 }).join("");
