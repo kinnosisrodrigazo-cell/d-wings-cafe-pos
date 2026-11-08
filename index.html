@@ -3249,12 +3249,14 @@ onAuthStateChanged(auth, async user => {
   }
 
   try {
-    await verifyUser(user);
+   await verifyUser(user);
   } catch (error) {
-    console.error(error);
-    await signOut(auth);
+    console.error("VERIFY USER ERROR:", error);
+
     document.getElementById("loginMessage").textContent =
-      "Unable to verify account. Please try again.";
+      "VERIFY ERROR: " + (error.code || error.message);
+
+    await signOut(auth);
   }
 });
 
