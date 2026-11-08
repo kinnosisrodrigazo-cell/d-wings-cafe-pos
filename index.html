@@ -1363,6 +1363,7 @@ const renderProductCards = items => items.map(p => {
       ${unavailable ? "disabled" : ""}
       style="
         position:relative;
+        padding-bottom:28px;
         ${unavailable ? "opacity:.45;border:1px solid #ff5555;" : ""}
       "
     >
@@ -1371,11 +1372,23 @@ const renderProductCards = items => items.map(p => {
       <span style="
         position:absolute;
         bottom:6px;
-        right:8px;
-        color:${unavailable ? "#ff3333" : "#22aa55"};
+        left:8px;
         font-size:9px;
         font-weight:600;
         letter-spacing:.4px;
+        color:#ffffff;
+      ">
+        ₱${Number(p.price).toFixed(2)}
+      </span>
+
+      <span style="
+        position:absolute;
+        bottom:6px;
+        right:8px;
+        font-size:9px;
+        font-weight:600;
+        letter-spacing:.4px;
+        color:${unavailable ? "#ff3333" : "#22aa55"};
       ">
         ${unavailable ? "NOT AVAILABLE" : "AVAILABLE"}
       </span>
