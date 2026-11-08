@@ -732,7 +732,7 @@ button:disabled{opacity:.5}
   </div>
 </section>
 
-<div class="terminal-nav">
+<div class="terminal-nav hidden">
   <button class="active" data-page="salesPage">SALES</button>
   <button data-page="historyPage">ORDER HISTORY</button>
   <button data-page="reportPage">DAILY SALES REPORT</button>
@@ -3208,11 +3208,13 @@ document.getElementById("continueAvatarBtn").onclick = async () => {
     startOrderQueue();
 
 document.getElementById("avatarSelection").classList.add("hidden");
+
 document.getElementById("app").classList.remove("hidden");
 document.getElementById("queuePage").classList.remove("hidden");
 document.getElementById("salesPage").classList.remove("hidden");
-    document.querySelector(".terminal-nav").style.display = "";
-document.getElementById("salesPage").classList.remove("hidden");
+
+document.querySelector(".terminal-nav").classList.remove("hidden");
+
 document.getElementById("historyPage").classList.add("hidden");
 document.getElementById("reportPage").classList.add("hidden");
 
