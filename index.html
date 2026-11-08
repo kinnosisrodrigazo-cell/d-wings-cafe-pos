@@ -900,7 +900,8 @@ import {
   serverTimestamp,
   runTransaction,
   onSnapshot,
-  deleteDoc
+  deleteDoc,
+  deleteField
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
@@ -1172,32 +1173,36 @@ container.querySelectorAll("[data-availability-key]").forEach(checkbox => {
 
     availabilitySaving = true;
 
-    try {
-      await runTransaction(db, async transaction => {
-        const snapshot = await transaction.get(availabilityRef);
+try {
+  await runTransaction(db, async transaction => {
+    const snapshot = await transaction.get(availabilityRef);
 
-        const updated = snapshot.exists()
-          ? { ...(snapshot.data().unavailable || {}) }
-          : {};
+    const currentData = snapshot.exists()
+      ? snapshot.data()
+      : {};
 
-        if (newValue) {
-          updated[key] = true;
-        } else {
-          delete updated[key];
-        }
+    const updated = {
+      ...(currentData.unavailable || {})
+    };
 
-        transaction.set(availabilityRef, {
-          unavailable: updated,
-          updatedAt: serverTimestamp()
-        }, { merge: true });
-      });
+    if (newValue) {
+      updated[key] = true;
+    } else {
+      delete updated[key];
+    }
 
-      if (newValue) {
-        unavailableItems[key] = true;
-      } else {
-        delete unavailableItems[key];
-      }
+    transaction.set(availabilityRef, {
+      ...currentData,
+      unavailable: updated,
+      updatedAt: serverTimestamp()
+    });
+  });
 
+  if (newValue) {
+    unavailableItems[key] = true;
+  } else {
+    delete unavailableItems[key];
+  }
     } catch (error) {
       console.error("Availability update error:", error);
       alert("Unable to save availability. Please try again.");
@@ -1209,6 +1214,7 @@ container.querySelectorAll("[data-availability-key]").forEach(checkbox => {
       const savedScrollPosition = container.scrollTop;
 
       renderAvailabilitySettings();
+      renderProducts();
 
       container.scrollTop = savedScrollPosition;
     }
