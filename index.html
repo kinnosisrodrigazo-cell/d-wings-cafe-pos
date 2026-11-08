@@ -1170,8 +1170,7 @@ function renderAvailabilitySettings(){
       const key = checkbox.dataset.availabilityKey;
       const newValue = checkbox.checked;
 
-availabilitySaving = true;
-checkbox.disabled = true;
+
 
       try {
         await runTransaction(db, async transaction => {
@@ -1199,7 +1198,6 @@ checkbox.disabled = true;
         checkbox.checked = !newValue;
 } finally {
   availabilitySaving = false;
-  checkbox.disabled = false;
 }
     });
   });
