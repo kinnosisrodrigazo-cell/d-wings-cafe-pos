@@ -772,7 +772,25 @@ button:disabled{opacity:.5}
 ">
   👤
 </button>
-
+  
+<!-- EMPLOYEE ATTENDANCE BUTTON -->
+<button id="employeeAttendanceBtn" type="button" title="Employee Attendance" style="
+  position:fixed;
+  bottom:195px;
+  left:15px;
+  z-index:900;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  font-size:22px;
+  padding:0;
+  background:#000000;
+  border:1px solid #444444;
+  color:#e7ad3e;
+">
+  🕒
+</button>
+  
 <!-- SETTINGS BUTTON -->
 <button id="settingsBtn" type="button" style="
   position:fixed;
@@ -937,9 +955,7 @@ button:disabled{opacity:.5}
   </button>
 
   <!-- NEW EMPLOYEE ATTENDANCE BUTTON -->
-  <button data-page="employeeAttendancePage">
-    EMPLOYEE ATTENDANCE
-  </button>
+
 
 </div>
 
@@ -5116,25 +5132,52 @@ document.querySelectorAll(".terminal-nav button").forEach(button=>{
 
   });
 });
+  // EMPLOYEE ATTENDANCE BUTTON
+document.getElementById("employeeAttendanceBtn").addEventListener("click", () => {
+
+  [
+    "salesPage",
+    "queuePage",
+    "historyPage",
+    "reportPage",
+    "dashboardPage"
+  ].forEach(id => {
+    document.getElementById(id).classList.add("hidden");
+  });
+
+  document.getElementById("employeeAttendancePage").classList.remove("hidden");
+
+  document.querySelectorAll(".terminal-nav button").forEach(button => {
+    button.classList.remove("active");
+  });
+
+  loadTodayAttendance();
+
+});
 // OWNER DASHBOARD BUTTON
 document.getElementById("dashboardBtn").addEventListener("click", () => {
 
   if(currentUserRole !== "owner") return;
 
-  ["salesPage", "queuePage", "historyPage", "reportPage"].forEach(id => {
+  [
+    "salesPage",
+    "queuePage",
+    "historyPage",
+    "reportPage",
+    "employeeAttendancePage"
+  ].forEach(id => {
     document.getElementById(id).classList.add("hidden");
   });
 
   document.getElementById("dashboardPage").classList.remove("hidden");
-  
+
   loadDashboardDailySales();
-  loadTodayAttendance();
-  
+
   document.querySelectorAll(".terminal-nav button").forEach(button => {
     button.classList.remove("active");
   });
 
-});  
+});
 document.getElementById("discount").addEventListener("change", renderCart);
 document.getElementById("singlePaymentBtn").onclick = () => {
   document.getElementById("singlePaymentOptions").classList.remove("hidden");
@@ -5612,9 +5655,9 @@ document.getElementById("timeOutBtn")?.addEventListener("click", () => {
 // KEYBOARD SHORTCUTS
 document.addEventListener("keydown", event => {
 
-  const dashboard = document.getElementById("dashboardPage");
+const attendancePage = document.getElementById("employeeAttendancePage");
 
-  if(!dashboard || dashboard.classList.contains("hidden")) return;
+if(!attendancePage || attendancePage.classList.contains("hidden")) return;
 
   if(event.key === "F1"){
     event.preventDefault();
