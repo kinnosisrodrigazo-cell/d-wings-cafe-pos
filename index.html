@@ -678,6 +678,63 @@ button:disabled{opacity:.5}
     <span id="userLabel" class="small">POS SYSTEM</span>
   </div>
 </header>
+  
+<!-- DAILY ORDER SEARCH PANEL -->
+<div id="dailyOrderSearchPanel" style="
+  display:none;
+  background:#1b1b1b;
+  border:1px solid #444;
+  border-radius:14px;
+  padding:15px;
+  margin:12px 0;
+">
+
+  <div style="
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+  ">
+    <strong style="color:#e7ad3e;font-size:15px;">
+      <i class="fas fa-search"></i> SEARCH TODAY'S ORDERS
+    </strong>
+
+    <button
+      type="button"
+      id="closeDailyOrderSearch"
+      style="
+        background:transparent;
+        border:none;
+        color:#fff;
+        font-size:22px;
+        cursor:pointer;
+      ">
+      &times;
+    </button>
+  </div>
+
+  <input
+    type="search"
+    id="dailyOrderSearchInput"
+    placeholder="Customer name, order number, or product..."
+    autocomplete="off"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:13px;
+      border:1px solid #555;
+      border-radius:10px;
+      background:#111;
+      color:#fff;
+      font-size:15px;
+      outline:none;
+    ">
+
+  <div id="dailyOrderSearchResults" style="margin-top:12px;">
+    <p class="small">Enter a name, order number, or product to search today's orders.</p>
+  </div>
+
+</div>
 
 
 
@@ -1479,14 +1536,109 @@ container.scrollTop = 0;
 }
   
 const peso = n => "₱" + n.toFixed(2);
-function getTodayDate(){
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Manila",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(new Date());
+
+
+  
+let dailyOrderSearchOrders = [];
+
+async function loadDailyOrderSearch(){
+
+  const resultsEl = document.getElementById("dailyOrderSearchResults");
+
+  resultsEl.innerHTML = "<p class='small'>Loading today's orders...</p>";
+
+  try{
+    const today = getTodayDate();
+
+    const todayQuery = query(
+      collection(db, "orders"),
+      where("orderDate", "==", today)
+    );
+
+    const snapshot = await getDocs(todayQuery);
+
+    dailyOrderSearchOrders = snapshot.docs.map(orderDoc => ({
+      id: orderDoc.id,
+      ...orderDoc.data()
+    }));
+
+    dailyOrderSearchOrders.sort((a, b) =>
+      (b.createdAt?.toMillis?.() || 0) -
+      (a.createdAt?.toMillis?.() || 0)
+    );
+
+    resultsEl.innerHTML =
+      `<p class="small">${dailyOrderSearchOrders.length} orders found today. Type to search.</p>`;
+
+  }catch(error){
+    console.error("Daily order search error:", error);
+    resultsEl.innerHTML =
+      "<p class='small'>Unable to load today's orders.</p>";
+  }
 }
+
+function renderDailyOrderSearch(searchTerm){
+
+  const resultsEl = document.getElementById("dailyOrderSearchResults");
+  const term = searchTerm.trim().toLowerCase();
+
+  if(!term){
+    resultsEl.innerHTML =
+      `<p class="small">${dailyOrderSearchOrders.length} orders found today. Type to search.</p>`;
+    return;
+  }
+
+  const matches = dailyOrderSearchOrders.filter(order => {
+
+    const customer = String(order.customerName || "Walk-in").toLowerCase();
+    const orderNumber = String(order.orderNumber || "").toLowerCase();
+
+    const products = (order.items || [])
+      .map(item => String(item.name || "").toLowerCase())
+      .join(" ");
+
+    return customer.includes(term) ||
+      orderNumber.includes(term) ||
+      products.includes(term);
+  });
+
+  if(matches.length === 0){
+    resultsEl.innerHTML =
+      "<p class='small'>No matching orders found today.</p>";
+    return;
+  }
+
+  resultsEl.innerHTML = matches.map(order => {
+
+    const status = order.status === "VOID"
+      ? "VOID"
+      : (order.servingStatus || order.status || "COMPLETED");
+
+    const itemsHTML = (order.items || []).map(item => `
+      <div>${escapeHTML(item.name || "")} × ${Number(item.qty) || 0}</div>
+    `).join("");
+
+    return `
+      <div class="panel" style="margin-top:10px;padding:12px">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
+          <strong>${escapeHTML(status)}</strong>
+        </div>
+
+        <p class="small">
+          CUSTOMER: ${escapeHTML(order.customerName || "Walk-in")}
+        </p>
+
+        <div class="small">${itemsHTML}</div>
+
+        <div style="text-align:right;margin-top:8px">
+          <strong>${peso(Number(order.total) || 0)}</strong>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
 let selectedCategory = "Wings";
 function updateDateTime(){
   const now = new Date();
@@ -1506,6 +1658,36 @@ function updateDateTime(){
   document.getElementById("dateTimeDisplay").textContent =
     date + " • " + time;
 }
+  
+
+// OPEN DAILY ORDER SEARCH
+document.getElementById("dailyOrderSearchBtn").addEventListener("click", async () => {
+
+  const panel = document.getElementById("dailyOrderSearchPanel");
+
+  panel.style.display =
+    panel.style.display === "none" ? "block" : "none";
+
+  if(panel.style.display === "block"){
+    document.getElementById("dailyOrderSearchInput").value = "";
+    await loadDailyOrderSearch();
+    document.getElementById("dailyOrderSearchInput").focus();
+  }
+});
+
+// SEARCH AS YOU TYPE
+document.getElementById("dailyOrderSearchInput").addEventListener("input", event => {
+  renderDailyOrderSearch(event.target.value);
+});
+
+
+document.getElementById("closeDailyOrderSearch").addEventListener("click", () => {
+  document.getElementById("dailyOrderSearchPanel").style.display = "none";
+  document.getElementById("dailyOrderSearchInput").value = "";
+  document.getElementById("dailyOrderSearchResults").innerHTML =
+    "<p class='small'>Enter a name, order number, or product to search today's orders.</p>";
+});
+
 
 updateDateTime();
 setInterval(updateDateTime, 1000);
