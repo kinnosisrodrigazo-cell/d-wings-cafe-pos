@@ -1118,6 +1118,10 @@ button:disabled{opacity:.5}
       VIEW DAILY REPORT
     </button>
 
+     <button id="toggleSalesVisibility" class="secondary" style="width:100%;margin-top:12px">
+  SHOW AMOUNTS
+</button>
+
     <div id="dailyReport" style="margin-top:15px"></div>
     <div class="panel" style="margin-top:15px">
   <h3>WHOLE-DAY PAYMENT SUMMARY</h3>
@@ -1137,9 +1141,6 @@ button:disabled{opacity:.5}
     <strong class="total" id="summaryPayMaya">₱0.00</strong>
   </div>
 </div>
- <button id="toggleSalesVisibility" class="secondary" style="width:100%;margin-top:12px">
-  SHOW AMOUNTS
-</button>
 
 <button id="exportExcelBtn" class="hidden" style="width:100%;margin-top:12px">
   EXPORT TO EXCEL
@@ -2676,7 +2677,7 @@ const netSales = completedOrders.reduce(
       
 
         <p class="small">CURRENT DAILY SALES</p>
-        <div class="total">${peso(netSales)}</div>
+        <div class="total" id="currentDailySalesAmount">${salesAmountsVisible ? peso(netSales) : "*****"}</div>
 
         <div class="row">
           <strong>PROGRESS TO NEXT TARGET</strong>
@@ -2745,6 +2746,9 @@ const salesVisibilityBtn =
 let salesAmountsVisible = false;
 
 function updateSalesVisibility(){
+    document.getElementById("currentDailySalesAmount").textContent =
+    salesAmountsVisible ? peso(netSales) : "*****";
+  
   document.getElementById("summaryNetSales").textContent =
     salesAmountsVisible ? peso(netSales) : "*****";
 
