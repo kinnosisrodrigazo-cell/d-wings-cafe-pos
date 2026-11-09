@@ -3062,6 +3062,60 @@ async function exportDailyReport(){
     const dailyRanking = getRankings(dailyOrders);
     const weeklyRanking = getRankings(weeklyOrders);
     const monthlyRanking = getRankings(monthlyOrders);
+    
+    // BEST-SELLING WING FLAVORS
+    const getFlavorRankings = orderList => {
+
+      const flavors = {};
+
+      orderList.filter(isCompleted).forEach(order => {
+
+        (order.items || []).forEach(item => {
+
+          if(!Array.isArray(item.flavors)) return;
+
+          const isUnli = String(item.name || "")
+            .toUpperCase()
+            .startsWith("UNLI");
+
+          const match = String(item.name || "")
+            .toUpperCase()
+            .match(/^(\d+)PCS/);
+
+          const piecesPerFlavor = isUnli
+            ? 1
+            : match ? Number(match[1]) / 3 : 1;
+
+          item.flavors.forEach(flavor => {
+
+            const name = String(flavor).trim();
+            if(!name) return;
+
+            if(!flavors[name]){
+              flavors[name] = {
+                name,
+                quantity: 0,
+                selections: 0
+              };
+            }
+
+            flavors[name].quantity +=
+              piecesPerFlavor * (Number(item.qty) || 0);
+
+            flavors[name].selections +=
+              Number(item.qty) || 0;
+          });
+        });
+      });
+
+      return Object.values(flavors)
+        .sort((a,b) => b.quantity - a.quantity);
+    };
+
+    const dailyFlavorRanking = getFlavorRankings(dailyOrders);
+    const weeklyFlavorRanking = getFlavorRankings(weeklyOrders);
+    const monthlyFlavorRanking = getFlavorRankings(monthlyOrders);
+
 
     // CREATE WORKBOOK AND ONE WORKSHEET
     const workbook = new ExcelJS.Workbook();
