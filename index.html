@@ -755,6 +755,40 @@ button:disabled{opacity:.5}
 </div>
 
 
+<!-- DASHBOARD BUTTON -->
+<button id="dashboardBtn" type="button" title="Dashboard" style="
+  position:fixed;
+  bottom:135px;
+  left:15px;
+  z-index:900;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  font-size:23px;
+  padding:0;
+  background:#000000;
+  border:1px solid #444444;
+  color:#e7ad3e;
+">
+  👤
+</button>
+<!-- DASHBOARD BUTTON -->
+<button id="dashboardBtn" type="button" title="Owner Dashboard" style="
+  position:fixed;
+  bottom:135px;
+  left:15px;
+  z-index:900;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  font-size:23px;
+  padding:0;
+  background:#000000;
+  border:1px solid #444444;
+  color:#e7ad3e;
+">
+  👤
+</button>
 
 <!-- SETTINGS BUTTON -->
 <button id="settingsBtn" type="button" style="
@@ -1148,7 +1182,51 @@ button:disabled{opacity:.5}
   </div>
   
 </section>
+<!-- OWNER DASHBOARD -->
+<section id="dashboardPage" class="hidden">
 
+  <div class="panel">
+    <h3>OWNER DASHBOARD</h3>
+    <p class="small">D' WINGS CAFE MANAGEMENT OVERVIEW</p>
+  </div>
+
+  <!-- DAILY SALES AND QUOTA -->
+  <div class="panel">
+    <h3>DAILY SALES & QUOTA</h3>
+    <div id="dashboardDailySales"></div>
+  </div>
+
+  <!-- EMPLOYEE ATTENDANCE -->
+  <div class="panel">
+    <h3>EMPLOYEE ATTENDANCE</h3>
+    <div id="dashboardAttendance"></div>
+  </div>
+
+  <!-- DAILY PAYROLL -->
+  <div class="panel">
+    <h3>DAILY EMPLOYEE PAYROLL</h3>
+    <div id="dashboardDailyPayroll"></div>
+  </div>
+
+  <!-- WEEKLY PAYROLL -->
+  <div class="panel">
+    <h3>WEEKLY PAYROLL</h3>
+    <div id="dashboardWeeklyPayroll"></div>
+  </div>
+
+  <!-- REST DAY REQUESTS -->
+  <div class="panel">
+    <h3>REST DAY REQUESTS</h3>
+    <div id="dashboardRestRequests"></div>
+  </div>
+
+  <!-- EMPLOYEE SCHEDULE -->
+  <div class="panel">
+    <h3>EMPLOYEE SCHEDULE CHART</h3>
+    <div id="dashboardSchedule"></div>
+  </div>
+
+</section>
 </div>
 </main>
   <div id="flavorModal" class="hidden">
@@ -3918,7 +3996,18 @@ items: cart.map(item=>({
   }
 
 currentUserRole = profile.role;
+// OWNER DASHBOARD ACCESS
+const dashboardBtn = document.getElementById("dashboardBtn");
 
+if(dashboardBtn){
+  dashboardBtn.disabled = currentUserRole !== "owner";
+
+  dashboardBtn.style.opacity =
+    currentUserRole === "owner" ? "1" : "0.45";
+
+  dashboardBtn.style.cursor =
+    currentUserRole === "owner" ? "pointer" : "not-allowed";
+}
 const exportBtn = document.getElementById("exportExcelBtn");
 
 if(exportBtn){
@@ -4474,7 +4563,13 @@ document.querySelector(".terminal-nav").style.display = "grid";
 
 document.getElementById("historyPage").classList.add("hidden");
 document.getElementById("reportPage").classList.add("hidden");
+document.getElementById("dashboardPage").classList.add("hidden");
 
+const dashboardBtn = document.getElementById("dashboardBtn");
+if(dashboardBtn){
+  dashboardBtn.disabled = true;
+  dashboardBtn.style.opacity = "0.45";
+}
 document.querySelectorAll(".terminal-nav button").forEach(button => {
   button.classList.toggle("active", button.dataset.page === "salesPage");
 });
@@ -4583,7 +4678,7 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
   button.addEventListener("click",()=>{
     const target = button.dataset.page;
 
-["salesPage","queuePage","historyPage","reportPage"].forEach(id=>{
+["salesPage","queuePage","historyPage","reportPage","dashboardPage"].forEach(id=>{
       document.getElementById(id).classList.toggle("hidden", id !== target);
     });
 
@@ -4592,7 +4687,22 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
     });
   });
 });
-  
+// OWNER DASHBOARD BUTTON
+document.getElementById("dashboardBtn").addEventListener("click", () => {
+
+  if(currentUserRole !== "owner") return;
+
+  ["salesPage", "queuePage", "historyPage", "reportPage"].forEach(id => {
+    document.getElementById(id).classList.add("hidden");
+  });
+
+  document.getElementById("dashboardPage").classList.remove("hidden");
+
+  document.querySelectorAll(".terminal-nav button").forEach(button => {
+    button.classList.remove("active");
+  });
+
+});  
 document.getElementById("discount").addEventListener("change", renderCart);
 document.getElementById("singlePaymentBtn").onclick = () => {
   document.getElementById("singlePaymentOptions").classList.remove("hidden");
