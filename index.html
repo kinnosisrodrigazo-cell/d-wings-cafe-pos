@@ -3291,6 +3291,89 @@ async function exportDailyReport(){
       rankingStart++;
     });
 
+    // BEST-SELLING WING FLAVORS
+    rankingStart += 1;
+
+    sheet.mergeCells(`A${rankingStart}:E${rankingStart}`);
+    sheet.getCell(`A${rankingStart}`).value =
+      "BEST-SELLING WING FLAVORS";
+
+    sheet.getCell(`A${rankingStart}`).font = {
+      bold:true,
+      color:{argb:"FFFFFFFF"}
+    };
+
+    sheet.getCell(`A${rankingStart}`).fill = {
+      type:"pattern",
+      pattern:"solid",
+      fgColor:{argb:black}
+    };
+
+    rankingStart++;
+
+    const flavorPeriods = [
+      ["DAILY",dailyFlavorRanking],
+      ["WEEKLY",weeklyFlavorRanking],
+      ["MONTHLY",monthlyFlavorRanking]
+    ];
+
+    flavorPeriods.forEach(([period,ranking]) => {
+
+      sheet.mergeCells(`A${rankingStart}:C${rankingStart}`);
+
+      sheet.getCell(`A${rankingStart}`).value =
+        `${period} BEST-SELLING FLAVORS`;
+
+      sheet.getCell(`A${rankingStart}`).font = {
+        bold:true,
+        color:{argb:"FFFFFFFF"}
+      };
+
+      sheet.getCell(`A${rankingStart}`).fill = {
+        type:"pattern",
+        pattern:"solid",
+        fgColor:{argb:black}
+      };
+
+      rankingStart++;
+
+      ["RANK","FLAVOR","QUANTITY / SELECTIONS"].forEach(
+        (heading,index) => {
+          const cell = sheet.getCell(rankingStart,index+1);
+          cell.value = heading;
+          cell.font = {
+            bold:true,
+            color:{argb:"FFFFFFFF"}
+          };
+          cell.fill = {
+            type:"pattern",
+            pattern:"solid",
+            fgColor:{argb:gold}
+          };
+        }
+      );
+
+      rankingStart++;
+
+      if(ranking.length === 0){
+        sheet.mergeCells(`A${rankingStart}:C${rankingStart}`);
+        sheet.getCell(`A${rankingStart}`).value =
+          "No flavor sales recorded";
+        rankingStart++;
+      } else {
+        ranking.forEach((flavor,index) => {
+
+          sheet.getCell(`A${rankingStart}`).value = index+1;
+          sheet.getCell(`B${rankingStart}`).value = flavor.name;
+          sheet.getCell(`C${rankingStart}`).value = flavor.quantity;
+
+          rankingStart++;
+        });
+      }
+
+      rankingStart++;
+    });
+
     // TRANSACTION TABLE
     rankingStart += 1;
 
