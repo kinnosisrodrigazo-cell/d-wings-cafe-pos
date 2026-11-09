@@ -2874,14 +2874,14 @@ async function findAttendanceEmployee(){
       const attendance = attendanceDoc.exists()
         ? attendanceDoc.data()
         : {};
-
-      if(type === "TIME IN"){
-
+      
 if(type === "TIME IN"){
 
   if(attendance.timeIn){
     throw new Error("ALREADY_IN");
   }
+
+      
 
   const shiftStart = employee.defaultShiftStart || "15:00";
 
