@@ -3234,6 +3234,28 @@ container.querySelectorAll(".order-queue-card").forEach(card => {
       String(seconds).padStart(2,"0");
   });
 }
+  async function startPreparingOrder(orderId){
+
+  const order = activeQueueOrders.find(item => item.id === orderId);
+
+  if(!order || order.servingStatus !== "PENDING" || order.preparing) return;
+
+  order.preparing = true;
+
+  try{
+    await updateDoc(doc(db, "orders", orderId), {
+      servingStatus: "PREPARING",
+      preparingAt: serverTimestamp(),
+      preparingBy: auth.currentUser?.email || "",
+      preparingByUid: auth.currentUser?.uid || ""
+    });
+
+  }catch(error){
+    console.error("Start preparing error:", error);
+    alert("Unable to start preparation. Please try again.");
+    order.preparing = false;
+  }
+}
 async function completeQueuedOrder(orderId){
 
   const order = activeQueueOrders.find(item => item.id === orderId);
