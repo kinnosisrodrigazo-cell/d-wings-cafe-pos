@@ -3506,50 +3506,61 @@ async function exportDailyReport(){
       monthlySales
     ];
 
-    // INSERT ALL SIX CHARTS INTO THE SAME WORKSHEET
-    const charts = [
-      ["DAILY SALES TREND",createChartImage(
-        "line",hourlyLabels,hourlySales,"Hourly Sales"
-      )],
-      ["WEEKLY SALES TREND",createChartImage(
-        "bar",weeklyLabels,weeklyValues,"Daily Sales"
-      )],
-      ["MONTHLY SALES TREND",createChartImage(
-        "line",monthlyLabels,monthlyValues,"Monthly Sales"
-      )],
-      ["BEST-SELLING CATEGORIES",createChartImage(
-        "bar",categories,categorySales,"Category Sales"
-      )],
-      ["PAYMENT METHOD BREAKDOWN",createChartImage(
-        "bar",paymentLabels,paymentValues,"Payment Sales"
-      )],
-      ["DAILY / WEEKLY / MONTHLY COMPARISON",createChartImage(
-        "bar",comparisonLabels,comparisonValues,"Sales Comparison"
-      )]
-    ];
 
-    charts.forEach(([chartTitle,imageData],index) => {
+// INSERT ALL SIX CHARTS BELOW THE TRANSACTION TABLE
+const charts = [
+  ["DAILY SALES TREND",createChartImage(
+    "line",hourlyLabels,hourlySales,"Hourly Sales"
+  )],
+  ["WEEKLY SALES TREND",createChartImage(
+    "bar",weeklyLabels,weeklyValues,"Daily Sales"
+  )],
+  ["MONTHLY SALES TREND",createChartImage(
+    "line",monthlyLabels,monthlyValues,"Monthly Sales"
+  )],
+  ["BEST-SELLING CATEGORIES",createChartImage(
+    "bar",categories,categorySales,"Category Sales"
+  )],
+  ["PAYMENT METHOD BREAKDOWN",createChartImage(
+    "bar",paymentLabels,paymentValues,"Payment Sales"
+  )],
+  ["DAILY / WEEKLY / MONTHLY COMPARISON",createChartImage(
+    "bar",comparisonLabels,comparisonValues,"Sales Comparison"
+  )]
+];
 
-      const titleRow = 1+(index*24);
-      const imageRow = titleRow+1;
+let chartRow = rankingStart + 2;
 
-      sheet.getCell(`K${titleRow}`).value = chartTitle;
-      sheet.getCell(`K${titleRow}`).font = {
-        bold:true,
-        color:{argb:gold},
-        size:12
-      };
+charts.forEach(([chartTitle,imageData]) => {
 
-      const imageId = workbook.addImage({
-        base64:imageData,
-        extension:"png"
-      });
+  sheet.mergeCells(`A${chartRow}:I${chartRow}`);
 
-      sheet.addImage(imageId,{
-        tl:{col:10,row:imageRow-1},
-        ext:{width:620,height:290}
-      });
-    });
+  const titleCell = sheet.getCell(`A${chartRow}`);
+  titleCell.value = chartTitle;
+  titleCell.font = {
+    bold:true,
+    color:{argb:"FFFFFFFF"},
+    size:12
+  };
+  titleCell.fill = {
+    type:"pattern",
+    pattern:"solid",
+    fgColor:{argb:black}
+  };
+
+  const imageId = workbook.addImage({
+    base64:imageData,
+    extension:"png"
+  });
+
+  sheet.addImage(imageId,{
+    tl:{col:0,row:chartRow},
+    ext:{width:900,height:420}
+  });
+
+  chartRow += 24;
+});
+
 
     // FINAL FORMATTING
     sheet.getColumn(1).width = 22;
