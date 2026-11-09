@@ -2877,14 +2877,22 @@ async function findAttendanceEmployee(){
 
     return null;
   }
-}
-  function calculateLateAttendance(timeIn, shiftStart, dailyRate){
+function calculateLateAttendance(timeIn, shiftStart, dailyRate){
 
   const [inHour, inMinute] = timeIn.split(":").map(Number);
   const [startHour, startMinute] = shiftStart.split(":").map(Number);
 
   const actualMinutes = inHour * 60 + inMinute;
   const scheduledMinutes = startHour * 60 + startMinute;
+
+  // No grace period
+  const lateMinutes = Math.max(
+    0,
+    actualMinutes - scheduledMinutes
+  );
+
+  // ₱1 deduction per late minute
+  const lateDeduction = lateMinutes * 1;
 
   return {
     lateMinutes,
