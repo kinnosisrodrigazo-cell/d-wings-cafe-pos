@@ -3111,8 +3111,9 @@ return Object.values(flavors)
     b.quantity - a.quantity ||
     a.name.localeCompare(b.name)
   );
+};
 
-    const dailyFlavorRanking = getFlavorRankings(dailyOrders);
+const dailyFlavorRanking = getFlavorRankings(dailyOrders);
     const weeklyFlavorRanking = getFlavorRankings(weeklyOrders);
     const monthlyFlavorRanking = getFlavorRankings(monthlyOrders);
 
