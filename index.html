@@ -2862,7 +2862,7 @@ async function findAttendanceEmployee(){
   // No grace period
   const lateMinutes = Math.max(0, actualMinutes - scheduledMinutes);
 
-  const ratePerMinute = Number(dailyRate) / 9 / 60;
+ const ratePerMinute = 1;
 
   const lateDeduction = lateMinutes * ratePerMinute;
 
