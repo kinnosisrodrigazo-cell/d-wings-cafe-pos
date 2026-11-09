@@ -563,7 +563,8 @@ button:disabled{opacity:.5}
 #activeOrderQueue {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 16px;
+  margin-top: 18px;
 }
 
 .order-queue-card {
@@ -574,7 +575,7 @@ button:disabled{opacity:.5}
   color: #fff;
   border: 1px solid #444;
   border-radius: 12px;
-  padding: 12px;
+  padding: 18px;
   touch-action: none;
   user-select: none;
   overflow: hidden;
@@ -2359,7 +2360,7 @@ async function loadOrderHistory(){
       const status = order.status || "COMPLETED";
 
       return `
-        <div class="panel" style="margin-top:12px">
+        <div class="panel" style="margin-top:18px; padding:18px">
           <div class="row">
             <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
 <strong>${escapeHTML(status)}</strong>
@@ -2714,7 +2715,7 @@ const netSales = completedOrders.reduce(
       <h3>VOID ORDERS</h3>
 
       ${voidOrders.length ? voidOrders.map(order => `
-        <div class="panel">
+<div class="panel" style="margin-top:18px; padding:18px">
           <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
           <p class="small">
             ${escapeHTML(order.customerName || "Walk-in")}
