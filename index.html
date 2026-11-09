@@ -2877,18 +2877,31 @@ async function findAttendanceEmployee(){
 
       if(type === "TIME IN"){
 
-        if(attendance.timeIn){
-          throw new Error("ALREADY_IN");
-        }
+if(type === "TIME IN"){
 
-        transaction.set(attendanceRef, {
-          employeeId: employee.id,
-          employeeName: employee.name,
-          date: date,
-          timeIn: time,
-          timeOut: null,
-          createdAt: serverTimestamp()
-        });
+  if(attendance.timeIn){
+    throw new Error("ALREADY_IN");
+  }
+
+  const shiftStart = employee.defaultShiftStart || "15:00";
+
+  const lateInfo = calculateLateAttendance(
+    time,
+    shiftStart,
+    employee.dailyRate
+  );
+
+  transaction.set(attendanceRef, {
+    employeeId: employee.id,
+    employeeName: employee.name,
+    date: date,
+    timeIn: time,
+    timeOut: null,
+    scheduledStart: shiftStart,
+    lateMinutes: lateInfo.lateMinutes,
+    lateDeduction: lateInfo.lateDeduction,
+    createdAt: serverTimestamp()
+  });
 
       }else if(type === "TIME OUT"){
 
