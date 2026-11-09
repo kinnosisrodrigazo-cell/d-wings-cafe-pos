@@ -1118,6 +1118,61 @@ button:disabled{opacity:.5}
 </section>
 
 <section id="historyPage" class="hidden">
+
+  <!-- EMPLOYEE ATTENDANCE PAGE -->
+<section id="employeeAttendancePage" class="hidden">
+
+  <div class="panel">
+    <h3>EMPLOYEE ATTENDANCE</h3>
+
+    <div id="dashboardAttendance">
+
+      <div style="margin-bottom:15px">
+        <label>SCAN EMPLOYEE BARCODE</label>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input
+            type="text"
+            id="attendanceBarcodeInput"
+            placeholder="Scan barcode here"
+            autocomplete="off"
+            style="flex:1;min-width:180px;padding:12px"
+          >
+
+          <button type="button" id="startAttendanceScanner">
+            OPEN CAMERA
+          </button>
+        </div>
+
+        <div id="attendanceScanner" style="display:none;margin-top:12px"></div>
+      </div>
+
+      <div class="row" style="gap:10px">
+        <button type="button" id="timeInBtn" style="flex:1">
+          F1 - TIME IN
+        </button>
+
+        <button type="button" id="timeOutBtn" style="flex:1">
+          F2 - TIME OUT
+        </button>
+      </div>
+
+      <p id="attendanceMessage" class="small">
+        Scan an employee barcode to record attendance.
+      </p>
+
+      <hr>
+
+      <h4>TODAY'S ATTENDANCE</h4>
+
+      <div id="todayAttendanceList">
+        <p class="small">Attendance records will appear here.</p>
+      </div>
+
+    </div>
+  </div>
+
+</section>
   <!-- ORDER HISTORY -->
   <div class="panel">
     <h3>ORDER HISTORY</h3>
@@ -1186,56 +1241,6 @@ button:disabled{opacity:.5}
   <p class="small">Loading daily sales...</p>
 </div>
   </div>
-
-<!-- EMPLOYEE ATTENDANCE -->
-<div class="panel">
-  <h3>EMPLOYEE ATTENDANCE</h3>
-
-  <div id="dashboardAttendance">
-
-    <div style="margin-bottom:15px">
-      <label>SCAN EMPLOYEE BARCODE</label>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input
-          type="text"
-          id="attendanceBarcodeInput"
-          placeholder="Scan barcode here"
-          autocomplete="off"
-          style="flex:1;min-width:180px;padding:12px"
-        >
-
-        <button type="button" id="startAttendanceScanner">
-          OPEN CAMERA
-        </button>
-      </div>
-
-      <div id="attendanceScanner" style="display:none;margin-top:12px"></div>
-    </div>
-
-    <div class="row" style="gap:10px">
-      <button type="button" id="timeInBtn" style="flex:1">
-        F1 - TIME IN
-      </button>
-
-      <button type="button" id="timeOutBtn" style="flex:1">
-        F2 - TIME OUT
-      </button>
-    </div>
-
-    <p id="attendanceMessage" class="small">
-      Scan an employee barcode to record attendance.
-    </p>
-
-    <hr>
-
-    <h4>TODAY'S ATTENDANCE</h4>
-    <div id="todayAttendanceList">
-      <p class="small">Attendance records will appear here.</p>
-    </div>
-
-  </div>
-</div>
 
   <!-- DAILY PAYROLL -->
   <div class="panel">
@@ -5079,18 +5084,36 @@ document.getElementById("onlineStaff").innerHTML = "";
 document.getElementById("orderHistoryBtn").onclick = loadOrderHistory;
 
 document.getElementById("viewReportBtn").onclick = loadDailyReport;
-  document.getElementById("exportExcelBtn").onclick = exportDailyReport;
-  document.querySelectorAll(".terminal-nav button").forEach(button=>{
+document.querySelectorAll(".terminal-nav button").forEach(button=>{
   button.addEventListener("click",()=>{
+
     const target = button.dataset.page;
 
-["salesPage","queuePage","historyPage","reportPage","dashboardPage"].forEach(id=>{
-      document.getElementById(id).classList.toggle("hidden", id !== target);
+    [
+      "salesPage",
+      "queuePage",
+      "historyPage",
+      "reportPage",
+      "dashboardPage",
+      "employeeAttendancePage"
+    ].forEach(id=>{
+
+      const page = document.getElementById(id);
+
+      if(page){
+        page.classList.toggle("hidden", id !== target);
+      }
+
     });
 
     document.querySelectorAll(".terminal-nav button").forEach(navButton=>{
       navButton.classList.toggle("active", navButton === button);
     });
+
+    if(target === "employeeAttendancePage"){
+      loadTodayAttendance();
+    }
+
   });
 });
 // OWNER DASHBOARD BUTTON
