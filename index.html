@@ -4680,15 +4680,6 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
 // OWNER DASHBOARD BUTTON
 document.getElementById("dashboardBtn").addEventListener("click", () => {
 
-document.getElementById("dashboardBtn").style.zIndex = "999999";
-
-alert(
-  "Button position: " +
-  document.getElementById("dashboardBtn").getBoundingClientRect().left +
-  ", " +
-  document.getElementById("dashboardBtn").getBoundingClientRect().top
-);
-
   if(currentUserRole !== "owner") return;
 
   ["salesPage", "queuePage", "historyPage", "reportPage"].forEach(id => {
