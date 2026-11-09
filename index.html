@@ -2806,166 +2806,802 @@ updateSalesVisibility();
       "<p class='small'>Unable to load daily report. Please try again.</p>";
   }
 }
-  function exportDailyReport(){
+async function exportDailyReport(){
 
   if(currentUserRole !== "owner"){
     alert("Access denied. Only the owner can export reports.");
     return;
   }
 
-  const selectedDate =
-    document.getElementById("reportDate").value;
+  const selectedDate = document.getElementById("reportDate").value;
 
   if(!selectedDate){
     alert("Please select a report date.");
     return;
   }
-    if(reportDateLoaded !== selectedDate){
-  alert("Please click VIEW DAILY REPORT for this date before exporting.");
-  return;
-}
 
-  if(typeof XLSX === "undefined"){
-    alert("Excel library not loaded. Please refresh the page.");
+  if(reportDateLoaded !== selectedDate){
+    alert("Please click VIEW DAILY REPORT for this date before exporting.");
     return;
   }
 
-  const completedOrders = reportOrders.filter(order =>
-    (order.status || "COMPLETED") !== "VOID"
-  );
+  if(typeof ExcelJS === "undefined" ||
+     typeof Chart === "undefined" ||
+     typeof ChartDataLabels === "undefined"){
+    alert("Excel or chart libraries are not loaded. Please refresh the page.");
+    return;
+  }
 
-  const voidOrders = reportOrders.filter(order =>
-    (order.status || "COMPLETED") === "VOID"
-  );
-  const paymentTotals = completedOrders.reduce((totals, order) => {
-    const method = order.paymentMethod || "";
+  try{
 
-    if (order.firstPaymentMethod && order.secondPaymentMethod) {
-      const payments = [
-        [order.firstPaymentMethod, order.firstPaymentAmount],
-        [order.secondPaymentMethod, order.secondPaymentAmount]
-      ];
+    // DATE HELPERS
+    const parseDate = value => {
+      const [year,month,day] = value.split("-").map(Number);
+      return new Date(year,month-1,day);
+    };
 
-      payments.forEach(([paymentMethod, amount]) => {
-        const received = Number(amount) || 0;
+    const dateString = date => {
+      return [
+        date.getFullYear(),
+        String(date.getMonth()+1).padStart(2,"0"),
+        String(date.getDate()).padStart(2,"0")
+      ].join("-");
+    };
 
-        if (paymentMethod === "CASH") totals.cash += received;
-        if (paymentMethod === "GCASH") totals.gcash += received;
-        if (paymentMethod === "PAYMAYA") totals.paymaya += received;
+    const addDays = (date,days) => {
+      const result = new Date(date);
+      result.setDate(result.getDate()+days);
+      return result;
+    };
+
+    const selected = parseDate(selectedDate);
+
+    const monday = new Date(selected);
+    monday.setDate(selected.getDate()-((selected.getDay()+6)%7));
+
+    const monthStart = new Date(
+      selected.getFullYear(),
+      selected.getMonth(),
+      1
+    );
+
+    const sixMonthsStart = new Date(
+      selected.getFullYear(),
+      selected.getMonth()-5,
+      1
+    );
+
+    // RETRIEVE HISTORICAL ORDERS FROM FIRESTORE
+    const historyQuery = query(
+      collection(db,"orders"),
+      where("orderDate",">=",dateString(sixMonthsStart)),
+      where("orderDate","<=",selectedDate)
+    );
+
+    const historySnapshot = await getDocs(historyQuery);
+
+    const historyOrders = historySnapshot.docs.map(orderDoc => ({
+      id: orderDoc.id,
+      ...orderDoc.data()
+    }));
+
+    // USE THE ALREADY LOADED DAILY ORDERS FOR THE SELECTED DATE
+    const allOrders = new Map();
+
+    historyOrders.forEach(order => {
+      allOrders.set(order.id,order);
+    });
+
+    reportOrders.forEach(order => {
+      allOrders.set(order.id,order);
+    });
+
+    const orders = Array.from(allOrders.values());
+
+    const isCompleted = order =>
+      (order.status || "COMPLETED") !== "VOID";
+
+    const isVoid = order =>
+      (order.status || "COMPLETED") === "VOID";
+
+    const dailyOrders = orders.filter(order =>
+      order.orderDate === selectedDate
+    );
+
+    const weeklyOrders = orders.filter(order =>
+      order.orderDate >= dateString(monday) &&
+      order.orderDate <= selectedDate
+    );
+
+    const monthlyOrders = orders.filter(order =>
+      order.orderDate >= dateString(monthStart) &&
+      order.orderDate <= selectedDate
+    );
+
+    const completedOrders = dailyOrders.filter(isCompleted);
+    const voidOrders = dailyOrders.filter(isVoid);
+
+    const sumSales = list => list
+      .filter(isCompleted)
+      .reduce((sum,order) => sum+(Number(order.total)||0),0);
+
+    const dailySales = sumSales(dailyOrders);
+    const weeklySales = sumSales(weeklyOrders);
+    const monthlySales = sumSales(monthlyOrders);
+
+    const incentive = getDailyIncentive(selectedDate,dailySales);
+
+    // PAYMENT TOTALS
+    const paymentTotals = {
+      CASH: 0,
+      GCASH: 0,
+      PAYMAYA: 0
+    };
+
+    completedOrders.forEach(order => {
+
+      if(order.firstPaymentMethod && order.secondPaymentMethod){
+
+        [
+          [order.firstPaymentMethod,order.firstPaymentAmount],
+          [order.secondPaymentMethod,order.secondPaymentAmount]
+        ].forEach(([method,amount]) => {
+          if(paymentTotals[method] !== undefined){
+            paymentTotals[method] += Number(amount)||0;
+          }
+        });
+
+      }else{
+
+        const method = order.paymentMethod || "";
+
+        if(paymentTotals[method] !== undefined){
+          paymentTotals[method] += Number(order.total)||0;
+        }
+      }
+    });
+
+    // FORMAT HELPERS
+    const peso = amount =>
+      "₱"+(Number(amount)||0).toLocaleString("en-PH",{
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
       });
 
-    } else if (method === "CASH") {
-      totals.cash += Number(order.cashReceived) || 0;
-    } else if (method === "GCASH") {
-      totals.gcash += Number(order.total) || 0;
-    } else if (method === "PAYMAYA") {
-      totals.paymaya += Number(order.total) || 0;
+    const formatTime = value => {
+      if(!value) return "";
+
+      const date = value.toDate
+        ? value.toDate()
+        : new Date(value);
+
+      return isNaN(date.getTime())
+        ? ""
+        : date.toLocaleString("en-PH");
+    };
+
+    const formatDuration = seconds => {
+      if(seconds === null || seconds === undefined) return "";
+
+      const total = Number(seconds)||0;
+      const hours = Math.floor(total/3600);
+      const minutes = Math.floor((total%3600)/60);
+      const remaining = total%60;
+
+      return (
+        String(hours).padStart(2,"0")+":"+
+        String(minutes).padStart(2,"0")+":"+
+        String(remaining).padStart(2,"0")
+      );
+    };
+
+    // PRODUCT CATEGORY LOOKUP
+    const categories = [
+      "Wings",
+      "Fries",
+      "Floats",
+      "Drinks",
+      "Extras",
+      "Sandwich",
+      "Chicken Burger"
+    ];
+
+    const getCategory = productName => {
+      const product = menu.find(item =>
+        item.name.toLowerCase() ===
+        String(productName||"").toLowerCase()
+      );
+
+      return product ? product.category : "Other";
+    };
+
+    // BEST SELLER CALCULATIONS
+    const getRankings = orderList => {
+
+      const products = {};
+
+      orderList.filter(isCompleted).forEach(order => {
+
+        const items = order.items || [];
+        const subtotal = Number(order.subtotal)||0;
+        const discount = Number(order.discountAmount)||0;
+
+        items.forEach(item => {
+
+          const name = item.name || "Unknown Product";
+          const qty = Number(item.qty)||0;
+          const price = Number(item.price)||0;
+          const lineSubtotal = qty*price;
+
+          const allocatedDiscount = subtotal > 0
+            ? discount*(lineSubtotal/subtotal)
+            : 0;
+
+          const sales = lineSubtotal-allocatedDiscount;
+          const category = getCategory(name);
+
+          const key = category+"|"+name;
+
+          if(!products[key]){
+            products[key] = {
+              category,
+              name,
+              qty: 0,
+              sales: 0
+            };
+          }
+
+          products[key].qty += qty;
+          products[key].sales += sales;
+        });
+      });
+
+      return Object.values(products);
+    };
+
+    const dailyRanking = getRankings(dailyOrders);
+    const weeklyRanking = getRankings(weeklyOrders);
+    const monthlyRanking = getRankings(monthlyOrders);
+
+    // CREATE WORKBOOK AND ONE WORKSHEET
+    const workbook = new ExcelJS.Workbook();
+
+    workbook.creator = "D' Wings Cafe";
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet("Sales Report",{
+      views: [{state:"frozen",ySplit:2}]
+    });
+
+    sheet.columns = [
+      {width:15},
+      {width:13},
+      {width:30},
+      {width:13},
+      {width:18},
+      {width:15},
+      {width:13},
+      {width:15},
+      {width:15},
+      {width:22},
+      {width:22},
+      {width:19},
+      {width:19},
+      {width:17},
+      {width:18},
+      {width:20},
+      {width:20}
+    ];
+
+    const gold = "D4AF37";
+    const black = "171717";
+    const lightGold = "FFF2CC";
+
+    // REPORT HEADER
+    sheet.mergeCells("A1:I1");
+
+    const titleCell = sheet.getCell("A1");
+    titleCell.value = "D' WINGS CAFE | SALES PERFORMANCE REPORT";
+    titleCell.font = {
+      bold:true,
+      size:18,
+      color:{argb:"FFFFFFFF"}
+    };
+    titleCell.fill = {
+      type:"pattern",
+      pattern:"solid",
+      fgColor:{argb:black}
+    };
+    titleCell.alignment = {
+      horizontal:"center",
+      vertical:"middle"
+    };
+
+    sheet.getRow(1).height = 35;
+
+    sheet.mergeCells("A2:I2");
+    sheet.getCell("A2").value =
+      "REPORT DATE: "+selectedDate+
+      "     |     GENERATED: "+new Date().toLocaleString("en-PH");
+
+    sheet.getCell("A2").font = {
+      bold:true,
+      color:{argb:gold}
+    };
+
+    // DAILY SUMMARY
+    const summaryRows = [
+      ["DAILY SALES SUMMARY",""],
+      ["Report Date",selectedDate],
+      ["Completed Orders",completedOrders.length],
+      ["VOID Orders",voidOrders.length],
+      ["Net Sales",dailySales],
+      ["Cash Sales",paymentTotals.CASH],
+      ["GCash Sales",paymentTotals.GCASH],
+      ["PayMaya Sales",paymentTotals.PAYMAYA],
+      ["Daily Incentive",incentive],
+      ["Weekly Sales (Monday to Report Date)",weeklySales],
+      ["Monthly Sales (1st to Report Date)",monthlySales]
+    ];
+
+    let rowNumber = 4;
+
+    summaryRows.forEach((row,index) => {
+      const excelRow = sheet.getRow(rowNumber+index);
+
+      excelRow.getCell(1).value = row[0];
+      excelRow.getCell(2).value = row[1];
+
+      if(index===0){
+        excelRow.font = {bold:true,color:{argb:"FFFFFFFF"}};
+        excelRow.fill = {
+          type:"pattern",
+          pattern:"solid",
+          fgColor:{argb:black}
+        };
+      }else{
+        excelRow.getCell(1).font = {bold:true};
+      }
+
+      if(typeof row[1] === "number"){
+        excelRow.getCell(2).numFmt = '"₱"#,##0.00';
+      }
+    });
+
+    // BEST SELLER RANKINGS
+    let rankingStart = 17;
+
+    sheet.mergeCells(`A${rankingStart}:E${rankingStart}`);
+    sheet.getCell(`A${rankingStart}`).value =
+      "BEST SELLERS BY PERIOD AND CATEGORY";
+
+    sheet.getCell(`A${rankingStart}`).font = {
+      bold:true,
+      color:{argb:"FFFFFFFF"}
+    };
+
+    sheet.getCell(`A${rankingStart}`).fill = {
+      type:"pattern",
+      pattern:"solid",
+      fgColor:{argb:black}
+    };
+
+    rankingStart++;
+
+    const rankingPeriods = [
+      ["DAILY",dailyRanking],
+      ["WEEKLY",weeklyRanking],
+      ["MONTHLY",monthlyRanking]
+    ];
+
+    rankingPeriods.forEach(([period,ranking]) => {
+
+      const periodRow = sheet.getRow(rankingStart++);
+      periodRow.getCell(1).value = period+" BEST SELLERS";
+      periodRow.getCell(1).font = {
+        bold:true,
+        color:{argb:gold}
+      };
+
+      const header = sheet.getRow(rankingStart++);
+      ["CATEGORY","PRODUCT","QUANTITY SOLD","SALES AMOUNT"].forEach(
+        (value,index) => {
+          header.getCell(index+1).value = value;
+          header.getCell(index+1).font = {bold:true};
+          header.getCell(index+1).fill = {
+            type:"pattern",
+            pattern:"solid",
+            fgColor:{argb:lightGold}
+          };
+        }
+      );
+
+      categories.forEach(category => {
+
+        const topProducts = ranking
+          .filter(item => item.category === category)
+          .sort((a,b) => b.qty-a.qty)
+          .slice(0,5);
+
+        topProducts.forEach(item => {
+          const row = sheet.getRow(rankingStart++);
+
+          row.getCell(1).value = category;
+          row.getCell(2).value = item.name;
+          row.getCell(3).value = item.qty;
+          row.getCell(4).value = item.sales;
+          row.getCell(4).numFmt = '"₱"#,##0.00';
+        });
+      });
+
+      rankingStart++;
+    });
+
+    // TRANSACTION TABLE
+    rankingStart += 1;
+
+    sheet.mergeCells(`A${rankingStart}:Q${rankingStart}`);
+    sheet.getCell(`A${rankingStart}`).value =
+      "DAILY TRANSACTION DETAILS";
+
+    sheet.getCell(`A${rankingStart}`).font = {
+      bold:true,
+      color:{argb:"FFFFFFFF"}
+    };
+
+    sheet.getCell(`A${rankingStart}`).fill = {
+      type:"pattern",
+      pattern:"solid",
+      fgColor:{argb:black}
+    };
+
+    rankingStart++;
+
+    const transactionHeaders = [
+      "DATE",
+      "ORDER NO.",
+      "PRODUCT",
+      "QTY",
+      "PAYMENT METHOD",
+      "SALE PRICE",
+      "DISCOUNT",
+      "VOID",
+      "TOTAL SALES",
+      "CUSTOMER NAME",
+      "FLAVORS",
+      "ORDER TIME",
+      "COMPLETION TIME",
+      "SERVING DURATION",
+      "ORDER TYPE",
+      "ORDER STATUS",
+      "RESTORATION TIME"
+    ];
+
+    const headerRow = sheet.getRow(rankingStart++);
+
+    transactionHeaders.forEach((header,index) => {
+      const cell = headerRow.getCell(index+1);
+      cell.value = header;
+      cell.font = {bold:true,color:{argb:"FFFFFFFF"}};
+      cell.fill = {
+        type:"pattern",
+        pattern:"solid",
+        fgColor:{argb:black}
+      };
+      cell.alignment = {horizontal:"center",vertical:"middle"};
+    });
+
+    // TRANSACTION DATA
+    dailyOrders.forEach(order => {
+
+      const items = order.items || [];
+      const subtotal = Number(order.subtotal)||0;
+      const discount = Number(order.discountAmount)||0;
+      const voided = isVoid(order);
+
+      items.forEach(item => {
+
+        const qty = Number(item.qty)||0;
+        const price = Number(item.price)||0;
+        const lineSubtotal = qty*price;
+
+        const allocatedDiscount = subtotal > 0
+          ? discount*(lineSubtotal/subtotal)
+          : 0;
+
+        const lineTotal = voided
+          ? 0
+          : lineSubtotal-allocatedDiscount;
+
+        const row = sheet.getRow(rankingStart++);
+
+        const values = [
+          order.orderDate||selectedDate,
+          order.orderNumber||"LEGACY",
+          item.name||"",
+          qty,
+          order.paymentMethod||(
+            order.firstPaymentMethod && order.secondPaymentMethod
+              ? "SPLIT"
+              : ""
+          ),
+          price,
+          allocatedDiscount,
+          voided ? "YES" : "NO",
+          lineTotal,
+          order.customerName||"Walk-in",
+          (item.flavors||[]).join(", "),
+          formatTime(order.orderTime||order.createdAt),
+          formatTime(order.completedAt),
+          formatDuration(order.servingDuration),
+          order.orderType||"",
+          order.servingStatus||"",
+          formatTime(order.restoredAt)
+        ];
+
+        values.forEach((value,index) => {
+          row.getCell(index+1).value = value;
+        });
+
+        [6,7,9].forEach(column => {
+          row.getCell(column).numFmt = '"₱"#,##0.00';
+        });
+
+        if(voided){
+          row.eachCell(cell => {
+            cell.font = {color:{argb:"FFFF0000"}};
+          });
+        }
+      });
+    });
+
+    // CHART DATA
+    const chartCanvas = document.createElement("canvas");
+    chartCanvas.width = 900;
+    chartCanvas.height = 420;
+
+    const pesoLabel = value => peso(value);
+
+    const createChartImage = (type,labels,data,label) => {
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 900;
+      canvas.height = 420;
+
+      const chart = new Chart(canvas,{
+        type,
+        data:{
+          labels,
+          datasets:[{
+            label,
+            data,
+            backgroundColor:
+              type==="line" ? "rgba(212,175,55,0.20)" : gold,
+            borderColor:gold,
+            borderWidth:2,
+            fill:type==="line",
+            tension:0.3
+          }]
+        },
+        options:{
+          responsive:false,
+          animation:false,
+          plugins:{
+            legend:{display:true},
+            datalabels:{
+              display:true,
+              color:black,
+              anchor:"end",
+              align:"top",
+              formatter:value => pesoLabel(value),
+              font:{weight:"bold",size:10}
+            }
+          },
+          scales:{
+            y:{
+              beginAtZero:true,
+              ticks:{
+                callback:value => pesoLabel(value)
+              }
+            }
+          }
+        }
+      });
+
+      const imageData = chart.toBase64Image();
+      chart.destroy();
+
+      return imageData;
+    };
+
+    // DAILY TREND: HOURLY SALES
+    const hourlyLabels = Array.from({length:24},(_,hour) =>
+      String(hour).padStart(2,"0")+":00"
+    );
+
+    const hourlySales = Array(24).fill(0);
+
+    completedOrders.forEach(order => {
+      const timestamp = order.orderTime || order.createdAt;
+
+      if(!timestamp) return;
+
+      const date = timestamp.toDate
+        ? timestamp.toDate()
+        : new Date(timestamp);
+
+      if(!isNaN(date.getTime())){
+        const hour = date.getHours();
+        hourlySales[hour] += Number(order.total)||0;
+      }
+    });
+
+    // WEEKLY TREND: DAILY SALES
+    const weeklyLabels = [];
+    const weeklyValues = [];
+
+    for(let i=0;i<7;i++){
+      const day = addDays(monday,i);
+      const key = dateString(day);
+
+      weeklyLabels.push(
+        day.toLocaleDateString("en-PH",{
+          month:"short",
+          day:"numeric"
+        })
+      );
+
+      weeklyValues.push(
+        sumSales(orders.filter(order => order.orderDate===key))
+      );
     }
 
-    return totals;
-  }, {
-    cash: 0,
-    gcash: 0,
-    paymaya: 0
-  });
-  const netSales = completedOrders.reduce(
-    (sum, order) => sum + (Number(order.total) || 0),
-    0
-  );
+    // MONTHLY TREND: LAST SIX MONTHS
+    const monthlyLabels = [];
+    const monthlyValues = [];
 
-  const incentive = getDailyIncentive(selectedDate, netSales);
+    for(let i=5;i>=0;i--){
+      const monthDate = new Date(
+        selected.getFullYear(),
+        selected.getMonth()-i,
+        1
+      );
 
-const summarySheet = XLSX.utils.aoa_to_sheet([
-    ["D' WINGS CAFE - DAILY SALES REPORT"],
-    ["Date", selectedDate],
-    ["Completed Orders", completedOrders.length],
-    ["VOID Orders", voidOrders.length],
-    ["NET SALES", netSales],
-    ["CASH RECEIVED", paymentTotals.cash],
-    ["GCASH RECEIVED", paymentTotals.gcash],
-    ["PAYMAYA RECEIVED", paymentTotals.paymaya],
-    ["INCENTIVE", incentive]
-  ]);
-const formatReportTime = value =>
-  value?.toDate
-    ? value.toDate().toLocaleString("en-PH")
-    : "";
+      const key = dateString(monthDate).slice(0,7);
 
-const formatServingDuration = seconds => {
-  if(seconds === null || seconds === undefined) return "";
+      monthlyLabels.push(
+        monthDate.toLocaleDateString("en-PH",{
+          month:"short",
+          year:"numeric"
+        })
+      );
 
-  const totalSeconds = Number(seconds) || 0;
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const remainingSeconds = totalSeconds % 60;
+      monthlyValues.push(
+        sumSales(orders.filter(order =>
+          (order.orderDate||"").startsWith(key)
+        ))
+      );
+    }
 
-  return (
-    String(hours).padStart(2,"0") + ":" +
-    String(minutes).padStart(2,"0") + ":" +
-    String(remainingSeconds).padStart(2,"0")
-  );
-};
- const transactionRows = reportOrders.flatMap(order => {
-  const items = order.items || [];
-  const subtotal = Number(order.subtotal) || 0;
-  const discountAmount = Number(order.discountAmount) || 0;
-  const orderStatus = order.status || "COMPLETED";
+    // CATEGORY SALES
+    const categorySales = categories.map(category =>
+      monthlyRanking
+        .filter(item => item.category===category)
+        .reduce((sum,item) => sum+item.sales,0)
+    );
 
-  return items.map(item => {
-    const qty = Number(item.qty) || 0;
-    const salePrice = Number(item.price) || 0;
-    const lineSubtotal = salePrice * qty;
+    // PAYMENT BREAKDOWN
+    const paymentLabels = ["CASH","GCASH","PAYMAYA"];
+    const paymentValues = [
+      paymentTotals.CASH,
+      paymentTotals.GCASH,
+      paymentTotals.PAYMAYA
+    ];
 
-    const allocatedDiscount = subtotal > 0
-      ? discountAmount * (lineSubtotal / subtotal)
-      : 0;
+    // DAILY / WEEKLY / MONTHLY COMPARISON
+    const comparisonLabels = ["DAILY","WEEKLY","MONTHLY"];
+    const comparisonValues = [
+      dailySales,
+      weeklySales,
+      monthlySales
+    ];
 
-    const lineTotal = lineSubtotal - allocatedDiscount;
+    // INSERT ALL SIX CHARTS INTO THE SAME WORKSHEET
+    const charts = [
+      ["DAILY SALES TREND",createChartImage(
+        "line",hourlyLabels,hourlySales,"Hourly Sales"
+      )],
+      ["WEEKLY SALES TREND",createChartImage(
+        "bar",weeklyLabels,weeklyValues,"Daily Sales"
+      )],
+      ["MONTHLY SALES TREND",createChartImage(
+        "line",monthlyLabels,monthlyValues,"Monthly Sales"
+      )],
+      ["BEST-SELLING CATEGORIES",createChartImage(
+        "bar",categories,categorySales,"Category Sales"
+      )],
+      ["PAYMENT METHOD BREAKDOWN",createChartImage(
+        "bar",paymentLabels,paymentValues,"Payment Sales"
+      )],
+      ["DAILY / WEEKLY / MONTHLY COMPARISON",createChartImage(
+        "bar",comparisonLabels,comparisonValues,"Sales Comparison"
+      )]
+    ];
 
-    return {
-      "DATE": order.orderDate || selectedDate,
-      "ORDER NO.": order.orderNumber || "LEGACY",
-      "PRODUCT": item.name || "",
-      "FLAVORS": (item.flavors || []).join(", "),
-      "QTY": qty,
-      "PAYMENT METHOD": order.paymentMethod || "",
-      "SALE PRICE": salePrice,
-      "DISCOUNT": allocatedDiscount,
- "VOID/COMPLETED": orderStatus,
-"TOTAL SALES": orderStatus === "VOID" ? 0 : lineTotal,
-"ORDER TIME": formatReportTime(order.orderTime || order.createdAt),
-"COMPLETION TIME": formatReportTime(order.completedAt),
-"SERVING DURATION": formatServingDuration(order.servingDuration),
-"ORDER TYPE": order.orderType || "",
-"ORDER STATUS": order.servingStatus || "",
-"RESTORATION TIME": formatReportTime(order.restoredAt),
-"STAFF": order.completedBy || order.cashierEmail || ""
-    };
-  });
-});
+    charts.forEach(([chartTitle,imageData],index) => {
 
+      const titleRow = 1+(index*24);
+      const imageRow = titleRow+1;
 
-  const workbook = XLSX.utils.book_new();
+      sheet.getCell(`K${titleRow}`).value = chartTitle;
+      sheet.getCell(`K${titleRow}`).font = {
+        bold:true,
+        color:{argb:gold},
+        size:12
+      };
 
-  const transactionsSheet =
-    XLSX.utils.json_to_sheet(transactionRows);
+      const imageId = workbook.addImage({
+        base64:imageData,
+        extension:"png"
+      });
 
-  XLSX.utils.book_append_sheet(
-    workbook,
-    summarySheet,
-    "Daily Summary"
-  );
+      sheet.addImage(imageId,{
+        tl:{col:10,row:imageRow-1},
+        ext:{width:620,height:290}
+      });
+    });
 
-  XLSX.utils.book_append_sheet(
-    workbook,
-    transactionsSheet,
-    "Transactions"
-  );
+    // FINAL FORMATTING
+    sheet.getColumn(1).width = 22;
+    sheet.getColumn(2).width = 22;
+    sheet.getColumn(3).width = 32;
+    sheet.getColumn(10).width = 24;
+    sheet.getColumn(11).width = 24;
+    sheet.getColumn(12).width = 24;
+    sheet.getColumn(13).width = 24;
+    sheet.getColumn(14).width = 20;
+    sheet.getColumn(15).width = 20;
+    sheet.getColumn(16).width = 20;
+    sheet.getColumn(17).width = 22;
 
-  XLSX.writeFile(
-    workbook,
-    `D_Wings_Daily_Report_${selectedDate}.xlsx`
-  );
+    sheet.eachRow(row => {
+      row.eachCell(cell => {
+        cell.alignment = {
+          vertical:"middle",
+          wrapText:true
+        };
+      });
+    });
+
+    // DOWNLOAD EXCEL FILE
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer],{
+      type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `D_Wings_Sales_Report_${selectedDate}.xlsx`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+    alert("D' Wings Cafe Excel report exported successfully!");
+
+  }catch(error){
+
+    console.error("Excel report export error:",error);
+
+    alert(
+      "Unable to export the Excel report. Please check the browser Console for details."
+    );
+  }
 }
 async function saveSale(){
   if(isSavingSale || saleSaved) return;
