@@ -1176,7 +1176,9 @@ button:disabled{opacity:.5}
   <!-- DAILY SALES AND QUOTA -->
   <div class="panel">
     <h3>DAILY SALES & QUOTA</h3>
-    <div id="dashboardDailySales"></div>
+    <div id="dashboardDailySales">
+  <p class="small">Loading daily sales...</p>
+</div>
   </div>
 
   <!-- EMPLOYEE ATTENDANCE -->
@@ -2634,7 +2636,86 @@ function getDailyIncentiveInfo(date, sales){
 }
 
 let salesAmountsVisible = false;
+async function loadDashboardDailySales(){
 
+  const dashboardSalesEl =
+    document.getElementById("dashboardDailySales");
+
+  if(!dashboardSalesEl) return;
+
+  dashboardSalesEl.innerHTML =
+    "<p class='small'>Loading daily sales...</p>";
+
+  try{
+
+    const today = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Asia/Manila"
+    });
+
+    const ordersQuery = query(
+      collection(db, "orders"),
+      where("orderDate", "==", today)
+    );
+
+    const snapshot = await getDocs(ordersQuery);
+
+    const todayOrders = snapshot.docs.map(doc => doc.data());
+
+    const completedOrders = todayOrders.filter(order =>
+      (order.status || "COMPLETED") !== "VOID"
+    );
+
+    const netSales = completedOrders.reduce(
+      (sum, order) => sum + (Number(order.total) || 0),
+      0
+    );
+
+    const incentiveInfo =
+      getDailyIncentiveInfo(today, netSales);
+
+    dashboardSalesEl.innerHTML = `
+      <p class="small">TODAY'S SALES</p>
+
+      <h2 style="color:#e7ad3e">
+        ${peso(netSales)}
+      </h2>
+
+      <div class="row">
+        <strong>COMPLETED ORDERS</strong>
+        <strong>${completedOrders.length}</strong>
+      </div>
+
+      <div class="row">
+        <strong>SALES TARGET</strong>
+        <strong>₱20,000</strong>
+      </div>
+
+      <div style="height:14px;background:#444;border-radius:20px;overflow:hidden">
+        <div style="
+          height:14px;
+          width:${Math.min(100, netSales / 20000 * 100)}%;
+          background:#e7ad3e;
+          border-radius:20px;
+        "></div>
+      </div>
+
+      <p style="color:#7de39a;font-weight:bold">
+        ${escapeHTML(incentiveInfo.earned || "NO INCENTIVE EARNED YET")}
+      </p>
+
+      <p class="small">
+        ${escapeHTML(incentiveInfo.next)}
+      </p>
+    `;
+
+  }catch(error){
+
+    console.error("Dashboard daily sales error:", error);
+
+    dashboardSalesEl.innerHTML =
+      "<p class='small'>Unable to load daily sales.</p>";
+  }
+}
 async function loadDailyReport(){
   const selectedDate =
     document.getElementById("reportDate").value;
@@ -4687,7 +4768,8 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
   });
 
   document.getElementById("dashboardPage").classList.remove("hidden");
-
+  
+  loadDashboardDailySales();
   document.querySelectorAll(".terminal-nav button").forEach(button => {
     button.classList.remove("active");
   });
