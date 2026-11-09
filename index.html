@@ -2877,6 +2877,8 @@ async function findAttendanceEmployee(){
 
     return null;
   }
+}
+
 function calculateLateAttendance(timeIn, shiftStart, dailyRate){
 
   const [inHour, inMinute] = timeIn.split(":").map(Number);
