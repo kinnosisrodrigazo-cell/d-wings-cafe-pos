@@ -4575,6 +4575,10 @@ if(dashboardBtn){
 
   dashboardBtn.style.cursor =
     currentUserRole === "owner" ? "pointer" : "not-allowed";
+  alert(
+  "USER ROLE: " + currentUserRole +
+  "\nDASHBOARD DISABLED: " + dashboardBtn.disabled
+);
 }
 document.querySelectorAll(".terminal-nav button").forEach(button => {
   button.classList.toggle("active", button.dataset.page === "salesPage");
