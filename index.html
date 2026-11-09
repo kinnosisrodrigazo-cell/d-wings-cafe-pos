@@ -3082,9 +3082,7 @@ async function exportDailyReport(){
             .toUpperCase()
             .match(/^(\d+)PCS/);
 
-          const piecesPerFlavor = isUnli
-            ? 1
-            : match ? Number(match[1]) / 3 : 1;
+const piecesPerFlavor = 1;
 
           item.flavors.forEach(flavor => {
 
