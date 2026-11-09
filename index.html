@@ -566,7 +566,19 @@ button:disabled{opacity:.5}
   gap: 16px;
   margin-top: 18px;
 }
-
+/* SHARED ORDER CARD DESIGN */
+.order-list-card {
+  position: relative;
+  min-width: 0;
+  min-height: 190px;
+  background: #1b1b1b;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
 .order-queue-card {
   position: relative;
   min-width: 0;
@@ -914,7 +926,7 @@ button:disabled{opacity:.5}
     <h2>Sales Terminal</h2>
   </div>
     <div class="sales-layout">
-  <div class="panel">
+ <div class="order-list-card">
     <div id="categoryTabs" class="category-tabs"></div>
     <div class="grid" id="products"></div>
   </div>
@@ -2360,7 +2372,7 @@ async function loadOrderHistory(){
       const status = order.status || "COMPLETED";
 
       return `
-        <div class="panel" style="margin-top:18px; padding:18px">
+<div class="order-list-card">
           <div class="row">
             <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
 <strong>${escapeHTML(status)}</strong>
@@ -2715,7 +2727,7 @@ const netSales = completedOrders.reduce(
       <h3>VOID ORDERS</h3>
 
       ${voidOrders.length ? voidOrders.map(order => `
-<div class="panel" style="margin-top:18px; padding:18px">
+<div class="order-list-card">
           <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
           <p class="small">
             ${escapeHTML(order.customerName || "Walk-in")}
