@@ -1215,8 +1215,14 @@ button:disabled{opacity:.5}
     <p id="checkoutMessage" class="small"></p>
   </div>
 </div>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
 
 import {
@@ -1240,6 +1246,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+
+Chart.register(ChartDataLabels);
+  console.log("ExcelJS:", typeof ExcelJS);
+console.log("Chart.js:", typeof Chart);
+console.log("ChartDataLabels:", typeof ChartDataLabels);
 
 const firebaseConfig = {
   apiKey: "AIzaSyDzlVtp5ryG-t4Nc4QhuvrIFTj6ACcXfEo",
