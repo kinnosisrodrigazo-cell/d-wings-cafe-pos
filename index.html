@@ -4566,9 +4566,15 @@ document.getElementById("reportPage").classList.add("hidden");
 document.getElementById("dashboardPage").classList.add("hidden");
 
 const dashboardBtn = document.getElementById("dashboardBtn");
+
 if(dashboardBtn){
-  dashboardBtn.disabled = true;
-  dashboardBtn.style.opacity = "0.45";
+  dashboardBtn.disabled = currentUserRole !== "owner";
+
+  dashboardBtn.style.opacity =
+    currentUserRole === "owner" ? "1" : "0.45";
+
+  dashboardBtn.style.cursor =
+    currentUserRole === "owner" ? "pointer" : "not-allowed";
 }
 document.querySelectorAll(".terminal-nav button").forEach(button => {
   button.classList.toggle("active", button.dataset.page === "salesPage");
