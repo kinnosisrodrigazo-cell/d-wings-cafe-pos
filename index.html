@@ -3106,9 +3106,11 @@ const piecesPerFlavor = 1;
         });
       });
 
-      return Object.values(flavors)
-        .sort((a,b) => b.quantity - a.quantity);
-    };
+return Object.values(flavors)
+  .sort((a,b) =>
+    b.quantity - a.quantity ||
+    a.name.localeCompare(b.name)
+  );
 
     const dailyFlavorRanking = getFlavorRankings(dailyOrders);
     const weeklyFlavorRanking = getFlavorRankings(weeklyOrders);
