@@ -559,43 +559,81 @@ button:disabled{opacity:.5}
    D' WINGS CAFE - ORDER QUEUE
 =================================== */
 
+
 #activeOrderQueue {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding: 12px 4px;
-  align-items: stretch;
-  scroll-behavior: smooth;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .order-queue-card {
-  flex: 0 0 280px;
-  min-height: 180px;
+  position: relative;
+  min-width: 0;
+  min-height: 190px;
   background: #1b1b1b;
-  color: #ffffff;
+  color: #fff;
   border: 1px solid #444;
   border-radius: 12px;
-  padding: 16px;
-  touch-action: pan-x;
+  padding: 12px;
+  touch-action: none;
   user-select: none;
+  overflow: hidden;
 }
 
 .order-queue-card .queue-status {
+  display: inline-block;
   color: #e7ad3e;
+  font-size: 12px;
   font-weight: bold;
-}
-
-.order-queue-card .queue-timer {
-  font-size: 24px;
-  font-weight: bold;
-  color: #e7ad3e;
-  margin-top: 12px;
+  margin-top: 6px;
 }
 
 .order-queue-card .queue-items {
-  margin-top: 12px;
-  line-height: 1.6;
+  margin-top: 10px;
+  line-height: 1.5;
+  font-size: 13px;
 }
+
+.order-queue-card .queue-timer {
+  font-size: 19px;
+  font-weight: bold;
+  color: #e7ad3e;
+  margin-top: 5px;
+}
+
+.queue-action-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #e7ad3e;
+  color: #111;
+  font-size: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.queue-action-btn.preparing {
+  background: #2585df;
+  color: #fff;
+}
+
+.queue-prep-timer {
+  color: #55aaff;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+@media (min-width: 700px) {
+  #activeOrderQueue {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2963,19 +3001,19 @@ function startOrderQueue(){
 
   const ordersQuery = query(
     collection(db, "orders"),
-    where("servingStatus", "==", "PENDING")
+    where("servingStatus", "in", ["PENDING", "PREPARING"])
   );
 
   orderQueueUnsubscribe = onSnapshot(
     ordersQuery,
     snapshot => {
 
-     activeQueueOrders = snapshot.docs
-  .map(orderDoc => ({
-    id: orderDoc.id,
-    ...orderDoc.data()
-  }))
-  .filter(order => order.status !== "VOID");
+      activeQueueOrders = snapshot.docs
+        .map(orderDoc => ({
+          id: orderDoc.id,
+          ...orderDoc.data()
+        }))
+        .filter(order => order.status !== "VOID");
 
       activeQueueOrders.sort((a,b) =>
         (a.orderTime?.toMillis?.() || a.createdAt?.toMillis?.() || 0) -
@@ -2993,29 +3031,36 @@ function startOrderQueue(){
     clearInterval(orderQueueTimer);
   }
 
-orderQueueTimer = setInterval(() => {
-  updateQueueTimers();
-}, 1000);
+  orderQueueTimer = setInterval(() => {
+    updateQueueTimers();
+  }, 1000);
 }
 
 function renderOrderQueue(){
   const container = document.getElementById("activeOrderQueue");
   if(!container) return;
+
   const queueCount = document.getElementById("queueCount");
-const queueIndicator = document.getElementById("queueIndicator");
+  const queueIndicator = document.getElementById("queueIndicator");
 
-const pendingCount = activeQueueOrders.length;
+  const pendingCount = activeQueueOrders.filter(
+    order => order.servingStatus === "PENDING"
+  ).length;
 
-if(queueCount){
-  queueCount.textContent = pendingCount > 0
-    ? pendingCount + " PENDING"
-    : "NO PENDING ORDERS";
-}
+  const preparingCount = activeQueueOrders.filter(
+    order => order.servingStatus === "PREPARING"
+  ).length;
 
-if(queueIndicator){
-  queueIndicator.style.background =
-    pendingCount > 0 ? "#d64545" : "#239b57";
-}
+  if(queueCount){
+    queueCount.textContent =
+      pendingCount + " PENDING | " +
+      preparingCount + " PREPARING";
+  }
+
+  if(queueIndicator){
+    queueIndicator.style.background =
+      activeQueueOrders.length > 0 ? "#d64545" : "#239b57";
+  }
 
   if(activeQueueOrders.length === 0){
     container.innerHTML =
@@ -3024,8 +3069,9 @@ if(queueIndicator){
   }
 
   container.innerHTML = activeQueueOrders.map(order => {
-    const orderTimestamp =
-      order.orderTime || order.createdAt;
+
+    const orderTimestamp = order.orderTime || order.createdAt;
+    const orderMillis = orderTimestamp?.toMillis?.() || 0;
 
     const orderDate = orderTimestamp?.toDate
       ? orderTimestamp.toDate()
@@ -3039,6 +3085,10 @@ if(queueIndicator){
         })
       : "Waiting for time...";
 
+    const isPreparing = order.servingStatus === "PREPARING";
+
+    const preparingMillis = order.preparingAt?.toMillis?.() || 0;
+
     const itemsHTML = (order.items || []).map(item => `
       <div>
         ${escapeHTML(item.name || "")}
@@ -3050,10 +3100,30 @@ if(queueIndicator){
       <div class="order-queue-card"
            data-order-id="${order.id}">
 
-        <div class="row">
-          <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
-          <span class="queue-status">PENDING</span>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+
+          <div>
+            <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
+
+            <div class="queue-status">
+              ${isPreparing ? "PREPARING" : "PENDING"}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="queue-action-btn ${isPreparing ? "preparing" : ""}"
+            data-prepare-order="${order.id}"
+            aria-label="${isPreparing ? "Preparing" : "Start preparing"}"
+            ${isPreparing ? "disabled" : ""}>
+            ${isPreparing ? "✓" : "♨"}
+          </button>
+
         </div>
+
+        <p class="small" style="margin:8px 0 4px">
+          CUSTOMER: ${escapeHTML(order.customerName || "Walk-in")}
+        </p>
 
         <div class="queue-items">
           ${itemsHTML}
@@ -3067,76 +3137,67 @@ if(queueIndicator){
           ORDER TIME: ${orderTimeText}
         </p>
 
-        <div class="queue-timer"
-             data-order-time="${orderTimestamp?.toMillis?.() || 0}">
-          00:00:00
+        <div>
+          <div class="small">ORDER TIMER</div>
+          <div class="queue-timer"
+               data-order-time="${orderMillis}">
+            00:00:00
+          </div>
+        </div>
+
+        <div>
+          <div class="small">PREPARATION TIMER</div>
+          <div class="queue-prep-timer"
+               data-preparing-time="${preparingMillis}">
+            00:00:00
+          </div>
         </div>
 
       </div>
     `;
   }).join("");
 
-  container.querySelectorAll(".order-queue-card").forEach(card => {
-    let startX = 0;
-    let startY = 0;
-
-    card.addEventListener("pointerdown", event => {
-      startX = event.clientX;
-      startY = event.clientY;
-    });
-
-    card.addEventListener("pointerup", event => {
-      const deltaX = Math.abs(event.clientX - startX);
-      const deltaY = Math.abs(event.clientY - startY);
-
-      if(deltaY > 90 && deltaY > deltaX * 1.5){
-        completeQueuedOrder(card.dataset.orderId);
-      }
+  // PREPARING BUTTON
+  container.querySelectorAll("[data-prepare-order]").forEach(button => {
+    button.addEventListener("click", () => {
+      startPreparingOrder(button.dataset.prepareOrder);
     });
   });
 
+// SWIPE UP TO COMPLETE
+container.querySelectorAll(".order-queue-card").forEach(card => {
+
+  let startX = 0;
+  let startY = 0;
+
+  card.addEventListener("pointerdown", event => {
+    if(event.target.closest("button")) return;
+
+    startX = event.clientX;
+    startY = event.clientY;
+  });
+
+  card.addEventListener("pointerup", event => {
+    if(event.target.closest("button")) return;
+
+    const deltaX = Math.abs(event.clientX - startX);
+    const deltaY = startY - event.clientY;
+
+    if(deltaY > 90 && deltaY > deltaX * 1.5){
+      completeQueuedOrder(card.dataset.orderId);
+    }
+  });
+});
+
   updateQueueTimers();
 }
-async function completeQueuedOrder(orderId){
 
-  const order = activeQueueOrders.find(item => item.id === orderId);
+  function updateQueueTimers(){
 
-  if(!order || order.servingStatus !== "PENDING" || order.completing) return;
-
-  const orderTimestamp = order.orderTime || order.createdAt;
-  const orderTimeMillis = orderTimestamp?.toMillis?.();
-
-if(!orderTimeMillis){
-  alert("Order time is missing. Unable to complete this order.");
-  return;
-}
-
-order.completing = true;
- const completedAt = Timestamp.now();
-  const servingDuration = Math.max(
-    0,
-    Math.floor((completedAt.getTime() - orderTimeMillis) / 1000)
-  );
-
-  try{
-    await updateDoc(doc(db, "orders", orderId), {
-      servingStatus: "COMPLETED",
-     completedAt: serverTimestamp(),
-      servingDuration: servingDuration,
-      completedBy: auth.currentUser?.email || "",
-      completedByUid: auth.currentUser?.uid || ""
-    });
-
-  }catch(error){
-    console.error("Order completion error:", error);
-    alert("Unable to complete order. Please try again.");
-        order.completing = false;
-  }
-}
-function updateQueueTimers(){
+  // ORDER TIMER
   document.querySelectorAll(".queue-timer").forEach(timer => {
-    const startTime = Number(timer.dataset.orderTime);
 
+    const startTime = Number(timer.dataset.orderTime);
     if(!startTime) return;
 
     const elapsed = Math.max(0, Date.now() - startTime);
@@ -3150,6 +3211,80 @@ function updateQueueTimers(){
       String(minutes).padStart(2,"0") + ":" +
       String(seconds).padStart(2,"0");
   });
+
+  // PREPARATION TIMER
+  document.querySelectorAll(".queue-prep-timer").forEach(timer => {
+
+    const startTime = Number(timer.dataset.preparingTime);
+
+    if(!startTime){
+      timer.textContent = "00:00:00";
+      return;
+    }
+
+    const elapsed = Math.max(0, Date.now() - startTime);
+
+    const hours = Math.floor(elapsed / 3600000);
+    const minutes = Math.floor((elapsed % 3600000) / 60000);
+    const seconds = Math.floor((elapsed % 60000) / 1000);
+
+    timer.textContent =
+      String(hours).padStart(2,"0") + ":" +
+      String(minutes).padStart(2,"0") + ":" +
+      String(seconds).padStart(2,"0");
+  });
+}
+async function completeQueuedOrder(orderId){
+
+  const order = activeQueueOrders.find(item => item.id === orderId);
+
+  if(
+    !order ||
+    !["PENDING", "PREPARING"].includes(order.servingStatus) ||
+    order.completing
+  ) return;
+
+  const orderTimestamp = order.orderTime || order.createdAt;
+  const orderTimeMillis = orderTimestamp?.toMillis?.();
+
+  if(!orderTimeMillis){
+    alert("Order time is missing. Unable to complete this order.");
+    return;
+  }
+
+  order.completing = true;
+
+  const completedAt = Timestamp.now();
+
+  const servingDuration = Math.max(
+    0,
+    Math.floor((completedAt.toMillis() - orderTimeMillis) / 1000)
+  );
+
+  const preparingTimeMillis = order.preparingAt?.toMillis?.() || 0;
+
+  const preparationDuration = preparingTimeMillis
+    ? Math.max(
+        0,
+        Math.floor((completedAt.toMillis() - preparingTimeMillis) / 1000)
+      )
+    : 0;
+
+  try{
+    await updateDoc(doc(db, "orders", orderId), {
+      servingStatus: "COMPLETED",
+      completedAt: serverTimestamp(),
+      servingDuration: servingDuration,
+      preparationDuration: preparationDuration,
+      completedBy: auth.currentUser?.email || "",
+      completedByUid: auth.currentUser?.uid || ""
+    });
+
+  }catch(error){
+    console.error("Order completion error:", error);
+    alert("Unable to complete order. Please try again.");
+    order.completing = false;
+  }
 }
 function renderOnlineStaff() {
   const container = document.getElementById("onlineStaff");
