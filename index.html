@@ -2746,20 +2746,36 @@ const salesVisibilityBtn =
 let salesAmountsVisible = false;
 
 function updateSalesVisibility(){
-    document.getElementById("currentDailySalesAmount").textContent =
-    salesAmountsVisible ? peso(netSales) : "*****";
-  
-  document.getElementById("summaryNetSales").textContent =
-    salesAmountsVisible ? peso(netSales) : "*****";
+  const currentAmount = document.getElementById("currentDailySalesAmount");
+  const netSalesAmount = document.getElementById("summaryNetSales");
+  const cashAmount = document.getElementById("summaryCash");
+  const gcashAmount = document.getElementById("summaryGCash");
+  const paymayaAmount = document.getElementById("summaryPayMaya");
 
-  document.getElementById("summaryCash").textContent =
-    salesAmountsVisible ? peso(paymentTotals.cash) : "*****";
+  if(currentAmount){
+    currentAmount.textContent =
+      salesAmountsVisible ? peso(netSales) : "*****";
+  }
 
-  document.getElementById("summaryGCash").textContent =
-    salesAmountsVisible ? peso(paymentTotals.gcash) : "*****";
+  if(netSalesAmount){
+    netSalesAmount.textContent =
+      salesAmountsVisible ? peso(netSales) : "*****";
+  }
 
-  document.getElementById("summaryPayMaya").textContent =
-    salesAmountsVisible ? peso(paymentTotals.paymaya) : "*****";
+  if(cashAmount){
+    cashAmount.textContent =
+      salesAmountsVisible ? peso(paymentTotals.cash) : "*****";
+  }
+
+  if(gcashAmount){
+    gcashAmount.textContent =
+      salesAmountsVisible ? peso(paymentTotals.gcash) : "*****";
+  }
+
+  if(paymayaAmount){
+    paymayaAmount.textContent =
+      salesAmountsVisible ? peso(paymentTotals.paymaya) : "*****";
+  }
 
   salesVisibilityBtn.textContent =
     salesAmountsVisible ? "HIDE AMOUNTS" : "SHOW AMOUNTS";
