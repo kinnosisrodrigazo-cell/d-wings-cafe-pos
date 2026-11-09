@@ -4312,7 +4312,7 @@ async function completeQueuedOrder(orderId){
 
   if(
     !order ||
-    !["PENDING", "PREPARING"].includes(order.servingStatus) ||
+    order.servingStatus !== "PREPARING" ||
     order.completing
   ) return;
 
