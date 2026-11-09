@@ -2851,6 +2851,26 @@ async function findAttendanceEmployee(){
     return null;
   }
 }
+  function calculateLateAttendance(timeIn, shiftStart, dailyRate){
+
+  const [inHour, inMinute] = timeIn.split(":").map(Number);
+  const [startHour, startMinute] = shiftStart.split(":").map(Number);
+
+  const actualMinutes = inHour * 60 + inMinute;
+  const scheduledMinutes = startHour * 60 + startMinute;
+
+  // No grace period
+  const lateMinutes = Math.max(0, actualMinutes - scheduledMinutes);
+
+  const ratePerMinute = Number(dailyRate) / 9 / 60;
+
+  const lateDeduction = lateMinutes * ratePerMinute;
+
+  return {
+    lateMinutes,
+    lateDeduction: Number(lateDeduction.toFixed(2))
+  };
+}
   async function recordAttendance(type){
 
   const employee = await findAttendanceEmployee();
