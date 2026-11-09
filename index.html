@@ -4700,6 +4700,8 @@ document.getElementById("viewReportBtn").onclick = loadDailyReport;
 // OWNER DASHBOARD BUTTON
 document.getElementById("dashboardBtn").addEventListener("click", () => {
 
+  alert("DASHBOARD BUTTON CLICKED");
+
   if(currentUserRole !== "owner") return;
 
   ["salesPage", "queuePage", "historyPage", "reportPage"].forEach(id => {
