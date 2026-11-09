@@ -2561,6 +2561,8 @@ function getDailyIncentiveInfo(date, sales){
   };
 }
 
+let salesAmountsVisible = false;
+
 async function loadDailyReport(){
   const selectedDate =
     document.getElementById("reportDate").value;
@@ -2743,7 +2745,7 @@ const netSales = completedOrders.reduce(
 const salesVisibilityBtn =
   document.getElementById("toggleSalesVisibility");
 
-let salesAmountsVisible = false;
+
 
 function updateSalesVisibility(){
   const currentAmount = document.getElementById("currentDailySalesAmount");
