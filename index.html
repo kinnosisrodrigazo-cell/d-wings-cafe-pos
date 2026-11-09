@@ -5054,6 +5054,8 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
   document.getElementById("dashboardPage").classList.remove("hidden");
   
   loadDashboardDailySales();
+  loadTodayAttendance();
+  
   document.querySelectorAll(".terminal-nav button").forEach(button => {
     button.classList.remove("active");
   });
