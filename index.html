@@ -2817,6 +2817,7 @@ async function findAttendanceEmployee(){
 
     if(snapshot.size > 1){
       scannedAttendanceEmployee = null;
+      
       message.textContent = "Duplicate barcode detected. Contact the owner.";
       return null;
     }
@@ -2910,7 +2911,9 @@ async function findAttendanceEmployee(){
 
     message.textContent =
       `${employee.name}: ${type} recorded at ${time}`;
-
+    
+    await loadTodayAttendance();
+    
     document.getElementById("attendanceBarcodeInput").value = "";
     scannedAttendanceEmployee = null;
 
@@ -2928,6 +2931,75 @@ async function findAttendanceEmployee(){
     }
   }
 }
+  
+// LOAD TODAY'S ATTENDANCE
+async function loadTodayAttendance(){
+
+  const attendanceList =
+    document.getElementById("todayAttendanceList");
+
+  const { date } = getManilaDateTime();
+
+  attendanceList.innerHTML =
+    "<p class='small'>Loading attendance...</p>";
+
+  try{
+
+    const attendanceQuery = query(
+      collection(db, "attendance"),
+      where("date", "==", date)
+    );
+
+    const snapshot = await getDocs(attendanceQuery);
+
+    if(snapshot.empty){
+      attendanceList.innerHTML =
+        "<p class='small'>No attendance records today.</p>";
+      return;
+    }
+
+    const records = snapshot.docs
+      .map(doc => doc.data())
+      .sort((a, b) =>
+        (a.employeeName || "").localeCompare(b.employeeName || "")
+      );
+
+    attendanceList.innerHTML = `
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr>
+              <th>EMPLOYEE</th>
+              <th>TIME IN</th>
+              <th>TIME OUT</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${records.map(record => `
+              <tr>
+                <td>${record.employeeName || "Unknown"}</td>
+                <td>${record.timeIn || "—"}</td>
+                <td>${record.timeOut || "—"}</td>
+                <td>
+                  ${record.timeOut ? "COMPLETED" : "WORKING"}
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+  }catch(error){
+
+    console.error("Today's attendance error:", error);
+
+    attendanceList.innerHTML =
+      "<p class='small'>Unable to load attendance records.</p>";
+  }
+}
+
 async function loadDailyReport(){
   const selectedDate =
     document.getElementById("reportDate").value;
