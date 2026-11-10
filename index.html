@@ -1775,10 +1775,26 @@ function renderStaffWeeklySchedule(){
       const assignment =
         staffScheduleDraft[employeeId] || {};
 
-const value = assignment[date] || "";
-const isToday = date === todayDate;
 const pillStyle = value === "WORK"
   ? `
+    background:transparent;
+    color:#168bff;
+    border:none;
+    border-radius:0;
+  `
+  : value === "RD"
+  ? `
+    background:transparent;
+    color:#35c978;
+    border:none;
+    border-radius:0;
+  `
+  : `
+    background:transparent;
+    color:#aaa;
+    border:none;
+    border-radius:0;
+  `;
     background:transparent;
     color:#168bff;
     border:none;
@@ -1879,18 +1895,12 @@ ${value === "WORK" ? "3PM" : value === "RD" ? "RD" : "-"}
         staffScheduleDraft[employeeId][date] =
           select.value;
 
-        if(select.value === "WORK"){
+select.style.background = "transparent";
+select.style.color =
+  select.value === "WORK" ? "#168bff" :
+  select.value === "RD" ? "#35c978" : "#aaa";
 
-          select.style.background = "#168bff";
-          select.style.color = "#fff";
-          select.style.borderColor = "#168bff";
-
-        }else{
-
-          select.style.background = "transparent";
-          select.style.color = "#35c978";
-          select.style.borderColor = "transparent";
-        }
+select.style.border = "none";
       });
     });
 }
