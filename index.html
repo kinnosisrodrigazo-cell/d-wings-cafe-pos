@@ -1644,6 +1644,7 @@ async function loadWeeklySchedule(){
   }
 }
 
+
 function renderStaffWeeklySchedule(){
 
   const scheduleEl =
@@ -1653,6 +1654,13 @@ function renderStaffWeeklySchedule(){
 
   const canEdit =
     String(currentUserRole || "").toLowerCase() === "owner";
+
+  const saveButton =
+    document.getElementById("saveStaffScheduleBtn");
+
+  if(saveButton){
+    saveButton.style.display = canEdit ? "" : "none";
+  }
 
   const weekLabel =
     document.getElementById("scheduleWeekLabel");
@@ -1686,33 +1694,54 @@ function renderStaffWeeklySchedule(){
     return;
   }
 
+  const todayDate = new Date().toLocaleDateString(
+    "en-CA",
+    {timeZone:"Asia/Manila"}
+  );
+
   let html = `
-    <div style="overflow-x:auto">
+    <div style="width:100%;overflow-x:auto">
       <table style="
         width:100%;
-        min-width:850px;
-        border-collapse:collapse;
+        min-width:540px;
+        border-collapse:separate;
+        border-spacing:0 5px;
         text-align:center;
+        font-size:12px;
       ">
         <thead>
           <tr>
-            <th style="padding:10px;text-align:left">STAFF</th>
+            <th style="
+              padding:9px 5px;
+              text-align:left;
+              min-width:90px;
+            ">
+              STAFF
+            </th>
   `;
 
   dates.forEach(date => {
 
     const day = new Date(date + "T12:00:00");
+    const isToday = date === todayDate;
 
     html += `
-      <th style="padding:8px">
+      <th style="
+        padding:7px 2px;
+        color:${isToday ? "#e7ad3e" : "#aaa"};
+        background:${isToday ? "#292929" : "transparent"};
+        border-radius:8px;
+      ">
         ${day.toLocaleDateString("en-PH", {
           weekday:"short"
         })}
         <br>
-        ${day.toLocaleDateString("en-PH", {
-          month:"short",
-          day:"numeric"
-        })}
+        <strong>
+          ${day.toLocaleDateString("en-PH", {
+            month:"numeric",
+            day:"numeric"
+          })}
+        </strong>
       </th>
     `;
   });
@@ -1729,11 +1758,13 @@ function renderStaffWeeklySchedule(){
     const name = escapeScheduleHtml(employee.name);
 
     html += `
-      <tr style="border-top:1px solid #444">
+      <tr>
         <td style="
-          padding:10px;
+          padding:10px 5px;
           text-align:left;
           font-weight:bold;
+          border-top:1px solid #333;
+          border-bottom:1px solid #333;
         ">
           ${name}
         </td>
@@ -1745,32 +1776,80 @@ function renderStaffWeeklySchedule(){
         staffScheduleDraft[employeeId] || {};
 
       const value = assignment[date] || "RD";
+      const isToday = date === todayDate;
+
+      const pillStyle = value === "WORK"
+        ? `
+          background:#168bff;
+          color:#fff;
+          border:1px solid #168bff;
+          border-radius:999px;
+        `
+        : `
+          background:transparent;
+          color:#35c978;
+          border:1px solid transparent;
+          border-radius:999px;
+        `;
 
       html += `
-        <td style="padding:6px">
+        <td style="
+          padding:5px 2px;
+          border-top:1px solid #333;
+          border-bottom:1px solid #333;
+          background:${isToday ? "rgba(231,173,62,.07)" : "transparent"};
+        ">
+      `;
+
+      if(canEdit){
+
+        html += `
           <select
             class="staff-schedule-select"
             data-employee-id="${escapeScheduleHtml(employeeId)}"
             data-date="${date}"
-            ${canEdit ? "" : "disabled"}
             style="
               width:100%;
-              min-width:95px;
-              padding:9px 5px;
-              border-radius:8px;
-              font-weight:bold;
+              min-width:55px;
+              max-width:72px;
+              padding:6px 2px;
+              font-size:11px;
+              font-weight:800;
               text-align:center;
+              text-align-last:center;
+              appearance:none;
+              -webkit-appearance:none;
+              outline:none;
+              cursor:pointer;
+              ${pillStyle}
             "
           >
             <option value="WORK" ${value === "WORK" ? "selected" : ""}>
-              🕒 3:00
+              🕒 3PM
             </option>
             <option value="RD" ${value === "RD" ? "selected" : ""}>
               RD
             </option>
           </select>
-        </td>
-      `;
+        `;
+
+      }else{
+
+        html += `
+          <span style="
+            display:inline-block;
+            min-width:55px;
+            padding:6px 2px;
+            font-size:11px;
+            font-weight:800;
+            ${pillStyle}
+          ">
+            ${value === "WORK" ? "🕒 3PM" : "RD"}
+          </span>
+        `;
+      }
+
+      html += "</td>";
     });
 
     html += "</tr>";
@@ -1799,6 +1878,19 @@ function renderStaffWeeklySchedule(){
 
         staffScheduleDraft[employeeId][date] =
           select.value;
+
+        if(select.value === "WORK"){
+
+          select.style.background = "#168bff";
+          select.style.color = "#fff";
+          select.style.borderColor = "#168bff";
+
+        }else{
+
+          select.style.background = "transparent";
+          select.style.color = "#35c978";
+          select.style.borderColor = "transparent";
+        }
       });
     });
 }
