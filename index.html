@@ -1582,6 +1582,7 @@ let currentUserRole = null;
 let staffScheduleDraft = {};
 let staffScheduleEmployees = [];
 let staffScheduleLoaded = false;
+  let staffWeeklyAttendance = {};
   function getScheduleWeekDates(){
 
   const today = new Date();
@@ -1615,7 +1616,8 @@ function escapeScheduleHtml(value){
   })[char]);
 }
 
-async function loadWeeklySchedule(){
+
+  async function loadWeeklySchedule(){
 
   const scheduleEl =
     document.getElementById("staffWeeklySchedule");
@@ -1632,6 +1634,9 @@ async function loadWeeklySchedule(){
     staffScheduleDraft = snapshot.exists()
       ? (snapshot.data().assignments || {})
       : {};
+
+    // LOAD ATTENDANCE FOR THE SELECTED WEEK
+    await loadStaffWeeklyAttendance(dates);
 
     renderStaffWeeklySchedule();
 
@@ -1780,57 +1785,84 @@ dates.forEach(date => {
 
   const value = assignment[date] || "";
 
-  const pillStyle = value === "WORK"
-    ? `
-      background:transparent;
-      color:#168bff;
-      border:none;
-      border-radius:0;
-    `
-    : value === "RD"
-    ? `
-      background:transparent;
-      color:#35c978;
-      border:none;
-      border-radius:0;
-    `
-    : `
-      background:transparent;
-      color:#aaa;
-      border:none;
-      border-radius:0;
-    `;
-      html += `
-        <td style="
-          padding:5px 0;
-          border-top:1px solid #333;
-          border-bottom:1px solid #333;
-          background:${isToday ? "rgba(231,173,62,.07)" : "transparent"};
-        ">
-      `;
+const attendance =
+  staffWeeklyAttendance[`${employeeId}_${date}`] || {};
 
-      if(canEdit){
+const isAbsent =
+  value === "WORK" && attendance.status === "ABSENT";
 
-        html += `
-          <select
-            class="staff-schedule-select"
-            data-employee-id="${escapeScheduleHtml(employeeId)}"
-            data-date="${date}"
-            style="
-              width:100%;
-min-width:0;
-max-width:100%;
-              padding:6px 2px;
-              font-size:11px;
-              font-weight:800;
-              text-align:center;
-              text-align-last:center;
-              appearance:none;
-              -webkit-appearance:none;
-              outline:none;
-              cursor:pointer;
-              ${pillStyle}
-            "
+const isLate =
+  value === "WORK" &&
+  !isAbsent &&
+  Number(attendance.lateMinutes || 0) > 0;
+
+
+      const pillStyle = isAbsent
+  ? `
+    background:rgba(220,53,69,.15);
+    color:#ff4d5a;
+    border:1px solid #ff4d5a;
+    border-radius:8px;
+  `
+  : isLate
+  ? `
+    background:transparent;
+    color:#168bff;
+    border:1px solid #e7ad3e;
+    border-radius:8px;
+  `
+  : value === "WORK"
+  ? `
+    background:transparent;
+    color:#168bff;
+    border:none;
+    border-radius:0;
+  `
+  : value === "RD"
+  ? `
+    background:transparent;
+    color:#35c978;
+    border:none;
+    border-radius:0;
+  `
+  : `
+    background:transparent;
+    color:#aaa;
+    border:none;
+    border-radius:0;
+  `;
+
+html += `
+  <td style="
+    padding:5px 0;
+    border-top:1px solid #333;
+    border-bottom:1px solid #333;
+    background:${isToday ? "rgba(231,173,62,.07)" : "transparent"};
+  ">
+`;
+
+if(canEdit && !isAbsent){
+
+  html += `
+    <select
+      class="staff-schedule-select"
+      data-employee-id="${escapeScheduleHtml(employeeId)}"
+      data-date="${date}"
+      style="
+        width:100%;
+        min-width:0;
+        max-width:100%;
+        padding:6px 2px;
+        font-size:11px;
+        font-weight:800;
+        text-align:center;
+        text-align-last:center;
+        appearance:none;
+        -webkit-appearance:none;
+        outline:none;
+        cursor:pointer;
+        ${pillStyle}
+      "
           >
 <option value="" ${value === "" ? "selected" : ""}></option>
 <option value="WORK" ${value === "WORK" ? "selected" : ""}>
@@ -1853,8 +1885,7 @@ padding:6px 2px;
             font-weight:800;
             ${pillStyle}
           ">
-${value === "WORK" ? "3PM" : value === "RD" ? "RD" : "-"}
-</span>
+${isAbsent ? "ABSENT" : value === "WORK" ? "3PM" : value === "RD" ? "RD" : "-"}</span>
         `;
       }
 
