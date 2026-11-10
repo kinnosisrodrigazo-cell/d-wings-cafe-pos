@@ -1729,8 +1729,8 @@ dates.forEach(date => {
       <th style="
         padding:7px 0;
 font-size:10px;
-        color:${isToday ? "#e7ad3e" : [1,3,5].includes(new Date(date + "T12:00:00").getDay()) ? "#168bff" : "#222"};
-        background:${isToday ? "#292929" : "transparent"};
+        color:${[1,3,5].includes(new Date(date + "T12:00:00").getDay()) ? "#168bff" : "#222"};
+        background:"#ffffff";
         border-radius:8px;
       ">
         ${day.toLocaleDateString("en-PH", {
