@@ -1188,8 +1188,17 @@ button:disabled{opacity:.5}
       <!-- ASSIGN SCHEDULE -->
       <div class="panel">
         <h3>ASSIGN SCHEDULE</h3>
-        <div id="staffScheduleControls"></div>
-        <div id="staffWeeklySchedule">
+<div id="staffScheduleControls" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+  <div style="display:flex;align-items:center;gap:8px">
+    <button type="button" id="schedulePrevWeek">‹</button>
+    <strong id="scheduleWeekLabel">THIS WEEK</strong>
+    <button type="button" id="scheduleNextWeek">›</button>
+  </div>
+
+  <button type="button" id="saveStaffScheduleBtn">
+    <i class="fas fa-save"></i> SAVE SCHEDULE
+  </button>
+</div>        <div id="staffWeeklySchedule">
           <p class="small">Weekly schedule will appear here.</p>
         </div>
       </div>
