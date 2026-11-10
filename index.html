@@ -1775,7 +1775,8 @@ function renderStaffWeeklySchedule(){
       const assignment =
         staffScheduleDraft[employeeId] || {};
 
-const value = assignment[date] || "";      const isToday = date === todayDate;
+const value = assignment[date] || "";
+const isToday = date === todayDate;
 
       const pillStyle = value === "WORK"
         ? `
@@ -1823,12 +1824,13 @@ const value = assignment[date] || "";      const isToday = date === todayDate;
               ${pillStyle}
             "
           >
-            <option value="WORK" ${value === "WORK" ? "selected" : ""}>
-              🕒 3PM
-            </option>
-            <option value="RD" ${value === "RD" ? "selected" : ""}>
-              RD
-            </option>
+<option value="" ${value === "" ? "selected" : ""}></option>
+<option value="WORK" ${value === "WORK" ? "selected" : ""}>
+  🕒 3PM
+</option>
+<option value="RD" ${value === "RD" ? "selected" : ""}>
+  RD
+</option>
           </select>
         `;
 
