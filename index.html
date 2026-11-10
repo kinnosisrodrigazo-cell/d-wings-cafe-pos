@@ -1772,9 +1772,11 @@ function renderStaffWeeklySchedule(){
 
     dates.forEach(date => {
 
-      const assignment =
+const assignment =
         staffScheduleDraft[employeeId] || {};
-
+      
+const value = assignment[date] || "";
+      
 const pillStyle = value === "WORK"
   ? `
     background:transparent;
