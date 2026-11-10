@@ -1777,20 +1777,19 @@ function renderStaffWeeklySchedule(){
 
 const value = assignment[date] || "";
 const isToday = date === todayDate;
-
-      const pillStyle = value === "WORK"
-        ? `
-          background:#168bff;
-          color:#fff;
-          border:1px solid #168bff;
-          border-radius:999px;
-        `
-        : `
-          background:transparent;
-          color:#35c978;
-          border:1px solid transparent;
-          border-radius:999px;
-        `;
+const pillStyle = value === "WORK"
+  ? `
+    background:transparent;
+    color:#168bff;
+    border:none;
+    border-radius:0;
+  `
+  : `
+    background:transparent;
+    color:#35c978;
+    border:none;
+    border-radius:0;
+  `;
 
       html += `
         <td style="
@@ -1826,7 +1825,7 @@ const isToday = date === todayDate;
           >
 <option value="" ${value === "" ? "selected" : ""}></option>
 <option value="WORK" ${value === "WORK" ? "selected" : ""}>
-  🕒 3PM
+  3PM
 </option>
 <option value="RD" ${value === "RD" ? "selected" : ""}>
   RD
@@ -1845,7 +1844,8 @@ const isToday = date === todayDate;
             font-weight:800;
             ${pillStyle}
           ">
-${value === "WORK" ? "🕒 3PM" : value === "RD" ? "RD" : ""}          </span>
+${value === "WORK" ? "3PM" : value === "RD" ? "RD" : "-"}
+</span>
         `;
       }
 
