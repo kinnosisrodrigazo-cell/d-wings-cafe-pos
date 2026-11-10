@@ -898,11 +898,15 @@ button:disabled{opacity:.5}
       <p class="small">Loading products...</p>
     </div>
 
-    <div style="display:flex;justify-content:flex-end;margin-top:20px">
-      <button type="button" class="secondary" id="closeSettingsBtn">
-        UPDATE
-      </button>
-    </div>
+<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+  <button type="button" class="secondary" id="closeSettingsBtn">
+    UPDATE
+  </button>
+
+  <button type="button" class="secondary" id="closeSettingsWindowBtn">
+    CLOSE
+  </button>
+</div>
   </div>
 </div>
   
@@ -5837,6 +5841,12 @@ document.getElementById("settingsBtn").onclick = () => {
 };
 
 document.getElementById("closeSettingsBtn").onclick = () => {
+  const modal = document.getElementById("settingsModal");
+
+  modal.classList.add("hidden");
+  modal.style.display = "none";
+};
+  document.getElementById("closeSettingsWindowBtn").onclick = () => {
   const modal = document.getElementById("settingsModal");
 
   modal.classList.add("hidden");
