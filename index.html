@@ -1720,12 +1720,12 @@ function renderStaffWeeklySchedule(){
             </th>
   `;
 
-  dates.forEach(date => {
+dates.forEach(date => {
 
-    const day = new Date(date + "T12:00:00");
-    const isToday = date === todayDate;
+  const day = new Date(date + "T12:00:00");
+  const isToday = date === todayDate;
 
-    html += `
+  html += `
       <th style="
         padding:7px 2px;
         color:${isToday ? "#e7ad3e" : "#aaa"};
@@ -1772,32 +1772,33 @@ function renderStaffWeeklySchedule(){
 
     dates.forEach(date => {
 
-const assignment =
-        staffScheduleDraft[employeeId] || {};
-      
-const value = assignment[date] || "";
-      
-const pillStyle = value === "WORK"
-  ? `
-    background:transparent;
-    color:#168bff;
-    border:none;
-    border-radius:0;
-  `
-  : value === "RD"
-  ? `
-    background:transparent;
-    color:#35c978;
-    border:none;
-    border-radius:0;
-  `
-  : `
-    background:transparent;
-    color:#aaa;
-    border:none;
-    border-radius:0;
-  `;
+  const isToday = date === todayDate;
 
+  const assignment =
+    staffScheduleDraft[employeeId] || {};
+
+  const value = assignment[date] || "";
+
+  const pillStyle = value === "WORK"
+    ? `
+      background:transparent;
+      color:#168bff;
+      border:none;
+      border-radius:0;
+    `
+    : value === "RD"
+    ? `
+      background:transparent;
+      color:#35c978;
+      border:none;
+      border-radius:0;
+    `
+    : `
+      background:transparent;
+      color:#aaa;
+      border:none;
+      border-radius:0;
+    `;
       html += `
         <td style="
           padding:5px 2px;
