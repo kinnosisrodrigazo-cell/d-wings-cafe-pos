@@ -1041,7 +1041,7 @@ button:disabled{opacity:.5}
   </label>
 
   <label class="order-type-btn">
-    <input type="radio" name="orderType" value="TAKE OUT">
+    <input type="radio" name="orderType" value="TAKE OUT" id="takeOutOption">
     <span>TAKE OUT</span>
     <span class="order-check">✓</span>
   </label>
@@ -2350,6 +2350,24 @@ document.getElementById("cashReceived").value = "";
 renderCart();
 };
 function renderCart(){
+    const hasUnliProduct = cart.some(item =>
+    item.name === "UNLI 269 WINGS" ||
+    item.name === "UNLI 299 WINGS"
+  );
+
+  const takeOutOption = document.getElementById("takeOutOption");
+
+  takeOutOption.disabled = hasUnliProduct;
+
+  if(hasUnliProduct){
+    document.querySelector('input[name="orderType"][value="DINE IN"]').checked = true;
+  }
+
+  takeOutOption.closest(".order-type-btn").style.opacity =
+    hasUnliProduct ? "0.4" : "1";
+
+  takeOutOption.closest(".order-type-btn").style.cursor =
+    hasUnliProduct ? "not-allowed" : "pointer";
   const el = document.getElementById("cart");
   document.getElementById("cartPanel").classList.toggle("hidden", cart.length === 0);
   const discountType = document.getElementById("discount").value;
@@ -5632,6 +5650,19 @@ document.getElementById("newOrderBtn").onclick=()=>{
 };
 }
 document.getElementById("checkoutBtn").onclick=()=>{
+    const hasUnliProduct = cart.some(item =>
+    item.name === "UNLI 269 WINGS" ||
+    item.name === "UNLI 299 WINGS"
+  );
+
+  if(
+    hasUnliProduct &&
+    document.querySelector('input[name="orderType"]:checked').value !== "DINE IN"
+  ){
+    document.getElementById("orderMessage").textContent =
+      "UNLI WINGS IS FOR DINE IN ONLY.";
+    return;
+  }
   document.getElementById("orderMessage").textContent="";
     const customerName =
     document.getElementById("customerName").value.trim();
