@@ -1604,7 +1604,206 @@ let staffScheduleLoaded = false;
     });
   });
 }
-  async function loadScheduleEmployees(){
+
+function escapeScheduleHtml(value){
+  return String(value || "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+async function loadWeeklySchedule(){
+
+  const scheduleEl =
+    document.getElementById("staffWeeklySchedule");
+
+  const dates = getScheduleWeekDates();
+  const weekStart = dates[0];
+
+  try{
+
+    const snapshot = await getDoc(
+      doc(db, "schedules", weekStart)
+    );
+
+    staffScheduleDraft = snapshot.exists()
+      ? (snapshot.data().assignments || {})
+      : {};
+
+    renderStaffWeeklySchedule();
+
+  }catch(error){
+
+    console.error("Weekly schedule loading error:", error);
+
+    scheduleEl.innerHTML =
+      "<p class='small'>Unable to load weekly schedule.</p>";
+  }
+}
+
+function renderStaffWeeklySchedule(){
+
+  const scheduleEl =
+    document.getElementById("staffWeeklySchedule");
+
+  const dates = getScheduleWeekDates();
+
+  const canEdit =
+    String(currentUserRole || "").toLowerCase() === "owner";
+
+  const weekLabel =
+    document.getElementById("scheduleWeekLabel");
+
+  if(weekLabel){
+
+    if(scheduleWeekOffset === 0){
+      weekLabel.textContent = "THIS WEEK";
+    }else{
+      const start = new Date(dates[0] + "T12:00:00");
+      const end = new Date(dates[6] + "T12:00:00");
+
+      weekLabel.textContent =
+        start.toLocaleDateString("en-PH", {
+          month:"short",
+          day:"numeric"
+        }) + " - " +
+        end.toLocaleDateString("en-PH", {
+          month:"short",
+          day:"numeric",
+          year:"numeric"
+        });
+    }
+  }
+
+  if(!staffScheduleEmployees.length){
+
+    scheduleEl.innerHTML =
+      "<p class='small'>No active staff found.</p>";
+
+    return;
+  }
+
+  let html = `
+    <div style="overflow-x:auto">
+      <table style="
+        width:100%;
+        min-width:850px;
+        border-collapse:collapse;
+        text-align:center;
+      ">
+        <thead>
+          <tr>
+            <th style="padding:10px;text-align:left">STAFF</th>
+  `;
+
+  dates.forEach(date => {
+
+    const day = new Date(date + "T12:00:00");
+
+    html += `
+      <th style="padding:8px">
+        ${day.toLocaleDateString("en-PH", {
+          weekday:"short"
+        })}
+        <br>
+        ${day.toLocaleDateString("en-PH", {
+          month:"short",
+          day:"numeric"
+        })}
+      </th>
+    `;
+  });
+
+  html += `
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  staffScheduleEmployees.forEach(employee => {
+
+    const employeeId = employee.id;
+    const name = escapeScheduleHtml(employee.name);
+
+    html += `
+      <tr style="border-top:1px solid #444">
+        <td style="
+          padding:10px;
+          text-align:left;
+          font-weight:bold;
+        ">
+          ${name}
+        </td>
+    `;
+
+    dates.forEach(date => {
+
+      const assignment =
+        staffScheduleDraft[employeeId] || {};
+
+      const value = assignment[date] || "RD";
+
+      html += `
+        <td style="padding:6px">
+          <select
+            class="staff-schedule-select"
+            data-employee-id="${escapeScheduleHtml(employeeId)}"
+            data-date="${date}"
+            ${canEdit ? "" : "disabled"}
+            style="
+              width:100%;
+              min-width:95px;
+              padding:9px 5px;
+              border-radius:8px;
+              font-weight:bold;
+              text-align:center;
+            "
+          >
+            <option value="WORK" ${value === "WORK" ? "selected" : ""}>
+              🕒 3:00
+            </option>
+            <option value="RD" ${value === "RD" ? "selected" : ""}>
+              RD
+            </option>
+          </select>
+        </td>
+      `;
+    });
+
+    html += "</tr>";
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  scheduleEl.innerHTML = html;
+
+  scheduleEl
+    .querySelectorAll(".staff-schedule-select")
+    .forEach(select => {
+
+      select.addEventListener("change", () => {
+
+        const employeeId = select.dataset.employeeId;
+        const date = select.dataset.date;
+
+        if(!staffScheduleDraft[employeeId]){
+          staffScheduleDraft[employeeId] = {};
+        }
+
+        staffScheduleDraft[employeeId][date] =
+          select.value;
+      });
+    });
+}
+
+async function loadScheduleEmployees(){
 
   const scheduleEl =
     document.getElementById("staffWeeklySchedule");
@@ -1630,6 +1829,8 @@ let staffScheduleLoaded = false;
 
     staffScheduleLoaded = true;
 
+    await loadWeeklySchedule();
+
   }catch(error){
 
     console.error("Schedule employee loading error:", error);
@@ -1638,6 +1839,62 @@ let staffScheduleLoaded = false;
       "<p class='small'>Unable to load staff. Please try again.</p>";
   }
 }
+
+  
+document.getElementById("schedulePrevWeek").addEventListener("click", async () => {
+  scheduleWeekOffset--;
+  await loadWeeklySchedule();
+});
+
+document.getElementById("scheduleNextWeek").addEventListener("click", async () => {
+  scheduleWeekOffset++;
+  await loadWeeklySchedule();
+});
+
+document.getElementById("saveStaffScheduleBtn").addEventListener("click", async () => {
+
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
+    alert("Only the owner can save staff schedules.");
+    return;
+  }
+
+  const weekStart = getScheduleWeekDates()[0];
+
+  const saveButton =
+    document.getElementById("saveStaffScheduleBtn");
+
+  saveButton.disabled = true;
+  saveButton.innerHTML = "SAVING...";
+
+  try{
+
+    await setDoc(
+      doc(db, "schedules", weekStart),
+      {
+        weekStart: weekStart,
+        assignments: staffScheduleDraft,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    alert("Weekly staff schedule saved successfully!");
+
+  }catch(error){
+
+    console.error("Schedule saving error:", error);
+
+    alert("Unable to save schedule. Please try again.");
+
+  }finally{
+
+    saveButton.disabled = false;
+    saveButton.innerHTML =
+      '<i class="fas fa-save"></i> SAVE SCHEDULE';
+  }
+
+});
+
 let reportOrders = [];
 let reportDateLoaded = "";
   
