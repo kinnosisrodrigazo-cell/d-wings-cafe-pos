@@ -1564,6 +1564,66 @@ let isSavingSale = false;
 let saleSaved = false;
 let pendingSaleRef = null;
 let currentUserRole = null;
+  let scheduleWeekOffset = 0;
+let staffScheduleDraft = {};
+let staffScheduleEmployees = [];
+let staffScheduleLoaded = false;
+  function getScheduleWeekDates(){
+
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+
+  const day = today.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+
+  const monday = new Date(today);
+  monday.setDate(
+    today.getDate() + mondayOffset + (scheduleWeekOffset * 7)
+  );
+
+  return Array.from({length: 7}, (_, index) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + index);
+
+    return date.toLocaleDateString("en-CA", {
+      timeZone: "Asia/Manila"
+    });
+  });
+}
+  async function loadScheduleEmployees(){
+
+  const scheduleEl =
+    document.getElementById("staffWeeklySchedule");
+
+  scheduleEl.innerHTML =
+    "<p class='small'>Loading staff...</p>";
+
+  try{
+
+    const snapshot = await getDocs(
+      collection(db, "employees")
+    );
+
+    staffScheduleEmployees = snapshot.docs
+      .map(employeeDoc => ({
+        id: employeeDoc.id,
+        ...employeeDoc.data()
+      }))
+      .filter(employee => employee.active === true)
+      .sort((a, b) =>
+        (a.name || "").localeCompare(b.name || "")
+      );
+
+    staffScheduleLoaded = true;
+
+  }catch(error){
+
+    console.error("Schedule employee loading error:", error);
+
+    scheduleEl.innerHTML =
+      "<p class='small'>Unable to load staff. Please try again.</p>";
+  }
+}
 let reportOrders = [];
 let reportDateLoaded = "";
   
@@ -5277,6 +5337,7 @@ document.getElementById("employeeAttendanceBtn").addEventListener("click", () =>
   });
 
   loadTodayAttendance();
+  loadScheduleEmployees();
 
 });
 // OWNER DASHBOARD BUTTON
