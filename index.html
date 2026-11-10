@@ -1606,7 +1606,8 @@ let staffScheduleLoaded = false;
   });
 }
 
-function escapeScheduleHtml(value){
+
+  function escapeScheduleHtml(value){
   return String(value || "").replace(/[&<>"']/g, char => ({
     "&": "&amp;",
     "<": "&lt;",
@@ -1614,6 +1615,44 @@ function escapeScheduleHtml(value){
     '"': "&quot;",
     "'": "&#39;"
   })[char]);
+}
+
+// LOAD ATTENDANCE FOR THE SELECTED WEEK
+async function loadStaffWeeklyAttendance(dates) {
+
+  staffWeeklyAttendance = {};
+
+  if (!dates || dates.length !== 7) return;
+
+  try {
+
+    const attendanceQuery = query(
+      collection(db, "attendance"),
+      where("date", ">=", dates[0]),
+      where("date", "<=", dates[6])
+    );
+
+    const snapshot = await getDocs(attendanceQuery);
+
+    snapshot.forEach(docSnap => {
+
+      const attendance = docSnap.data();
+
+      const key =
+        `${attendance.employeeId}_${attendance.date}`;
+
+      staffWeeklyAttendance[key] = attendance;
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Failed to load weekly attendance:",
+      error
+    );
+
+  }
 }
 
 
@@ -1842,7 +1881,7 @@ html += `
 `;
 
 if(canEdit && !isAbsent){
-
+  
   html += `
     <select
       class="staff-schedule-select"
@@ -1873,7 +1912,37 @@ if(canEdit && !isAbsent){
 </option>
           </select>
         `;
+if(
+  value === "WORK" &&
+  date <= todayDate &&
+  !attendance.timeIn &&
+  !attendance.status
+){
 
+  html += `
+    <button
+      type="button"
+      class="mark-absent-btn"
+      data-employee-id="${escapeScheduleHtml(employeeId)}"
+      data-employee-name="${name}"
+      data-date="${date}"
+      style="
+        display:block;
+        margin:4px auto 0;
+        padding:3px 6px;
+        border:1px solid #ff4d5a;
+        border-radius:6px;
+        background:rgba(220,53,69,.12);
+        color:#ff4d5a;
+        font-size:9px;
+        font-weight:800;
+        cursor:pointer;
+      "
+    >
+      ABSENT
+    </button>
+  `;
+}
       }else{
 
         html += `
@@ -1902,7 +1971,22 @@ ${isAbsent ? "ABSENT" : value === "WORK" ? "3PM" : value === "RD" ? "RD" : "-"}<
   `;
 
   scheduleEl.innerHTML = html;
+  // ABSENT BUTTON CLICK HANDLER
+  scheduleEl
+    .querySelectorAll(".mark-absent-btn")
+    .forEach(button => {
 
+      button.addEventListener("click", () => {
+
+        markStaffAbsent(
+          button.dataset.employeeId,
+          button.dataset.employeeName,
+          button.dataset.date
+        );
+
+      });
+
+    });
   scheduleEl
     .querySelectorAll(".staff-schedule-select")
     .forEach(select => {
@@ -1979,10 +2063,15 @@ document.getElementById("scheduleNextWeek").addEventListener("click", async () =
 
 document.getElementById("saveStaffScheduleBtn").addEventListener("click", async () => {
 
-  if(String(currentUserRole || "").toLowerCase() !== "owner"){
-    alert("Only the owner can save staff schedules.");
-    return;
-  }
+if(String(currentUserRole || "").toLowerCase() !== "owner"){
+  alert("Only the owner can edit the staff schedule.");
+  return;
+}
+
+if(!auth.currentUser){
+  alert("Please sign in again.");
+  return;
+}
 
   const weekStart = getScheduleWeekDates()[0];
 
@@ -3564,7 +3653,74 @@ if(type === "TIME IN"){
     }
   }
 }
-  
+  // OWNER CONFIRMS STAFF ABSENT
+async function markStaffAbsent(employeeId, employeeName, date){
+
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
+    alert("Only the owner can mark staff absent.");
+    return;
+  }
+
+  const today = getManilaDateTime().date;
+
+  if(date > today){
+    alert("You cannot mark a future schedule date as absent.");
+    return;
+  }
+
+  const assignment =
+    staffScheduleDraft[employeeId] || {};
+
+  if(assignment[date] !== "WORK"){
+    alert("Only staff scheduled to work can be marked absent.");
+    return;
+  }
+
+  const attendanceId = `${employeeId}_${date}`;
+  const attendanceRef = doc(db, "attendance", attendanceId);
+
+  if(!confirm(`Confirm ABSENT for ${employeeName} on ${date}? A ₱500 deduction will apply.`)){
+    return;
+  }
+
+  try{
+
+    await runTransaction(db, async transaction => {
+
+      const attendanceDoc = await transaction.get(attendanceRef);
+
+      if(attendanceDoc.exists()){
+        throw new Error("ATTENDANCE_EXISTS");
+      }
+
+      transaction.set(attendanceRef, {
+        employeeId: employeeId,
+        employeeName: employeeName,
+        date: date,
+        status: "ABSENT",
+        absentBy: auth.currentUser.uid,
+        absentAt: serverTimestamp(),
+        absentDeduction: 500
+      });
+
+    });
+
+    alert(`${employeeName} marked ABSENT successfully.`);
+
+    await loadStaffWeeklyAttendance(getScheduleWeekDates());
+    renderStaffWeeklySchedule();
+    await loadTodayAttendance();
+
+  }catch(error){
+
+    if(error.message === "ATTENDANCE_EXISTS"){
+      alert("This staff member already has an attendance record for that date. ABSENT cannot be applied.");
+    }else{
+      console.error("ABSENT recording error:", error);
+      alert("Unable to mark staff absent. Please try again.");
+    }
+  }
+}
 // LOAD TODAY'S ATTENDANCE
 async function loadTodayAttendance(){
 
@@ -3631,9 +3787,21 @@ attendanceList.innerHTML = `
               text-align:center;
               font-size:11px;
               font-weight:bold;
-              color:${record.timeOut ? "#16a34a" : "#d97706"};
+             color:${
+  record.status === "ABSENT"
+    ? "#ff4d5a"
+    : record.timeOut
+    ? "#16a34a"
+    : "#d97706"
+};
             ">
-              ${record.timeOut ? "COMPLETED" : "WORKING"}
+             ${
+  record.status === "ABSENT"
+    ? "ABSENT"
+    : record.timeOut
+    ? "COMPLETED"
+    : "WORKING"
+}
             </td>
           </tr>
         `).join("")}
