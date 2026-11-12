@@ -5112,120 +5112,85 @@ const ATTENDANCE_CAFE_LNG = 120.871896;
 const ATTENDANCE_RADIUS_METERS = 50;
 const ATTENDANCE_PHOTO_RETENTION_DAYS = 14;
 
-const ATTENDANCE_PHOTO_DB = "DWingsAttendancePhotos";
-const ATTENDANCE_PHOTO_STORE = "photos";
-
-function openAttendancePhotoDB(){
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(ATTENDANCE_PHOTO_DB, 1);
-
-    request.onupgradeneeded = () => {
-      const database = request.result;
-
-      if(!database.objectStoreNames.contains(ATTENDANCE_PHOTO_STORE)){
-        database.createObjectStore(ATTENDANCE_PHOTO_STORE, {
-          keyPath: "id"
-        });
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
 async function saveAttendancePhoto(employeeId, date, photoBlob){
-  const database = await openAttendancePhotoDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(
-      ATTENDANCE_PHOTO_STORE,
-      "readwrite"
-    );
+  const user = auth.currentUser;
 
-    transaction.objectStore(ATTENDANCE_PHOTO_STORE).put({
-      id: `${employeeId}_${date}`,
-      employeeId,
-      date,
-      photo: photoBlob,
-      savedAt: Date.now()
-    });
+  if(!user){
+    throw new Error("FIREBASE_LOGIN_REQUIRED");
+  }
 
-    transaction.oncomplete = () => {
-      database.close();
-      resolve(true);
-    };
+  const idToken = await user.getIdToken();
 
-    transaction.onerror = () => {
-      database.close();
-      reject(transaction.error);
-    };
-  });
+  const formData = new FormData();
+
+  formData.append("employeeId", employeeId);
+  formData.append("date", date);
+  formData.append(
+    "file",
+    photoBlob,
+    `${employeeId}_${date}.jpg`
+  );
+
+  const response = await fetch(
+    "https://qtmupngryhnliugrfnnv.supabase.co/functions/v1/attendance-photos",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken}`
+      },
+      body: formData
+    }
+  );
+
+  const result = await response.json();
+
+  if(!response.ok || !result.success){
+    console.error("Supabase photo upload failed:", result);
+    throw new Error(result.error || "PHOTO_UPLOAD_FAILED");
+  }
+
+  return true;
 }
 
-  async function getAttendancePhoto(employeeId, date){
-  const database = await openAttendancePhotoDB();
 
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(
-      ATTENDANCE_PHOTO_STORE,
-      "readonly"
-    );
 
-    const request = transaction
-      .objectStore(ATTENDANCE_PHOTO_STORE)
-      .get(`${employeeId}_${date}`);
+async function getAttendancePhotoURL(employeeId, date){
 
-    request.onsuccess = () => {
-      const record = request.result || null;
-      database.close();
-      resolve(record);
-    };
+  const user = auth.currentUser;
 
-    request.onerror = () => {
-      database.close();
-      reject(request.error);
-    };
-  });
+  if(!user){
+    throw new Error("FIREBASE_LOGIN_REQUIRED");
+  }
+
+  const idToken = await user.getIdToken();
+
+  const response = await fetch(
+    "https://qtmupngryhnliugrfnnv.supabase.co/functions/v1/attendance-photos",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "view",
+        employeeId,
+        date
+      })
+    }
+  );
+
+  const result = await response.json();
+
+  if(!response.ok || !result.success || !result.signedURL){
+    console.error("Photo retrieval failed:", result);
+    throw new Error(result.error || "PHOTO_VIEW_FAILED");
+  }
+
+  return result.signedURL;
 }
 
-async function cleanupOldAttendancePhotos(){
-  const database = await openAttendancePhotoDB();
-  const cutoff = Date.now() -
-    ATTENDANCE_PHOTO_RETENTION_DAYS * 24 * 60 * 60 * 1000;
-
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(
-      ATTENDANCE_PHOTO_STORE,
-      "readwrite"
-    );
-
-    const store = transaction.objectStore(ATTENDANCE_PHOTO_STORE);
-    const request = store.openCursor();
-
-    request.onsuccess = () => {
-      const cursor = request.result;
-
-      if(!cursor) return;
-
-      if(cursor.value.savedAt < cutoff){
-        cursor.delete();
-      }
-
-      cursor.continue();
-    };
-
-    transaction.oncomplete = () => {
-      database.close();
-      resolve(true);
-    };
-
-    transaction.onerror = () => {
-      database.close();
-      reject(transaction.error);
-    };
-  });
-}
 
 function getAttendanceGPS(){
   return new Promise((resolve, reject) => {
@@ -5598,7 +5563,7 @@ async function recordAttendance(type){
           distanceFromCafe: gpsInfo.distanceFromCafe,
 
           photoStored: true,
-          photoStorage: "LOCAL_DEVICE",
+         photoStorage: "SUPABASE",
 
           createdAt: serverTimestamp()
         });
@@ -5632,30 +5597,7 @@ async function recordAttendance(type){
 
   }catch(error){
 
-    // Remove local photo if attendance was not successfully recorded
-    if(photoSaved){
-      try{
-        const database = await openAttendancePhotoDB();
 
-        await new Promise((resolve, reject) => {
-          const transaction = database.transaction(
-            ATTENDANCE_PHOTO_STORE,
-            "readwrite"
-          );
-
-          transaction.objectStore(ATTENDANCE_PHOTO_STORE)
-            .delete(`${employee.id}_${date}`);
-
-          transaction.oncomplete = resolve;
-          transaction.onerror = () => reject(transaction.error);
-        });
-
-        database.close();
-
-      }catch(cleanupError){
-        console.error("Photo cleanup error:", cleanupError);
-      }
-    }
 
     if(error.message === "ALREADY_IN"){
       message.textContent =
@@ -6078,22 +6020,12 @@ locationBtn.onclick = null;
   };
 }
 
-    const savedPhoto = await getAttendancePhoto(employeeId, date);
 
-    if(!savedPhoto || !savedPhoto.photo){
-      info.textContent = "Photo not available on this tablet.";
-      return;
-    }
+const photoURL = await getAttendancePhotoURL(employeeId, date);
 
-    if(image.dataset.objectUrl){
-      URL.revokeObjectURL(image.dataset.objectUrl);
-    }
+image.src = photoURL;
+image.style.display = "block";
 
-    const photoURL = URL.createObjectURL(savedPhoto.photo);
-
-    image.dataset.objectUrl = photoURL;
-    image.src = photoURL;
-    image.style.display = "block";
 
     info.textContent =
       "STAFF: " + (record.employeeName || "Unknown") + "\n" +
@@ -8117,13 +8049,6 @@ document.getElementById("avatarSelection").classList.add("hidden");
 
 try {
    await verifyUser(user);
-
-   // Automatically delete attendance photos older than 14 days
-   try {
-     await cleanupOldAttendancePhotos();
-   } catch (photoCleanupError) {
-     console.error("Attendance photo cleanup error:", photoCleanupError);
-   }
 
   } catch (error) {
     console.error("VERIFY USER ERROR:", error);
