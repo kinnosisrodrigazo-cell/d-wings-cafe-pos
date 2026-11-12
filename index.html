@@ -1217,18 +1217,45 @@ button:disabled{opacity:.5}
         </div>
       </div>
 
-      <!-- ATTENDANCE REMINDER -->
-      <div class="panel">
-        <h3>ATTENDANCE REMINDER</h3>
-        <div id="staffAttendanceReminders">
-          <p class="small">Attendance reminders will appear here.</p>
-        </div>
-      </div>
 
+<!-- ATTENDANCE REMINDER -->
+<div class="panel">
+  <h3>ATTENDANCE REMINDER</h3>
 
+  <div id="staffAttendanceReminderSummary"
+       style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;">
 
-    <!-- RIGHT COLUMN -->
-    <div class="staff-right-column">
+    <div style="background:#292929;padding:12px;border-radius:9px;">
+      <div style="font-size:11px;color:#aaa;">NO TIME IN</div>
+      <strong id="reminderNoTimeIn" style="font-size:22px;color:#ff4d5a;">0</strong>
+    </div>
+
+    <div style="background:#292929;padding:12px;border-radius:9px;">
+      <div style="font-size:11px;color:#aaa;">NO TIME OUT</div>
+      <strong id="reminderNoTimeOut" style="font-size:22px;color:#e7ad3e;">0</strong>
+    </div>
+
+    <div style="background:#292929;padding:12px;border-radius:9px;">
+      <div style="font-size:11px;color:#aaa;">LATE</div>
+      <strong id="reminderLate" style="font-size:22px;color:#168bff;">0</strong>
+    </div>
+
+    <div style="background:#292929;padding:12px;border-radius:9px;">
+      <div style="font-size:11px;color:#aaa;">ABSENT</div>
+      <strong id="reminderAbsent" style="font-size:22px;color:#ff4d5a;">0</strong>
+    </div>
+
+  </div>
+
+  <div id="staffAttendanceReminders">
+    <p class="small">Loading attendance reminders...</p>
+  </div>
+</div>
+
+</div><!-- END LEFT COLUMN -->
+
+<!-- RIGHT COLUMN -->
+<div class="staff-right-column">
 
       <div class="panel">
 
