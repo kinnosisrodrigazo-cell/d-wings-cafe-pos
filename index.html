@@ -1676,6 +1676,7 @@ let staffScheduleDraft = {};
 let staffScheduleEmployees = [];
 let staffScheduleLoaded = false;
   let staffWeeklyAttendance = {};
+  let staffAttendanceReminderApprovals = {};
   function getScheduleWeekDates(){
 
   const today = new Date();
@@ -1711,7 +1712,9 @@ let staffScheduleLoaded = false;
 }
 
 // LOAD ATTENDANCE FOR THE SELECTED WEEK
-async function loadStaffWeeklyAttendance(dates) {
+await loadStaffWeeklyAttendance(dates);
+
+renderStaffWeeklySchedule();
 
   staffWeeklyAttendance = {};
 
@@ -1766,7 +1769,9 @@ async function loadStaffWeeklyAttendance(dates) {
     staffScheduleDraft = snapshot.exists()
       ? (snapshot.data().assignments || {})
       : {};
-
+staffAttendanceReminderApprovals = snapshot.exists()
+  ? (snapshot.data().reminderApprovals || {})
+  : {};
     // LOAD ATTENDANCE FOR THE SELECTED WEEK
     await loadStaffWeeklyAttendance(dates);
 
@@ -2104,6 +2109,221 @@ select.style.color =
 select.style.border = "none";
       });
     });
+}
+
+// RENDER WEEKLY STAFF ATTENDANCE REMINDERS
+function renderStaffAttendanceReminders(){
+
+  const reminderList =
+    document.getElementById("staffAttendanceReminders");
+
+  if(!reminderList) return;
+
+  const dates = getScheduleWeekDates();
+  const today = getManilaDateTime().date;
+  const reminders = [];
+
+  staffScheduleEmployees.forEach(employee => {
+
+    const assignment =
+      staffScheduleDraft[employee.id] || {};
+
+    dates.forEach(date => {
+
+      if(date > today || assignment[date] !== "WORK"){
+        return;
+      }
+
+      const attendance =
+        staffWeeklyAttendance[`${employee.id}_${date}`] || {};
+
+      const types = [];
+
+if(attendance.status === "ABSENT"){
+
+  types.push("ABSENT");
+
+}else if(!attendance.timeIn){
+
+  // NO TIME IN: only after 3 PM
+  if(
+    date < today ||
+    (date === today && getManilaDateTime().time >= "15:00:00")
+  ){
+    types.push("NO TIME IN");
+  }
+
+}else if(!attendance.timeOut){
+
+  // NO TIME OUT: only after the shift has ended
+  if(date < today){
+    types.push("NO TIME OUT");
+  }
+
+}
+
+      if(Number(attendance.lateMinutes || 0) > 0){
+        types.push("LATE");
+      }
+
+      types.forEach(type => {
+
+        const approvalKey =
+          `${employee.id}_${date}_${type}`;
+
+        if(staffAttendanceReminderApprovals[approvalKey]){
+          return;
+        }
+
+        reminders.push({
+          employeeId: employee.id,
+          employeeName: employee.name,
+          date,
+          type,
+          approvalKey
+        });
+
+      });
+
+    });
+
+  });
+
+  // UPDATE COUNTERS
+  ["NO TIME IN", "NO TIME OUT", "LATE", "ABSENT"]
+    .forEach(type => {
+
+      const count = reminders.filter(
+        reminder => reminder.type === type
+      ).length;
+
+      const counterIds = {
+        "NO TIME IN": "reminderNoTimeIn",
+        "NO TIME OUT": "reminderNoTimeOut",
+        "LATE": "reminderLate",
+        "ABSENT": "reminderAbsent"
+      };
+
+      const counter =
+        document.getElementById(counterIds[type]);
+
+      if(counter) counter.textContent = count;
+
+    });
+
+  if(!reminders.length){
+
+    reminderList.innerHTML =
+      '<p class="small">No pending attendance reminders.</p>';
+
+    return;
+  }
+
+  const isOwner =
+    String(currentUserRole || "").toLowerCase() === "owner";
+
+  reminderList.innerHTML = reminders.map(reminder => `
+
+    <div style="
+      background:#292929;
+      padding:12px;
+      border-radius:9px;
+      margin-bottom:8px;
+      border-left:3px solid ${
+        reminder.type === "LATE" ? "#168bff" :
+        reminder.type === "NO TIME OUT" ? "#e7ad3e" :
+        "#ff4d5a"
+      };
+    ">
+
+      <div style="font-weight:bold">
+        ${escapeScheduleHtml(reminder.employeeName)}
+      </div>
+
+      <div style="font-size:12px;color:#aaa;margin:5px 0">
+        ${reminder.date} · ${reminder.type}
+      </div>
+
+      ${
+        isOwner
+        ? `
+          <button
+            type="button"
+            class="approve-attendance-reminder-btn"
+            data-key="${escapeScheduleHtml(reminder.approvalKey)}"
+            style="padding:7px 12px;font-size:11px"
+          >
+            APPROVE
+          </button>
+        `
+        : `
+          <span class="small">OWNER APPROVAL REQUIRED</span>
+        `
+      }
+
+    </div>
+
+  `).join("");
+
+  // OWNER APPROVAL BUTTONS
+  reminderList
+    .querySelectorAll(".approve-attendance-reminder-btn")
+    .forEach(button => {
+
+      button.addEventListener("click", async () => {
+
+        if(!isOwner) return;
+
+        const key = button.dataset.key;
+
+        if(!confirm("Approve and clear this attendance reminder?")){
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "APPROVING...";
+
+        try{
+
+          const approvals = {
+            ...staffAttendanceReminderApprovals,
+            [key]: {
+              approvedBy: auth.currentUser.uid,
+              approvedAt: new Date().toISOString()
+            }
+          };
+
+          const weekStart = dates[0];
+
+          await setDoc(
+            doc(db, "schedules", weekStart),
+            {
+              weekStart,
+              reminderApprovals: approvals,
+              updatedAt: serverTimestamp()
+            },
+            { merge: true }
+          );
+
+          staffAttendanceReminderApprovals = approvals;
+
+          renderStaffAttendanceReminders();
+
+        }catch(error){
+
+          console.error("Reminder approval error:", error);
+
+          alert("Unable to approve reminder. Please try again.");
+
+          button.disabled = false;
+          button.textContent = "APPROVE";
+
+        }
+
+      });
+
+    });
+
 }
 
 async function loadScheduleEmployees(){
@@ -4190,6 +4410,7 @@ async function markStaffAbsent(employeeId, employeeName, date){
 
     await loadStaffWeeklyAttendance(getScheduleWeekDates());
     renderStaffWeeklySchedule();
+    renderStaffAttendanceReminders();
     await loadTodayAttendance();
 
   }catch(error){
