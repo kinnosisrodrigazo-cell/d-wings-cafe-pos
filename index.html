@@ -3765,6 +3765,121 @@ function getDailyIncentiveInfo(date, sales){
 
 let salesAmountsVisible = false;
 
+
+async function loadDashboardOrdersChart(){
+
+  const container = document.getElementById("dashboardOrdersChart");
+  if(!container) return;
+
+  container.innerHTML = "<p class='small'>Loading orders chart...</p>";
+
+  try{
+
+    const today = getManilaDateTime().date;
+    const todayDate = new Date(today + "T12:00:00");
+
+    const monday = new Date(todayDate);
+    const weekday = monday.getDay();
+
+    monday.setDate(
+      monday.getDate() - (weekday === 0 ? 6 : weekday - 1)
+    );
+
+    const dates = Array.from({length:7}, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+
+      return date.toLocaleDateString("en-CA", {
+        timeZone:"Asia/Manila"
+      });
+    });
+
+    const weekStart = dates[0];
+
+    const ordersSnapshot = await getDocs(query(
+      collection(db, "orders"),
+      where("orderDate", ">=", weekStart),
+      where("orderDate", "<=", today)
+    ));
+
+    const dailyCounts = {};
+
+    dates.forEach(date => {
+      dailyCounts[date] = 0;
+    });
+
+    // COUNT ALL ORDERS REGARDLESS OF STATUS
+    ordersSnapshot.forEach(docSnap => {
+
+      const order = docSnap.data();
+
+      if(dailyCounts[order.orderDate] !== undefined){
+        dailyCounts[order.orderDate]++;
+      }
+
+    });
+
+    if(typeof Chart === "undefined"){
+      container.innerHTML = "<p class='small'>Chart library is unavailable.</p>";
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="position:relative;height:280px;width:100%">
+        <canvas id="dashboardOrdersCanvas"></canvas>
+      </div>
+    `;
+
+    const canvas = document.getElementById("dashboardOrdersCanvas");
+
+    const existingChart = Chart.getChart(canvas);
+    if(existingChart) existingChart.destroy();
+
+    new Chart(canvas, {
+      type:"bar",
+      data:{
+        labels:dates.map(date =>
+          new Date(date + "T12:00:00").toLocaleDateString("en-PH", {
+            weekday:"short",
+            day:"numeric"
+          })
+        ),
+        datasets:[{
+          label:"Total Orders",
+          data:dates.map(date => dailyCounts[date]),
+          backgroundColor:"#d4af37",
+          borderRadius:6
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false}
+        },
+        scales:{
+          y:{
+            beginAtZero:true,
+            ticks:{
+              precision:0
+            }
+          }
+        }
+      }
+    });
+
+  }catch(error){
+
+    console.error("Orders Chart Error:", error);
+
+    container.innerHTML =
+      "<p class='small'>Unable to load orders chart.</p>";
+
+  }
+
+}
+
+  
 async function loadDashboardBusinessPerformance(){
 
   const summaryEl = document.getElementById("dashboardBusinessSummary");
@@ -7805,8 +7920,16 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
   document.getElementById("dashboardPage").classList.remove("hidden");
 
 loadDashboardBusinessPerformance();
-  loadDashboardPayroll();
-  loadDashboardPayslips();
+loadDashboardPayroll();
+loadDashboardPayslips();
+
+loadDashboardOrdersChart();
+loadDashboardPerformanceChart();
+loadDashboardWeeklyProfitChart();
+loadDashboardAverageProfitChart();
+loadDashboardScheduleChart();
+
+  
   document.querySelectorAll(".terminal-nav button").forEach(button => {
     button.classList.remove("active");
   });
