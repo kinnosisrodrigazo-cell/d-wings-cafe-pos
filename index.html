@@ -3989,7 +3989,7 @@ async function recordAttendance(type){
 
     }else if(error.message === "OUTSIDE_CAFE_RADIUS"){
       message.textContent =
-        "TIME IN denied: You must be within 50 meters of D’ Wings Cafe.";
+        "ERROR IN LOCATION: You are outside the authorized attendance area."
 
     }else if(error.message === "PHOTO_CANCELLED"){
       message.textContent =
