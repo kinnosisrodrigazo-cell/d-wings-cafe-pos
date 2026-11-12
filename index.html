@@ -2194,13 +2194,18 @@ if(
 
       types.forEach(type => {
 
+        reminders.push({
+          employeeId: employee.id,
+          employeeName: employee.name,
+          date,
+          type
+        });
 
-reminders.push({
-  employeeId: employee.id,
-  employeeName: employee.name,
-  date,
-  type
-});
+      });
+
+    });
+
+  });
 
   // UPDATE COUNTERS
   ["NO TIME IN", "NO TIME OUT", "LATE", "ABSENT"]
