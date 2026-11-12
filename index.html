@@ -2171,13 +2171,13 @@ if(attendance.status === "ABSENT"){
 
 }else if(!attendance.timeIn){
 
-  // NO TIME IN: only after 3 PM
-  if(
-    date < today ||
-    (date === today && getManilaDateTime().time >= "15:00:00")
-  ){
-    types.push("NO TIME IN");
-  }
+// NO TIME IN: only after 3 PM
+if(
+  date < today ||
+  (date === today && getManilaDateTime().time >= "15:00:00")
+){
+  types.push("NO TIME IN");
+}
 
 }else if(!attendance.timeOut){
 
@@ -2194,25 +2194,13 @@ if(attendance.status === "ABSENT"){
 
       types.forEach(type => {
 
-        const approvalKey =
-          `${employee.id}_${date}_${type}`;
-const approval =
-  staffAttendanceReminderApprovals[approvalKey] || null;
 
 reminders.push({
   employeeId: employee.id,
   employeeName: employee.name,
   date,
-  type,
-  approvalKey,
-  approval
+  type
 });
-
-      });
-
-    });
-
-  });
 
   // UPDATE COUNTERS
   ["NO TIME IN", "NO TIME OUT", "LATE", "ABSENT"]
@@ -2280,65 +2268,6 @@ reminders.push({
 
     </div>
   `).join("");
-
-  // OWNER APPROVAL BUTTONS
-  reminderList
-    .querySelectorAll(".approve-attendance-reminder-btn")
-    .forEach(button => {
-
-      button.addEventListener("click", async () => {
-
-        if(!isOwner) return;
-
-        const key = button.dataset.key;
-
-        if(!confirm("Approve and clear this attendance reminder?")){
-          return;
-        }
-
-        button.disabled = true;
-        button.textContent = "APPROVING...";
-
-        try{
-
-          const approvals = {
-            ...staffAttendanceReminderApprovals,
-            [key]: {
-              approvedBy: "OWNER",
-              approvedAt: new Date().toISOString()
-            }
-          };
-
-          const weekStart = dates[0];
-
-          await setDoc(
-            doc(db, "schedules", weekStart),
-            {
-              weekStart,
-              reminderApprovals: approvals,
-              updatedAt: serverTimestamp()
-            },
-            { merge: true }
-          );
-
-          staffAttendanceReminderApprovals = approvals;
-
-          renderStaffAttendanceReminders();
-
-        }catch(error){
-
-          console.error("Reminder approval error:", error);
-
-          alert("Unable to approve reminder. Please try again.");
-
-          button.disabled = false;
-          button.textContent = "APPROVE";
-
-        }
-
-      });
-
-    });
 
 }
 
