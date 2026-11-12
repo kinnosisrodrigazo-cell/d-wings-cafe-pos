@@ -4693,6 +4693,8 @@ async function loadDashboardPayroll(){
 // OWNER DASHBOARD - INDIVIDUAL STAFF PAYSLIPS
 // ======================================
 
+
+  
 async function loadDashboardPayslips(){
 
   const payslipEl = document.getElementById("dashboardPayslips");
@@ -4731,16 +4733,22 @@ async function loadDashboardPayslips(){
       timeZone: "Asia/Manila"
     });
 
-    const [employeesSnapshot, attendanceSnapshot, scheduleSnapshot] =
-      await Promise.all([
+    const [
+      employeesSnapshot,
+      attendanceSnapshot,
+      scheduleSnapshot,
+      ordersSnapshot
+    ] = await Promise.all([
 
-        getDocs(collection(db, "employees")),
+      getDocs(collection(db, "employees")),
 
-        getDocs(collection(db, "attendance")),
+      getDocs(collection(db, "attendance")),
 
-        getDoc(doc(db, "schedules", weekStart))
+      getDoc(doc(db, "schedules", weekStart)),
 
-      ]);
+      getDocs(collection(db, "orders"))
+
+    ]);
 
     // ACTIVE STAFF ONLY
     const activeStaff = employeesSnapshot.docs
@@ -4768,6 +4776,30 @@ async function loadDashboardPayslips(){
 
     });
 
+    // DAILY COMPLETED SALES
+    // VOID ORDERS ARE EXCLUDED
+    const completedSalesByDate = {};
+
+    ordersSnapshot.forEach(docSnap => {
+
+      const order = docSnap.data();
+
+      if(
+        order.status === "COMPLETED" &&
+        order.orderDate >= weekStart &&
+        order.orderDate <= today
+      ){
+
+        const orderDate = order.orderDate;
+        const orderTotal = Number(order.total) || 0;
+
+        completedSalesByDate[orderDate] =
+          (completedSalesByDate[orderDate] || 0) + orderTotal;
+
+      }
+
+    });
+
     // WEEKLY SCHEDULE
     const assignments = scheduleSnapshot.exists()
       ? (scheduleSnapshot.data().assignments || {})
@@ -4780,6 +4812,7 @@ async function loadDashboardPayslips(){
 
       let daysWorked = 0;
       let lateDeductions = 0;
+      let incentivePay = 0;
 
       const currentDate = new Date(weekStart + "T12:00:00");
 
@@ -4813,6 +4846,30 @@ async function loadDashboardPayslips(){
             attendance.lateDeduction
           ) || 0;
 
+          // DAILY COMPLETED SALES
+          const dailySales =
+            Number(completedSalesByDate[date]) || 0;
+
+          const dayOfWeek =
+            new Date(date + "T12:00:00").getDay();
+
+          // CALCULATE INDIVIDUAL STAFF INCENTIVE
+          if(dailySales >= 20000){
+
+            incentivePay += 500;
+
+          }else if(dailySales >= 15000){
+
+            incentivePay += 300;
+
+          }else if(dailySales >= 10000){
+
+            incentivePay += (
+              dayOfWeek >= 1 && dayOfWeek <= 4
+            ) ? 200 : 100;
+
+          }
+
         }
 
         currentDate.setDate(currentDate.getDate() + 1);
@@ -4823,8 +4880,17 @@ async function loadDashboardPayslips(){
       if(daysWorked > 0){
 
         const dailyRate = Number(employee.dailyRate) || 500;
+
         const grossSalary = dailyRate * daysWorked;
-        const netPay = Math.max(0, grossSalary - lateDeductions);
+
+        // BASIC PAY + SALES INCENTIVES
+        const totalEarnings = grossSalary + incentivePay;
+
+        // DEDUCT LATE AMOUNTS
+        const netPay = Math.max(
+          0,
+          totalEarnings - lateDeductions
+        );
 
         payslips.push({
           id: employee.id,
@@ -4832,6 +4898,8 @@ async function loadDashboardPayslips(){
           daysWorked,
           dailyRate,
           grossSalary,
+          incentivePay,
+          totalEarnings,
           lateDeductions,
           netPay
         });
@@ -4886,6 +4954,18 @@ async function loadDashboardPayslips(){
             <div class="row">
               <span>Gross Salary</span>
               <strong>${peso(staff.grossSalary)}</strong>
+            </div>
+
+            <div class="row">
+              <span>Incentive Pay</span>
+              <strong style="color:#55c98a">
+                + ${peso(staff.incentivePay)}
+              </strong>
+            </div>
+
+            <div class="row">
+              <span>Total Earnings</span>
+              <strong>${peso(staff.totalEarnings)}</strong>
             </div>
 
             <div class="row">
@@ -4950,324 +5030,327 @@ async function loadDashboardPayslips(){
           return;
         }
 
+        const printHtml = `
 
-const printHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Staff Payslip - ${escapeHTML(staff.name)}</title>
 
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <title>Staff Payslip - ${escapeHTML(staff.name)}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+              *{
+                box-sizing:border-box;
+              }
 
-    <style>
-      *{
-        box-sizing:border-box;
-      }
+              body{
+                font-family:Arial,sans-serif;
+                color:#222;
+                background:#fff;
+                padding:35px;
+                max-width:750px;
+                margin:auto;
+              }
 
-      body{
-        font-family:Arial,sans-serif;
-        color:#222;
-        background:#fff;
-        padding:35px;
-        max-width:750px;
-        margin:auto;
-      }
+              .payslip{
+                border:1px solid #ddd;
+                padding:35px;
+              }
 
-      .payslip{
-        border:1px solid #ddd;
-        padding:35px;
-      }
+              .header{
+                text-align:center;
+                padding-bottom:22px;
+                border-bottom:3px solid #bd9138;
+              }
 
-      .header{
-        text-align:center;
-        padding-bottom:22px;
-        border-bottom:3px solid #bd9138;
-      }
+              .company{
+                font-size:27px;
+                font-weight:900;
+                letter-spacing:2px;
+                margin:0;
+                color:#171717;
+              }
 
-      .company{
-        font-size:27px;
-        font-weight:900;
-        letter-spacing:2px;
-        margin:0;
-        color:#171717;
-      }
+              .address{
+                font-size:12px;
+                color:#666;
+                margin-top:7px;
+              }
 
-      .address{
-        font-size:12px;
-        color:#666;
-        margin-top:7px;
-      }
+              .document-title{
+                display:inline-block;
+                margin-top:18px;
+                padding:8px 22px;
+                background:#171717;
+                color:#e7bd63;
+                font-size:15px;
+                font-weight:bold;
+                letter-spacing:3px;
+              }
 
-      .document-title{
-        display:inline-block;
-        margin-top:18px;
-        padding:8px 22px;
-        background:#171717;
-        color:#e7bd63;
-        font-size:15px;
-        font-weight:bold;
-        letter-spacing:3px;
-      }
+              .section-title{
+                font-size:12px;
+                font-weight:bold;
+                letter-spacing:1.5px;
+                color:#a47a2d;
+                margin:25px 0 12px;
+                text-transform:uppercase;
+              }
 
-      .section-title{
-        font-size:12px;
-        font-weight:bold;
-        letter-spacing:1.5px;
-        color:#a47a2d;
-        margin:25px 0 12px;
-        text-transform:uppercase;
-      }
+              .employee-grid{
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:15px;
+                padding:18px;
+                background:#f7f7f7;
+                border-radius:8px;
+              }
 
-      .employee-grid{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:15px;
-        padding:18px;
-        background:#f7f7f7;
-        border-radius:8px;
-      }
+              .field-label{
+                display:block;
+                font-size:10px;
+                color:#777;
+                text-transform:uppercase;
+                margin-bottom:5px;
+              }
 
-      .field-label{
-        display:block;
-        font-size:10px;
-        color:#777;
-        text-transform:uppercase;
-        margin-bottom:5px;
-      }
+              .field-value{
+                font-size:13px;
+                font-weight:bold;
+              }
 
-      .field-value{
-        font-size:13px;
-        font-weight:bold;
-      }
+              .row{
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:15px;
+                padding:12px 5px;
+                border-bottom:1px solid #e8e8e8;
+                font-size:13px;
+              }
 
-      .row{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:15px;
-        padding:12px 5px;
-        border-bottom:1px solid #e8e8e8;
-        font-size:13px;
-      }
+              .row strong{
+                white-space:nowrap;
+              }
 
-      .row strong{
-        white-space:nowrap;
-      }
+              .total-row{
+                background:#f7f7f7;
+                font-weight:bold;
+                padding:14px 10px;
+                margin-top:5px;
+              }
 
-      .total-row{
-        background:#f7f7f7;
-        font-weight:bold;
-        padding:14px 10px;
-        margin-top:5px;
-      }
+              .deduction{
+                color:#c34b4b;
+              }
 
-      .deduction{
-        color:#c34b4b;
-      }
+              .net{
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:15px;
+                margin-top:25px;
+                padding:22px;
+                background:#171717;
+                color:#e7bd63;
+                border-radius:8px;
+              }
 
-      .net{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:15px;
-        margin-top:25px;
-        padding:22px;
-        background:#171717;
-        color:#e7bd63;
-        border-radius:8px;
-      }
+              .net-label{
+                font-size:15px;
+                font-weight:bold;
+                letter-spacing:2px;
+              }
 
-      .net-label{
-        font-size:15px;
-        font-weight:bold;
-        letter-spacing:2px;
-      }
+              .net-amount{
+                font-size:25px;
+                font-weight:900;
+                white-space:nowrap;
+              }
 
-      .net-amount{
-        font-size:25px;
-        font-weight:900;
-        white-space:nowrap;
-      }
+              .signatures{
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:45px;
+                margin-top:85px;
+              }
 
-      .signatures{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:45px;
-        margin-top:85px;
-      }
+              .signature{
+                text-align:center;
+                border-top:1px solid #333;
+                padding-top:10px;
+                font-size:12px;
+              }
 
-      .signature{
-        text-align:center;
-        border-top:1px solid #333;
-        padding-top:10px;
-        font-size:12px;
-      }
+              .footer{
+                text-align:center;
+                font-size:10px;
+                color:#888;
+                margin-top:35px;
+              }
 
-      .footer{
-        text-align:center;
-        font-size:10px;
-        color:#888;
-        margin-top:35px;
-      }
+              @media print{
+                body{
+                  padding:0;
+                }
 
-      @media print{
-        body{
-          padding:0;
-        }
+                .payslip{
+                  border:none;
+                  padding:20px;
+                }
 
-        .payslip{
-          border:none;
-          padding:20px;
-        }
+                @page{
+                  size:A4;
+                  margin:12mm;
+                }
+              }
 
-        @page{
-          size:A4;
-          margin:12mm;
-        }
-      }
+              @media(max-width:500px){
+                body{
+                  padding:5px;
+                }
 
-      @media(max-width:500px){
-        body{
-          padding:5px;
-        }
+                .payslip{
+                  padding:15px;
+                }
 
-        .payslip{
-          padding:15px;
-        }
+                .employee-grid{
+                  grid-template-columns:1fr 1fr;
+                }
 
-        .employee-grid{
-          grid-template-columns:1fr 1fr;
-        }
+                .net-amount{
+                  font-size:20px;
+                }
+              }
+            </style>
+          </head>
 
-        .net-amount{
-          font-size:20px;
-        }
-      }
-    </style>
-  </head>
+          <body>
 
-  <body>
+            <div class="payslip">
 
-    <div class="payslip">
+              <div class="header">
+                <h1 class="company">D' WINGS CAFE</h1>
 
-      <div class="header">
-        <h1 class="company">D' WINGS CAFE</h1>
+                <div class="address">
+                  Maple Grove Parade, Bacao I, General Trias, Cavite
+                </div>
 
-        <div class="address">
-          Maple Grove Parade, Bacao I, General Trias, Cavite
-        </div>
+                <div class="document-title">
+                  STAFF PAYSLIP
+                </div>
+              </div>
 
-        <div class="document-title">
-          STAFF PAYSLIP
-        </div>
-      </div>
+              <div class="section-title">Staff Information</div>
 
-      <div class="section-title">Staff Information</div>
+              <div class="employee-grid">
 
-      <div class="employee-grid">
+                <div>
+                  <span class="field-label">Staff Name</span>
+                  <span class="field-value">
+                    ${escapeHTML(staff.name)}
+                  </span>
+                </div>
 
-        <div>
-          <span class="field-label">Staff Name</span>
-          <span class="field-value">
-            ${escapeHTML(staff.name)}
-          </span>
-        </div>
+                <div>
+                  <span class="field-label">Designation</span>
+                  <span class="field-value">Kitchen Staff</span>
+                </div>
 
-        <div>
-          <span class="field-label">Designation</span>
-         <span class="field-value">Kitchen Staff</span>
-        </div>
+                <div>
+                  <span class="field-label">Department</span>
+                  <span class="field-value">Kitchen</span>
+                </div>
 
-        <div>
-          <span class="field-label">Department</span>
-          <span class="field-value">Kitchen</span>
-        </div>
+                <div>
+                  <span class="field-label">Date of Joining</span>
+                  <span class="field-value">—</span>
+                </div>
 
-        <div>
-          <span class="field-label">Date of Joining</span>
-          <span class="field-value">—</span>
-        </div>
+                <div>
+                  <span class="field-label">Pay Period</span>
+                  <span class="field-value">
+                    ${weekStart} to ${weekEnd}
+                  </span>
+                </div>
 
-        <div>
-          <span class="field-label">Pay Period</span>
-          <span class="field-value">
-            ${weekStart} to ${weekEnd}
-          </span>
-        </div>
+                <div>
+                  <span class="field-label">Days Worked</span>
+                  <span class="field-value">
+                    ${staff.daysWorked} day(s)
+                  </span>
+                </div>
 
-        <div>
-          <span class="field-label">Days Worked</span>
-          <span class="field-value">
-            ${staff.daysWorked} day(s)
-          </span>
-        </div>
+              </div>
 
-      </div>
+              <div class="section-title">Earnings</div>
 
-      <div class="section-title">Earnings</div>
+              <div class="row">
+                <span>Basic Pay</span>
+                <strong>${peso(staff.grossSalary)}</strong>
+              </div>
 
-      <div class="row">
-        <span>Basic Pay</span>
-        <strong>${peso(staff.grossSalary)}</strong>
-      </div>
+              <div class="row">
+                <span>Daily Rate</span>
+                <strong>${peso(staff.dailyRate)}</strong>
+              </div>
 
-      <div class="row">
-        <span>Daily Rate</span>
-        <strong>${peso(staff.dailyRate)}</strong>
-      </div>
+              <div class="row">
+                <span>Incentive Pay</span>
+                <strong>${peso(staff.incentivePay)}</strong>
+              </div>
 
-      <div class="row total-row">
-        <span>TOTAL EARNINGS</span>
-        <strong>${peso(staff.grossSalary)}</strong>
-      </div>
+              <div class="row total-row">
+                <span>TOTAL EARNINGS</span>
+                <strong>${peso(staff.totalEarnings)}</strong>
+              </div>
 
-      <div class="section-title">Deductions</div>
+              <div class="section-title">Deductions</div>
 
-      <div class="row">
-        <span>Late Deduction</span>
-        <strong class="deduction">
-          - ${peso(staff.lateDeductions)}
-        </strong>
-      </div>
+              <div class="row">
+                <span>Late Deduction</span>
+                <strong class="deduction">
+                  - ${peso(staff.lateDeductions)}
+                </strong>
+              </div>
 
-      <div class="row total-row">
-        <span>TOTAL DEDUCTIONS</span>
-        <strong class="deduction">
-          ${peso(staff.lateDeductions)}
-        </strong>
-      </div>
+              <div class="row total-row">
+                <span>TOTAL DEDUCTIONS</span>
+                <strong class="deduction">
+                  ${peso(staff.lateDeductions)}
+                </strong>
+              </div>
 
-      <div class="net">
-        <span class="net-label">NET PAY</span>
-        <span class="net-amount">
-          ${peso(staff.netPay)}
-        </span>
-      </div>
+              <div class="net">
+                <span class="net-label">NET PAY</span>
+                <span class="net-amount">
+                  ${peso(staff.netPay)}
+                </span>
+              </div>
 
-      <div class="signatures">
+              <div class="signatures">
 
-        <div class="signature">
-          Staff Signature
-        </div>
+                <div class="signature">
+                  Staff Signature
+                </div>
 
-        <div class="signature">
-          Employer / Owner Signature
-        </div>
+                <div class="signature">
+                  Employer / Owner Signature
+                </div>
 
-      </div>
+              </div>
 
-      <div class="footer">
-        D' WINGS CAFE • STAFF PAYROLL
-      </div>
+              <div class="footer">
+                D' WINGS CAFE • STAFF PAYROLL
+              </div>
 
-    </div>
+            </div>
 
-  </body>
-  </html>
+          </body>
+          </html>
 
-`;
-
+        `;
 
         printWindow.onload = () => {
           printWindow.focus();
@@ -5295,6 +5378,7 @@ const printHtml = `
   }
 
 }
+
 
   
 // ======================================
