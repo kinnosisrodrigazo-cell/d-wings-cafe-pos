@@ -1486,7 +1486,32 @@ button:disabled{opacity:.5}
     <h3>OWNER DASHBOARD</h3>
     <p class="small">D' WINGS CAFE BUSINESS PERFORMANCE</p>
   </div>
+  <!-- DAILY AND WEEKLY PAYROLL -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
 
+    <div class="panel">
+      <h3>TODAY'S PAYROLL</h3>
+      <div id="dashboardDailyPayroll">
+        <p class="small">Loading today's payroll...</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>WEEKLY PAYROLL</h3>
+      <div id="dashboardWeeklyPayroll">
+        <p class="small">Loading weekly payroll...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- INDIVIDUAL PAYSLIPS -->
+  <div class="panel">
+    <h3>STAFF PAYSLIPS</h3>
+    <div id="dashboardPayslips">
+      <p class="small">Loading staff payslips...</p>
+    </div>
+  </div>
   <!-- WEEK NAVIGATION -->
   <div class="row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:15px">
 
@@ -1514,7 +1539,6 @@ button:disabled{opacity:.5}
     <div id="dashboardPerformanceChart"></div>
   </div>
 
-</section>
   <!-- WEEKLY PROFIT GRAPH -->
   <div class="panel">
     <h3>WEEKLY PROFIT</h3>
