@@ -130,6 +130,13 @@ button:disabled{opacity:.5}
   min-width: 0;
 }
 
+
+@media (max-width: 600px) {
+  .attendance-reminder-payslip-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .staff-attendance-heading {
   display: flex;
   justify-content: space-between;
@@ -1242,7 +1249,6 @@ button:disabled{opacity:.5}
         </div>
       </div>
 
-
 <!-- ATTENDANCE REMINDER -->
 <div class="panel">
   <h3>ATTENDANCE REMINDER</h3>
@@ -1276,6 +1282,8 @@ button:disabled{opacity:.5}
     <p class="small">Loading attendance reminders...</p>
   </div>
 </div>
+
+
 
 </div><!-- END LEFT COLUMN -->
 
@@ -4252,6 +4260,419 @@ async function loadDashboardPayroll(){
       "<p class='small'>Unable to load weekly payroll.</p>";
 
   }
+}
+
+// ======================================
+// OWNER DASHBOARD - INDIVIDUAL STAFF PAYSLIPS
+// ======================================
+
+async function loadDashboardPayslips(){
+
+  const payslipEl = document.getElementById("dashboardPayslips");
+
+  if(!payslipEl) return;
+
+  // OWNER ACCESS ONLY
+  if(currentUserRole !== "owner"){
+    payslipEl.innerHTML = "<p class='small'>Owner access only.</p>";
+    return;
+  }
+
+  payslipEl.innerHTML = "<p class='small'>Loading staff payslips...</p>";
+
+  try{
+
+    const today = getManilaDateTime().date;
+
+    // GET CURRENT WEEK (MONDAY TO SUNDAY)
+    const todayDate = new Date(today + "T12:00:00");
+    const weekDate = new Date(todayDate);
+    const weekday = weekDate.getDay();
+
+    weekDate.setDate(
+      weekDate.getDate() - (weekday === 0 ? 6 : weekday - 1)
+    );
+
+    const weekStart = weekDate.toLocaleDateString("en-CA", {
+      timeZone: "Asia/Manila"
+    });
+
+    const weekEndDate = new Date(weekDate);
+    weekEndDate.setDate(weekEndDate.getDate() + 6);
+
+    const weekEnd = weekEndDate.toLocaleDateString("en-CA", {
+      timeZone: "Asia/Manila"
+    });
+
+    const [employeesSnapshot, attendanceSnapshot, scheduleSnapshot] =
+      await Promise.all([
+
+        getDocs(collection(db, "employees")),
+
+        getDocs(collection(db, "attendance")),
+
+        getDoc(doc(db, "schedules", weekStart))
+
+      ]);
+
+    // ACTIVE STAFF ONLY
+    const activeStaff = employeesSnapshot.docs
+      .map(employeeDoc => ({
+        id: employeeDoc.id,
+        ...employeeDoc.data()
+      }))
+      .filter(employee => employee.active === true);
+
+    // ATTENDANCE RECORDS
+    const attendanceByStaffAndDate = {};
+
+    attendanceSnapshot.forEach(docSnap => {
+
+      const record = docSnap.data();
+
+      if(
+        record.date >= weekStart &&
+        record.date <= today
+      ){
+        attendanceByStaffAndDate[
+          `${record.employeeId}_${record.date}`
+        ] = record;
+      }
+
+    });
+
+    // WEEKLY SCHEDULE
+    const assignments = scheduleSnapshot.exists()
+      ? (scheduleSnapshot.data().assignments || {})
+      : {};
+
+    // CALCULATE EACH STAFF MEMBER'S PAYSLIP
+    const payslips = [];
+
+    activeStaff.forEach(employee => {
+
+      let daysWorked = 0;
+      let lateDeductions = 0;
+
+      const currentDate = new Date(weekStart + "T12:00:00");
+
+      while(
+        currentDate.toLocaleDateString("en-CA", {
+          timeZone: "Asia/Manila"
+        }) <= today
+      ){
+
+        const date = currentDate.toLocaleDateString("en-CA", {
+          timeZone: "Asia/Manila"
+        });
+
+        const attendance =
+          attendanceByStaffAndDate[`${employee.id}_${date}`];
+
+        const wasScheduled =
+          assignments[employee.id]?.[date] === "WORK";
+
+        const actuallyWorked = (
+          wasScheduled &&
+          attendance?.timeIn &&
+          String(attendance.status || "").toUpperCase() !== "ABSENT"
+        );
+
+        if(actuallyWorked){
+
+          daysWorked++;
+
+          lateDeductions += Number(
+            attendance.lateDeduction
+          ) || 0;
+
+        }
+
+        currentDate.setDate(currentDate.getDate() + 1);
+
+      }
+
+      // SHOW ONLY STAFF WHO ACTUALLY WORKED
+      if(daysWorked > 0){
+
+        const dailyRate = Number(employee.dailyRate) || 500;
+        const grossSalary = dailyRate * daysWorked;
+        const netPay = Math.max(0, grossSalary - lateDeductions);
+
+        payslips.push({
+          id: employee.id,
+          name: employee.name || "STAFF",
+          daysWorked,
+          dailyRate,
+          grossSalary,
+          lateDeductions,
+          netPay
+        });
+
+      }
+
+    });
+
+    // NO STAFF WORKED
+    if(payslips.length === 0){
+
+      payslipEl.innerHTML = `
+        <p class="small">
+          No staff attendance records for this week yet.
+        </p>
+      `;
+
+      return;
+    }
+
+    // DISPLAY INDIVIDUAL PAYSLIPS
+    payslipEl.innerHTML = `
+
+      <p class="small">
+        PAYROLL PERIOD:
+        <strong>${weekStart} to ${weekEnd}</strong>
+      </p>
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+        gap:12px;
+      ">
+
+        ${payslips.map(staff => `
+
+          <div class="panel" style="margin:0">
+
+            <h3 style="margin-top:0">
+              ${escapeHTML(staff.name)}
+            </h3>
+
+            <p class="small">
+              ${staff.daysWorked} DAY(S) WORKED
+            </p>
+
+            <div class="row">
+              <span>Daily Salary</span>
+              <strong>${peso(staff.dailyRate)}</strong>
+            </div>
+
+            <div class="row">
+              <span>Gross Salary</span>
+              <strong>${peso(staff.grossSalary)}</strong>
+            </div>
+
+            <div class="row">
+              <span>Late Deductions</span>
+              <strong style="color:#ff7777">
+                - ${peso(staff.lateDeductions)}
+              </strong>
+            </div>
+
+            <hr>
+
+            <div class="row">
+              <strong>NET PAY</strong>
+              <strong style="color:#e7ad3e;font-size:20px">
+                ${peso(staff.netPay)}
+              </strong>
+            </div>
+
+            <button
+              type="button"
+              class="primary"
+              data-print-payslip="${escapeHTML(staff.id)}"
+              style="width:100%;margin-top:12px"
+            >
+              PRINT / SAVE AS PDF
+            </button>
+
+          </div>
+
+        `).join("")}
+
+      </div>
+
+    `;
+
+    // INDIVIDUAL PRINT BUTTONS
+    payslipEl.querySelectorAll("[data-print-payslip]").forEach(button => {
+
+      button.addEventListener("click", () => {
+
+        // CHECK OWNER AGAIN BEFORE PRINTING
+        if(currentUserRole !== "owner"){
+          alert("Owner access only.");
+          return;
+        }
+
+        const staff = payslips.find(
+          item => item.id === button.dataset.printPayslip
+        );
+
+        if(!staff) return;
+
+        // OPEN ONE STAFF MEMBER'S PAYSLIP
+        const printWindow = window.open(
+          "",
+          "_blank",
+          "width=800,height=900"
+        );
+
+        if(!printWindow){
+          alert("Please allow pop-ups to print the payslip.");
+          return;
+        }
+
+        const printHtml = `
+
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Staff Payslip - ${escapeHTML(staff.name)}</title>
+
+            <style>
+
+              body{
+                font-family:Arial,sans-serif;
+                color:#111;
+                padding:35px;
+                max-width:650px;
+                margin:auto;
+              }
+
+              .header{
+                text-align:center;
+                border-bottom:2px solid #111;
+                padding-bottom:18px;
+                margin-bottom:25px;
+              }
+
+              h1{
+                margin:0 0 8px;
+                font-size:25px;
+              }
+
+              h2{
+                margin:0;
+                font-size:18px;
+                letter-spacing:2px;
+              }
+
+              .period{
+                text-align:center;
+                margin-bottom:25px;
+              }
+
+              .row{
+                display:flex;
+                justify-content:space-between;
+                padding:12px 0;
+                border-bottom:1px solid #ddd;
+              }
+
+              .net{
+                margin-top:15px;
+                padding:18px 0;
+                border-top:2px solid #111;
+                border-bottom:2px solid #111;
+                font-size:22px;
+                font-weight:bold;
+              }
+
+              .signature{
+                display:flex;
+                justify-content:space-between;
+                gap:40px;
+                margin-top:80px;
+              }
+
+              .signature div{
+                width:50%;
+                text-align:center;
+                border-top:1px solid #111;
+                padding-top:8px;
+                font-size:12px;
+              }
+
+              @media print{
+                body{padding:15px;}
+              }
+
+            </style>
+          </head>
+
+          <body>
+
+            <div class="header">
+              <h1>D' WINGS CAFE</h1>
+              <h2>STAFF PAYSLIP</h2>
+            </div>
+
+            <div class="period">
+              <strong>${escapeHTML(staff.name)}</strong>
+              <p>Payroll Period: ${weekStart} to ${weekEnd}</p>
+            </div>
+
+            <div class="row">
+              <span>Days Worked</span>
+              <strong>${staff.daysWorked} day(s)</strong>
+            </div>
+
+            <div class="row">
+              <span>Daily Salary</span>
+              <strong>${peso(staff.dailyRate)}</strong>
+            </div>
+
+            <div class="row">
+              <span>Gross Salary</span>
+              <strong>${peso(staff.grossSalary)}</strong>
+            </div>
+
+            <div class="row">
+              <span>Late Deductions</span>
+              <strong>- ${peso(staff.lateDeductions)}</strong>
+            </div>
+
+            <div class="row net">
+              <span>NET PAY</span>
+              <span>${peso(staff.netPay)}</span>
+            </div>
+
+            <div class="signature">
+              <div>Staff Signature</div>
+              <div>Owner Signature</div>
+            </div>
+
+          </body>
+          </html>
+
+        `;
+
+        printWindow.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+        };
+
+        printWindow.document.open();
+        printWindow.document.write(printHtml);
+        printWindow.document.close();
+
+      });
+
+    });
+
+  }catch(error){
+
+    console.error("Payslip loading error:", error);
+
+    payslipEl.innerHTML = `
+      <p style="color:#ff7777">
+        Unable to load staff payslips. Please try again.
+      </p>
+    `;
+
+  }
+
 }
 
   
@@ -7385,6 +7806,7 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
 
 loadDashboardBusinessPerformance();
   loadDashboardPayroll();
+  loadDashboardPayslips();
   document.querySelectorAll(".terminal-nav button").forEach(button => {
     button.classList.remove("active");
   });
