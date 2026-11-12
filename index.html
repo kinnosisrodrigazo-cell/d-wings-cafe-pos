@@ -3950,6 +3950,310 @@ async function loadDashboardBusinessPerformance(){
   }
 }
 
+async function loadDashboardPayroll(){
+
+  const dailyEl = document.getElementById("dashboardDailyPayroll");
+  const weeklyEl = document.getElementById("dashboardWeeklyPayroll");
+
+  if(!dailyEl || !weeklyEl) return;
+
+  dailyEl.innerHTML = "<p class='small'>Loading today's payroll...</p>";
+  weeklyEl.innerHTML = "<p class='small'>Loading weekly payroll...</p>";
+
+  try{
+
+    const today = getManilaDateTime().date;
+
+    // GET MONDAY OF CURRENT WEEK
+    const monday = new Date(today + "T12:00:00");
+    const dayOfWeek = monday.getDay();
+
+    monday.setDate(
+      monday.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)
+    );
+
+    const weekDates = Array.from({length:7}, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+
+      return date.toLocaleDateString("en-CA", {
+        timeZone:"Asia/Manila"
+      });
+    });
+
+    const weekStart = weekDates[0];
+
+    // LOAD STAFF, ATTENDANCE AND WEEKLY SCHEDULE
+    const [
+      employeesSnapshot,
+      attendanceSnapshot,
+      scheduleSnapshot
+    ] = await Promise.all([
+
+      getDocs(collection(db, "employees")),
+
+      getDocs(query(
+        collection(db, "attendance"),
+        where("date", ">=", weekStart),
+        where("date", "<=", today)
+      )),
+
+      getDoc(doc(db, "schedules", weekStart))
+
+    ]);
+
+    const staff = employeesSnapshot.docs
+      .map(docSnap => ({
+        id:docSnap.id,
+        ...docSnap.data()
+      }))
+      .filter(employee => employee.active === true);
+
+    const attendanceMap = {};
+
+    attendanceSnapshot.forEach(docSnap => {
+      const record = docSnap.data();
+
+      attendanceMap[
+        `${record.employeeId}_${record.date}`
+      ] = record;
+    });
+
+    const assignments = scheduleSnapshot.exists()
+      ? scheduleSnapshot.data().assignments || {}
+      : {};
+
+    // CALCULATE PAYROLL FOR EACH STAFF MEMBER
+    const payroll = staff.map(employee => {
+
+      const dailyRate = Number(employee.dailyRate) || 500;
+
+      let daysWorked = 0;
+      let grossSalary = 0;
+      let lateDeduction = 0;
+
+      const dailyDetails = [];
+
+      weekDates.forEach(date => {
+
+        if(date > today) return;
+
+        const scheduled =
+          assignments[employee.id]?.[date] === "WORK";
+
+        const attendance =
+          attendanceMap[`${employee.id}_${date}`] || {};
+
+        const absent =
+          String(attendance.status || "").toUpperCase() === "ABSENT";
+
+        const worked =
+          scheduled &&
+          Boolean(attendance.timeIn) &&
+          !absent;
+
+        if(worked){
+
+          daysWorked++;
+
+          grossSalary += dailyRate;
+
+          lateDeduction += Number(
+            attendance.lateDeduction || 0
+          );
+
+        }
+
+        dailyDetails.push({
+          date,
+          scheduled,
+          absent,
+          worked,
+          timeIn:attendance.timeIn || "",
+          lateDeduction:Number(attendance.lateDeduction || 0)
+        });
+
+      });
+
+      return {
+        id:employee.id,
+        name:employee.name || "STAFF",
+        dailyRate,
+        daysWorked,
+        grossSalary,
+        lateDeduction,
+        netPay:Math.max(0, grossSalary - lateDeduction),
+        dailyDetails
+      };
+
+    });
+
+    // TODAY'S PAYROLL
+    const todayPayroll = payroll.map(employee => {
+
+      const todayDetail = employee.dailyDetails.find(
+        item => item.date === today
+      );
+
+      return {
+        ...employee,
+        workedToday:Boolean(todayDetail?.worked),
+        todayLateDeduction:todayDetail?.worked
+          ? todayDetail.lateDeduction
+          : 0
+      };
+
+    });
+
+    const todayStaff = todayPayroll.filter(
+      employee => employee.workedToday
+    );
+
+    const todayGross = todayStaff.reduce(
+      (sum, employee) => sum + employee.dailyRate,
+      0
+    );
+
+    const todayLate = todayStaff.reduce(
+      (sum, employee) => sum + employee.todayLateDeduction,
+      0
+    );
+
+    const todayNet = Math.max(0, todayGross - todayLate);
+
+    dailyEl.innerHTML = `
+
+      <div class="panel" style="margin:0 0 10px">
+        <p class="small">TODAY'S TOTAL PAYROLL</p>
+        <h2 style="color:#e7ad3e">${peso(todayNet)}</h2>
+        <p class="small">
+          ${todayStaff.length} staff worked today
+        </p>
+      </div>
+
+      ${todayPayroll.map(employee => `
+
+        <div class="row" style="padding:8px 0;border-bottom:1px solid #333">
+          <div>
+            <strong>${escapeHTML(employee.name)}</strong>
+            <div class="small">
+              ${employee.workedToday
+                ? "WORKED TODAY"
+                : "NO PAY TODAY"}
+            </div>
+          </div>
+
+          <div style="text-align:right">
+            <strong>
+              ${peso(employee.workedToday
+                ? employee.dailyRate - employee.todayLateDeduction
+                : 0)}
+            </strong>
+
+            ${employee.todayLateDeduction > 0
+              ? `<div class="small">Late: ${peso(employee.todayLateDeduction)}</div>`
+              : ""}
+          </div>
+        </div>
+
+      `).join("")}
+
+      <hr>
+
+      <div class="row">
+        <strong>GROSS SALARY</strong>
+        <strong>${peso(todayGross)}</strong>
+      </div>
+
+      <div class="row">
+        <span>Late deductions</span>
+        <strong>${peso(todayLate)}</strong>
+      </div>
+
+      <div class="row">
+        <strong>NET PAY</strong>
+        <strong style="color:#7de39a">${peso(todayNet)}</strong>
+      </div>
+
+    `;
+
+    // WEEKLY PAYROLL
+    const weeklyGross = payroll.reduce(
+      (sum, employee) => sum + employee.grossSalary,
+      0
+    );
+
+    const weeklyLate = payroll.reduce(
+      (sum, employee) => sum + employee.lateDeduction,
+      0
+    );
+
+    const weeklyNet = payroll.reduce(
+      (sum, employee) => sum + employee.netPay,
+      0
+    );
+
+    weeklyEl.innerHTML = `
+
+      <div class="panel" style="margin:0 0 10px">
+        <p class="small">WEEKLY TOTAL PAYROLL</p>
+        <h2 style="color:#e7ad3e">${peso(weeklyNet)}</h2>
+        <p class="small">
+          ${weekStart} to ${weekDates[6]}
+        </p>
+      </div>
+
+      ${payroll.map(employee => `
+
+        <div style="padding:10px 0;border-bottom:1px solid #333">
+
+          <div class="row">
+            <strong>${escapeHTML(employee.name)}</strong>
+            <strong>${peso(employee.netPay)}</strong>
+          </div>
+
+          <p class="small">
+            ${employee.daysWorked} days worked
+            · Gross: ${peso(employee.grossSalary)}
+            · Late: ${peso(employee.lateDeduction)}
+          </p>
+
+        </div>
+
+      `).join("")}
+
+      <hr>
+
+      <div class="row">
+        <strong>GROSS PAYROLL</strong>
+        <strong>${peso(weeklyGross)}</strong>
+      </div>
+
+      <div class="row">
+        <span>Total late deductions</span>
+        <strong>${peso(weeklyLate)}</strong>
+      </div>
+
+      <div class="row">
+        <strong>FINAL NET PAYABLE</strong>
+        <strong style="color:#7de39a">${peso(weeklyNet)}</strong>
+      </div>
+
+    `;
+
+  }catch(error){
+
+    console.error("Dashboard payroll error:", error);
+
+    dailyEl.innerHTML =
+      "<p class='small'>Unable to load today's payroll.</p>";
+
+    weeklyEl.innerHTML =
+      "<p class='small'>Unable to load weekly payroll.</p>";
+
+  }
+}
+
   
 // ======================================
 // ATTENDANCE CAMERA + GPS + LOCAL PHOTOS
@@ -7080,6 +7384,7 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
   document.getElementById("dashboardPage").classList.remove("hidden");
 
 loadDashboardBusinessPerformance();
+  loadDashboardPayroll();
   document.querySelectorAll(".terminal-nav button").forEach(button => {
     button.classList.remove("active");
   });
