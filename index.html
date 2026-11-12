@@ -4268,7 +4268,7 @@ async function loadTodayAttendance(){
 
 async function viewAttendancePhoto(employeeId, date){
 
-  if(currentUserRole !== "owner"){
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
     alert("Owner only.");
     return;
   }
