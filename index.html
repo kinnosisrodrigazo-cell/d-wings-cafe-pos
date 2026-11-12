@@ -2269,36 +2269,14 @@ reminders.push({
         ${reminder.date} · ${reminder.type}
       </div>
 
-${
-  reminder.approval
-  ? `
-    <div style="
-      color:#35c978;
-      font-size:12px;
-      font-weight:bold;
-      margin-top:8px;
-    ">
-      ✓ APPROVED
-    </div>
-    <div class="small" style="margin-top:4px">
-      Approved by: ${escapeScheduleHtml(reminder.approval.approvedByName || "OWNER")}
-    </div>
-  `
-  : isOwner
-  ? `
-    <button
-      type="button"
-      class="approve-attendance-reminder-btn"
-      data-key="${escapeScheduleHtml(reminder.approvalKey)}"
-      style="padding:7px 12px;font-size:11px"
-    >
-      APPROVE
-    </button>
-  `
-  : `
-    <span class="small">OWNER APPROVAL REQUIRED</span>
-  `
-}
+<div style="
+  color:#f0b84b;
+  font-size:12px;
+  font-weight:bold;
+  margin-top:8px;
+">
+  ⚠ ATTENDANCE NEEDS REVIEW
+</div>
 
     </div>
   `).join("");
