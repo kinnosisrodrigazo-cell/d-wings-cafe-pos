@@ -3952,6 +3952,250 @@ async function loadDashboardOrdersChart(){
 }
 
   
+async function loadDashboardPerformanceChart(){
+
+  const container = document.getElementById("dashboardPerformanceChart");
+  if(!container) return;
+
+  container.innerHTML = "<p class='small'>Loading performance chart...</p>";
+
+  try{
+
+    const today = getManilaDateTime().date;
+    const dates = getDashboardWeekDates();
+
+    const weekStart = dates[0];
+    const weekEnd = dates[6] > today ? today : dates[6];
+
+    const [
+      ordersSnapshot,
+      employeesSnapshot,
+      attendanceSnapshot,
+      scheduleSnapshot
+    ] = await Promise.all([
+
+      getDocs(query(
+        collection(db, "orders"),
+        where("orderDate", ">=", weekStart),
+        where("orderDate", "<=", weekEnd)
+      )),
+
+      getDocs(collection(db, "employees")),
+
+      getDocs(query(
+        collection(db, "attendance"),
+        where("date", ">=", weekStart),
+        where("date", "<=", weekEnd)
+      )),
+
+      getDoc(doc(db, "schedules", weekStart))
+
+    ]);
+
+    // COMPLETED SALES ONLY
+    const dailySales = {};
+
+    dates.forEach(date => {
+      dailySales[date] = 0;
+    });
+
+    ordersSnapshot.forEach(docSnap => {
+
+      const order = docSnap.data();
+
+      if(
+        String(order.status || "").toUpperCase() === "COMPLETED" &&
+        dailySales[order.orderDate] !== undefined
+      ){
+        dailySales[order.orderDate] += Number(order.total) || 0;
+      }
+
+    });
+
+    // ACTIVE STAFF
+    const activeStaff = employeesSnapshot.docs
+      .map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }))
+      .filter(employee => employee.active === true);
+
+    // ATTENDANCE RECORDS
+    const attendanceMap = {};
+
+    attendanceSnapshot.forEach(docSnap => {
+
+      const record = docSnap.data();
+
+      attendanceMap[
+        `${record.employeeId}_${record.date}`
+      ] = record;
+
+    });
+
+    // WEEKLY SCHEDULE
+    const assignments = scheduleSnapshot.exists()
+      ? scheduleSnapshot.data().assignments || {}
+      : {};
+
+    const dailyExpenses = {};
+    const dailyProfit = {};
+
+    dates.forEach(date => {
+
+      // FUTURE DAYS HAVE ZERO VALUES
+      if(date > today){
+        dailyExpenses[date] = 0;
+        dailyProfit[date] = 0;
+        return;
+      }
+
+      const totalSales = dailySales[date] || 0;
+
+      // STAFF WHO ACTUALLY WORKED
+      const workingStaff = activeStaff.filter(employee => {
+
+        const attendance =
+          attendanceMap[`${employee.id}_${date}`];
+
+        return (
+          assignments[employee.id]?.[date] === "WORK" &&
+          attendance?.timeIn &&
+          String(attendance.status || "").toUpperCase() !== "ABSENT"
+        );
+
+      });
+
+      // STAFF SALARIES
+      const staffSalary = workingStaff.reduce(
+        (sum, employee) =>
+          sum + (Number(employee.dailyRate) || 500),
+        0
+      );
+
+      // STAFF INCENTIVES
+      const day = new Date(date + "T12:00:00").getDay();
+
+      let incentiveExpense = 0;
+
+      if(totalSales >= 20000){
+        incentiveExpense = workingStaff.length * 500;
+      }else if(totalSales >= 15000){
+        incentiveExpense = 300;
+      }else if(totalSales >= 10000){
+        incentiveExpense = (day >= 1 && day <= 4) ? 200 : 100;
+      }
+
+      // OTHER EXPENSES
+      const rentExpense = 3000;
+      const packagingExpense = totalSales * 0.50;
+
+      const totalExpense =
+        staffSalary +
+        incentiveExpense +
+        rentExpense +
+        packagingExpense;
+
+      dailyExpenses[date] = totalExpense;
+      dailyProfit[date] = totalSales - totalExpense;
+
+    });
+
+    if(typeof Chart === "undefined"){
+      container.innerHTML =
+        "<p class='small'>Chart library is unavailable.</p>";
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="position:relative;height:320px;width:100%">
+        <canvas id="dashboardPerformanceCanvas"></canvas>
+      </div>
+    `;
+
+    const canvas =
+      document.getElementById("dashboardPerformanceCanvas");
+
+    const existingChart = Chart.getChart(canvas);
+    if(existingChart) existingChart.destroy();
+
+    new Chart(canvas, {
+
+      type:"line",
+
+      data:{
+        labels:dates.map(date =>
+          new Date(date + "T12:00:00").toLocaleDateString("en-PH", {
+            weekday:"short",
+            day:"numeric"
+          })
+        ),
+
+        datasets:[
+
+          {
+            label:"Sales",
+            data:dates.map(date => dailySales[date]),
+            borderColor:"#d4af37",
+            backgroundColor:"#d4af37",
+            tension:0.3
+          },
+
+          {
+            label:"Expenses",
+            data:dates.map(date => dailyExpenses[date]),
+            borderColor:"#ff7777",
+            backgroundColor:"#ff7777",
+            tension:0.3
+          },
+
+          {
+            label:"Profit",
+            data:dates.map(date => dailyProfit[date]),
+            borderColor:"#7de39a",
+            backgroundColor:"#7de39a",
+            tension:0.3
+          }
+
+        ]
+
+      },
+
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+
+        plugins:{
+          legend:{
+            display:true,
+            position:"bottom"
+          }
+        },
+
+        scales:{
+          y:{
+            beginAtZero:true,
+            ticks:{
+              callback:value => "₱" + Number(value).toLocaleString("en-PH")
+            }
+          }
+        }
+
+      }
+
+    });
+
+  }catch(error){
+
+    console.error("Performance Chart Error:", error);
+
+    container.innerHTML =
+      "<p class='small'>Unable to load performance chart.</p>";
+
+  }
+
+}
+
 async function loadDashboardBusinessPerformance(){
 
   const summaryEl = document.getElementById("dashboardBusinessSummary");
