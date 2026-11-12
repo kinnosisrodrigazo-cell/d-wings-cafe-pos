@@ -3446,6 +3446,269 @@ async function loadDashboardDailySales(){
       "<p class='small'>Unable to load daily sales.</p>";
   }
 }
+  
+// ======================================
+// ATTENDANCE CAMERA + GPS + LOCAL PHOTOS
+// ======================================
+
+const ATTENDANCE_CAFE_LAT = 14.396842;
+const ATTENDANCE_CAFE_LNG = 120.871896;
+const ATTENDANCE_RADIUS_METERS = 50;
+const ATTENDANCE_PHOTO_RETENTION_DAYS = 14;
+
+const ATTENDANCE_PHOTO_DB = "DWingsAttendancePhotos";
+const ATTENDANCE_PHOTO_STORE = "photos";
+
+function openAttendancePhotoDB(){
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(ATTENDANCE_PHOTO_DB, 1);
+
+    request.onupgradeneeded = () => {
+      const database = request.result;
+
+      if(!database.objectStoreNames.contains(ATTENDANCE_PHOTO_STORE)){
+        database.createObjectStore(ATTENDANCE_PHOTO_STORE, {
+          keyPath: "id"
+        });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveAttendancePhoto(employeeId, date, photoBlob){
+  const database = await openAttendancePhotoDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(
+      ATTENDANCE_PHOTO_STORE,
+      "readwrite"
+    );
+
+    transaction.objectStore(ATTENDANCE_PHOTO_STORE).put({
+      id: `${employeeId}_${date}`,
+      employeeId,
+      date,
+      photo: photoBlob,
+      savedAt: Date.now()
+    });
+
+    transaction.oncomplete = () => {
+      database.close();
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      database.close();
+      reject(transaction.error);
+    };
+  });
+}
+
+async function cleanupOldAttendancePhotos(){
+  const database = await openAttendancePhotoDB();
+  const cutoff = Date.now() -
+    ATTENDANCE_PHOTO_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(
+      ATTENDANCE_PHOTO_STORE,
+      "readwrite"
+    );
+
+    const store = transaction.objectStore(ATTENDANCE_PHOTO_STORE);
+    const request = store.openCursor();
+
+    request.onsuccess = () => {
+      const cursor = request.result;
+
+      if(!cursor) return;
+
+      if(cursor.value.savedAt < cutoff){
+        cursor.delete();
+      }
+
+      cursor.continue();
+    };
+
+    transaction.oncomplete = () => {
+      database.close();
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      database.close();
+      reject(transaction.error);
+    };
+  });
+}
+
+function getAttendanceGPS(){
+  return new Promise((resolve, reject) => {
+    if(!navigator.geolocation){
+      reject(new Error("GPS_UNAVAILABLE"));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      position => resolve({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy
+      }),
+      error => reject(new Error("GPS_FAILED")),
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0
+      }
+    );
+  });
+}
+
+function getAttendanceDistance(lat1, lng1, lat2, lng2){
+  const toRadians = degrees => degrees * Math.PI / 180;
+  const earthRadius = 6371000;
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) *
+    Math.cos(toRadians(lat2)) *
+    Math.sin(dLng / 2) ** 2;
+
+  return earthRadius * 2 * Math.atan2(
+    Math.sqrt(a),
+    Math.sqrt(1 - a)
+  );
+}
+
+async function captureAttendancePhoto(){
+  if(!navigator.mediaDevices?.getUserMedia){
+    throw new Error("CAMERA_UNAVAILABLE");
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "user" },
+    audio: false
+  });
+
+  return new Promise((resolve, reject) => {
+    const overlay = document.createElement("div");
+
+    overlay.style.cssText = `
+      position:fixed;
+      inset:0;
+      z-index:99999;
+      background:#000e;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:15px;
+    `;
+
+    overlay.innerHTML = `
+      <div style="
+        background:#181818;
+        color:white;
+        padding:18px;
+        border-radius:14px;
+        width:100%;
+        max-width:420px;
+        text-align:center;
+      ">
+        <h3>STAFF TIME IN PHOTO</h3>
+        <video autoplay playsinline style="
+          width:100%;
+          border-radius:10px;
+          background:#000;
+        "></video>
+        <button type="button" id="captureAttendancePhotoBtn"
+          style="width:100%;padding:14px;margin-top:12px">
+          CAPTURE PHOTO
+        </button>
+        <button type="button" id="cancelAttendancePhotoBtn"
+          style="width:100%;padding:12px;margin-top:8px">
+          CANCEL
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const video = overlay.querySelector("video");
+    video.srcObject = stream;
+
+    const stopCamera = () => {
+      stream.getTracks().forEach(track => track.stop());
+      overlay.remove();
+    };
+
+    overlay.querySelector("#cancelAttendancePhotoBtn")
+      .onclick = () => {
+        stopCamera();
+        reject(new Error("PHOTO_CANCELLED"));
+      };
+
+    overlay.querySelector("#captureAttendancePhotoBtn")
+      .onclick = () => {
+        if(!video.videoWidth || !video.videoHeight){
+          alert("Camera is not ready. Please try again.");
+          return;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        canvas.getContext("2d").drawImage(
+          video,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+        canvas.toBlob(blob => {
+          stopCamera();
+
+          if(!blob){
+            reject(new Error("PHOTO_FAILED"));
+            return;
+          }
+
+          resolve(blob);
+        }, "image/jpeg", 0.8);
+      };
+  });
+}
+
+async function verifyAttendanceLocation(){
+  const position = await getAttendanceGPS();
+
+  const distance = getAttendanceDistance(
+    ATTENDANCE_CAFE_LAT,
+    ATTENDANCE_CAFE_LNG,
+    position.latitude,
+    position.longitude
+  );
+
+  if(distance > ATTENDANCE_RADIUS_METERS){
+    throw new Error("OUTSIDE_CAFE_RADIUS");
+  }
+
+  return {
+    latitude: position.latitude,
+    longitude: position.longitude,
+    accuracy: position.accuracy,
+    distanceFromCafe: Number(distance.toFixed(2))
+  };
+}
+
   function getManilaDateTime(){
 
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -3560,7 +3823,8 @@ function calculateLateAttendance(timeIn, shiftStart, dailyRate){
     lateDeduction: Number(lateDeduction.toFixed(2))
   };
 }
-  async function recordAttendance(type){
+
+async function recordAttendance(type){
 
   const employee = await findAttendanceEmployee();
 
@@ -3569,48 +3833,93 @@ function calculateLateAttendance(timeIn, shiftStart, dailyRate){
 
   if(!employee) return;
 
-  const { date, time } = getManilaDateTime();
+  const { date } = getManilaDateTime();
 
   const attendanceId = `${employee.id}_${date}`;
   const attendanceRef = doc(db, "attendance", attendanceId);
 
+  let photoSaved = false;
+
   try{
+
+    let photoBlob = null;
+    let gpsInfo = null;
+
+    // TIME IN: REQUIRE LIVE PHOTO AND GPS
+    if(type === "TIME IN"){
+
+      const existingAttendance = await getDoc(attendanceRef);
+
+      if(existingAttendance.exists() &&
+         existingAttendance.data().timeIn){
+        throw new Error("ALREADY_IN");
+      }
+
+      message.textContent = "Opening camera...";
+
+      photoBlob = await captureAttendancePhoto();
+
+      message.textContent = "Verifying cafe location...";
+
+      gpsInfo = await verifyAttendanceLocation();
+
+      message.textContent = "Saving attendance photo...";
+
+      await saveAttendancePhoto(
+        employee.id,
+        date,
+        photoBlob
+      );
+
+      photoSaved = true;
+    }
+
+    const { time } = getManilaDateTime();
 
     await runTransaction(db, async transaction => {
 
-      const attendanceDoc = await transaction.get(attendanceRef);
+      const attendanceDoc =
+        await transaction.get(attendanceRef);
 
       const attendance = attendanceDoc.exists()
         ? attendanceDoc.data()
         : {};
-      
-if(type === "TIME IN"){
 
-  if(attendance.timeIn){
-    throw new Error("ALREADY_IN");
-  }
+      if(type === "TIME IN"){
 
-      
+        if(attendance.timeIn){
+          throw new Error("ALREADY_IN");
+        }
 
-  const shiftStart = employee.defaultShiftStart || "15:00";
+        const shiftStart =
+          employee.defaultShiftStart || "15:00";
 
-  const lateInfo = calculateLateAttendance(
-    time,
-    shiftStart,
-    employee.dailyRate
-  );
+        const lateInfo = calculateLateAttendance(
+          time,
+          shiftStart,
+          employee.dailyRate
+        );
 
-  transaction.set(attendanceRef, {
-    employeeId: employee.id,
-    employeeName: employee.name,
-    date: date,
-    timeIn: time,
-    timeOut: null,
-    scheduledStart: shiftStart,
-    lateMinutes: lateInfo.lateMinutes,
-    lateDeduction: lateInfo.lateDeduction,
-    createdAt: serverTimestamp()
-  });
+        transaction.set(attendanceRef, {
+          employeeId: employee.id,
+          employeeName: employee.name,
+          date: date,
+          timeIn: time,
+          timeOut: null,
+          scheduledStart: shiftStart,
+          lateMinutes: lateInfo.lateMinutes,
+          lateDeduction: lateInfo.lateDeduction,
+
+          gpsLatitude: gpsInfo.latitude,
+          gpsLongitude: gpsInfo.longitude,
+          gpsAccuracy: gpsInfo.accuracy,
+          distanceFromCafe: gpsInfo.distanceFromCafe,
+
+          photoStored: true,
+          photoStorage: "LOCAL_DEVICE",
+
+          createdAt: serverTimestamp()
+        });
 
       }else if(type === "TIME OUT"){
 
@@ -3633,26 +3942,79 @@ if(type === "TIME IN"){
 
     message.textContent =
       `${employee.name}: ${type} recorded at ${time}`;
-    
+
     await loadTodayAttendance();
-    
+
     document.getElementById("attendanceBarcodeInput").value = "";
     scannedAttendanceEmployee = null;
 
   }catch(error){
 
+    // Remove local photo if attendance was not successfully recorded
+    if(photoSaved){
+      try{
+        const database = await openAttendancePhotoDB();
+
+        await new Promise((resolve, reject) => {
+          const transaction = database.transaction(
+            ATTENDANCE_PHOTO_STORE,
+            "readwrite"
+          );
+
+          transaction.objectStore(ATTENDANCE_PHOTO_STORE)
+            .delete(`${employee.id}_${date}`);
+
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error);
+        });
+
+        database.close();
+
+      }catch(cleanupError){
+        console.error("Photo cleanup error:", cleanupError);
+      }
+    }
+
     if(error.message === "ALREADY_IN"){
-      message.textContent = `${employee.name} already has a TIME IN today.`;
+      message.textContent =
+        `${employee.name} already has a TIME IN today.`;
+
     }else if(error.message === "NO_TIME_IN"){
-      message.textContent = `${employee.name} has no TIME IN record today.`;
+      message.textContent =
+        `${employee.name} has no TIME IN record today.`;
+
     }else if(error.message === "ALREADY_OUT"){
-      message.textContent = `${employee.name} already has a TIME OUT today.`;
+      message.textContent =
+        `${employee.name} already has a TIME OUT today.`;
+
+    }else if(error.message === "OUTSIDE_CAFE_RADIUS"){
+      message.textContent =
+        "TIME IN denied: You must be within 50 meters of D’ Wings Cafe.";
+
+    }else if(error.message === "PHOTO_CANCELLED"){
+      message.textContent =
+        "TIME IN cancelled. A photo is required.";
+
+    }else if(error.message === "CAMERA_UNAVAILABLE" ||
+             error.name === "NotAllowedError" ||
+             error.name === "NotFoundError"){
+      message.textContent =
+        "Camera unavailable or permission denied. TIME IN not recorded.";
+
+    }else if(error.message === "GPS_UNAVAILABLE" ||
+             error.message === "GPS_FAILED" ||
+             error.name === "GeolocationPositionError"){
+      message.textContent =
+        "GPS unavailable or permission denied. TIME IN not recorded.";
+
     }else{
       console.error("Attendance recording error:", error);
-      message.textContent = "Unable to record attendance. Please try again.";
+      message.textContent =
+        "Unable to record attendance. Please try again.";
     }
   }
 }
+
   // OWNER CONFIRMS STAFF ABSENT
 async function markStaffAbsent(employeeId, employeeName, date){
 
