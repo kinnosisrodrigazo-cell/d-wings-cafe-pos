@@ -4950,130 +4950,324 @@ async function loadDashboardPayslips(){
           return;
         }
 
-        const printHtml = `
 
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Staff Payslip - ${escapeHTML(staff.name)}</title>
+const printHtml = `
 
-            <style>
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Staff Payslip - ${escapeHTML(staff.name)}</title>
 
-              body{
-                font-family:Arial,sans-serif;
-                color:#111;
-                padding:35px;
-                max-width:650px;
-                margin:auto;
-              }
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-              .header{
-                text-align:center;
-                border-bottom:2px solid #111;
-                padding-bottom:18px;
-                margin-bottom:25px;
-              }
+    <style>
+      *{
+        box-sizing:border-box;
+      }
 
-              h1{
-                margin:0 0 8px;
-                font-size:25px;
-              }
+      body{
+        font-family:Arial,sans-serif;
+        color:#222;
+        background:#fff;
+        padding:35px;
+        max-width:750px;
+        margin:auto;
+      }
 
-              h2{
-                margin:0;
-                font-size:18px;
-                letter-spacing:2px;
-              }
+      .payslip{
+        border:1px solid #ddd;
+        padding:35px;
+      }
 
-              .period{
-                text-align:center;
-                margin-bottom:25px;
-              }
+      .header{
+        text-align:center;
+        padding-bottom:22px;
+        border-bottom:3px solid #bd9138;
+      }
 
-              .row{
-                display:flex;
-                justify-content:space-between;
-                padding:12px 0;
-                border-bottom:1px solid #ddd;
-              }
+      .company{
+        font-size:27px;
+        font-weight:900;
+        letter-spacing:2px;
+        margin:0;
+        color:#171717;
+      }
 
-              .net{
-                margin-top:15px;
-                padding:18px 0;
-                border-top:2px solid #111;
-                border-bottom:2px solid #111;
-                font-size:22px;
-                font-weight:bold;
-              }
+      .address{
+        font-size:12px;
+        color:#666;
+        margin-top:7px;
+      }
 
-              .signature{
-                display:flex;
-                justify-content:space-between;
-                gap:40px;
-                margin-top:80px;
-              }
+      .document-title{
+        display:inline-block;
+        margin-top:18px;
+        padding:8px 22px;
+        background:#171717;
+        color:#e7bd63;
+        font-size:15px;
+        font-weight:bold;
+        letter-spacing:3px;
+      }
 
-              .signature div{
-                width:50%;
-                text-align:center;
-                border-top:1px solid #111;
-                padding-top:8px;
-                font-size:12px;
-              }
+      .section-title{
+        font-size:12px;
+        font-weight:bold;
+        letter-spacing:1.5px;
+        color:#a47a2d;
+        margin:25px 0 12px;
+        text-transform:uppercase;
+      }
 
-              @media print{
-                body{padding:15px;}
-              }
+      .employee-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:15px;
+        padding:18px;
+        background:#f7f7f7;
+        border-radius:8px;
+      }
 
-            </style>
-          </head>
+      .field-label{
+        display:block;
+        font-size:10px;
+        color:#777;
+        text-transform:uppercase;
+        margin-bottom:5px;
+      }
 
-          <body>
+      .field-value{
+        font-size:13px;
+        font-weight:bold;
+      }
 
-            <div class="header">
-              <h1>D' WINGS CAFE</h1>
-              <h2>STAFF PAYSLIP</h2>
-            </div>
+      .row{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:15px;
+        padding:12px 5px;
+        border-bottom:1px solid #e8e8e8;
+        font-size:13px;
+      }
 
-            <div class="period">
-              <strong>${escapeHTML(staff.name)}</strong>
-              <p>Payroll Period: ${weekStart} to ${weekEnd}</p>
-            </div>
+      .row strong{
+        white-space:nowrap;
+      }
 
-            <div class="row">
-              <span>Days Worked</span>
-              <strong>${staff.daysWorked} day(s)</strong>
-            </div>
+      .total-row{
+        background:#f7f7f7;
+        font-weight:bold;
+        padding:14px 10px;
+        margin-top:5px;
+      }
 
-            <div class="row">
-              <span>Daily Salary</span>
-              <strong>${peso(staff.dailyRate)}</strong>
-            </div>
+      .deduction{
+        color:#c34b4b;
+      }
 
-            <div class="row">
-              <span>Gross Salary</span>
-              <strong>${peso(staff.grossSalary)}</strong>
-            </div>
+      .net{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:15px;
+        margin-top:25px;
+        padding:22px;
+        background:#171717;
+        color:#e7bd63;
+        border-radius:8px;
+      }
 
-            <div class="row">
-              <span>Late Deductions</span>
-              <strong>- ${peso(staff.lateDeductions)}</strong>
-            </div>
+      .net-label{
+        font-size:15px;
+        font-weight:bold;
+        letter-spacing:2px;
+      }
 
-            <div class="row net">
-              <span>NET PAY</span>
-              <span>${peso(staff.netPay)}</span>
-            </div>
+      .net-amount{
+        font-size:25px;
+        font-weight:900;
+        white-space:nowrap;
+      }
 
-            <div class="signature">
-              <div>Staff Signature</div>
-              <div>Owner Signature</div>
-            </div>
+      .signatures{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:45px;
+        margin-top:85px;
+      }
 
-          </body>
-          </html>
+      .signature{
+        text-align:center;
+        border-top:1px solid #333;
+        padding-top:10px;
+        font-size:12px;
+      }
 
-        `;
+      .footer{
+        text-align:center;
+        font-size:10px;
+        color:#888;
+        margin-top:35px;
+      }
+
+      @media print{
+        body{
+          padding:0;
+        }
+
+        .payslip{
+          border:none;
+          padding:20px;
+        }
+
+        @page{
+          size:A4;
+          margin:12mm;
+        }
+      }
+
+      @media(max-width:500px){
+        body{
+          padding:5px;
+        }
+
+        .payslip{
+          padding:15px;
+        }
+
+        .employee-grid{
+          grid-template-columns:1fr 1fr;
+        }
+
+        .net-amount{
+          font-size:20px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="payslip">
+
+      <div class="header">
+        <h1 class="company">D' WINGS CAFE</h1>
+
+        <div class="address">
+          Maple Grove Parade, Bacao I, General Trias, Cavite
+        </div>
+
+        <div class="document-title">
+          STAFF PAYSLIP
+        </div>
+      </div>
+
+      <div class="section-title">Staff Information</div>
+
+      <div class="employee-grid">
+
+        <div>
+          <span class="field-label">Staff Name</span>
+          <span class="field-value">
+            ${escapeHTML(staff.name)}
+          </span>
+        </div>
+
+        <div>
+          <span class="field-label">Designation</span>
+          <span class="field-value">All Kitchen Staff</span>
+        </div>
+
+        <div>
+          <span class="field-label">Department</span>
+          <span class="field-value">Kitchen</span>
+        </div>
+
+        <div>
+          <span class="field-label">Date of Joining</span>
+          <span class="field-value">—</span>
+        </div>
+
+        <div>
+          <span class="field-label">Pay Period</span>
+          <span class="field-value">
+            ${weekStart} to ${weekEnd}
+          </span>
+        </div>
+
+        <div>
+          <span class="field-label">Days Worked</span>
+          <span class="field-value">
+            ${staff.daysWorked} day(s)
+          </span>
+        </div>
+
+      </div>
+
+      <div class="section-title">Earnings</div>
+
+      <div class="row">
+        <span>Basic Pay</span>
+        <strong>${peso(staff.grossSalary)}</strong>
+      </div>
+
+      <div class="row">
+        <span>Daily Rate</span>
+        <strong>${peso(staff.dailyRate)}</strong>
+      </div>
+
+      <div class="row total-row">
+        <span>TOTAL EARNINGS</span>
+        <strong>${peso(staff.grossSalary)}</strong>
+      </div>
+
+      <div class="section-title">Deductions</div>
+
+      <div class="row">
+        <span>Late Deduction</span>
+        <strong class="deduction">
+          - ${peso(staff.lateDeductions)}
+        </strong>
+      </div>
+
+      <div class="row total-row">
+        <span>TOTAL DEDUCTIONS</span>
+        <strong class="deduction">
+          ${peso(staff.lateDeductions)}
+        </strong>
+      </div>
+
+      <div class="net">
+        <span class="net-label">NET PAY</span>
+        <span class="net-amount">
+          ${peso(staff.netPay)}
+        </span>
+      </div>
+
+      <div class="signatures">
+
+        <div class="signature">
+          Staff Signature
+        </div>
+
+        <div class="signature">
+          Employer / Owner Signature
+        </div>
+
+      </div>
+
+      <div class="footer">
+        D' WINGS CAFE • STAFF PAYROLL
+      </div>
+
+    </div>
+
+  </body>
+  </html>
+
+`;
+
 
         printWindow.onload = () => {
           printWindow.focus();
