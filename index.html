@@ -5863,7 +5863,9 @@ if(historySection){
                     ${
                       record.timeIn && record.photoStored === true
                         ? `<button type="button"
-                             onclick="viewAttendancePhoto('${record.employeeId}','${record.date}')"
+                             class="today-attendance-photo-btn"
+                             data-employee-id="${escapeHTML(record.employeeId || "")}"
+                             data-date="${escapeHTML(record.date || date)}"
                              style="padding:6px 9px;font-size:11px">
                              VIEW
                            </button>`
@@ -5877,7 +5879,16 @@ if(historySection){
         </table>
       </div>
     `;
-
+    attendanceList
+      .querySelectorAll(".today-attendance-photo-btn")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          viewAttendancePhoto(
+            button.dataset.employeeId,
+            button.dataset.date
+          );
+        });
+      });
   }catch(error){
 
     console.error("Today's attendance error:", error);
