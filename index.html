@@ -2451,12 +2451,14 @@ document.getElementById("dashboardPrevWeek").addEventListener("click", () => {
 
 document.getElementById("dashboardNextWeek").addEventListener("click", () => {
 
-  if(dashboardWeekOffset >= 0) return;
-
   dashboardWeekOffset++;
 
   updateDashboardWeekLabel();
   loadDashboardOrdersChart();
+  loadDashboardPerformanceChart();
+  loadDashboardWeeklyProfitChart();
+  loadDashboardAverageProfitChart();
+  loadDashboardScheduleChart();
 
 });
 
