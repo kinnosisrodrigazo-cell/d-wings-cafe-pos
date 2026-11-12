@@ -1205,24 +1205,36 @@ button:disabled{opacity:.5}
 <div id="staffScheduleControls" style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px">
 
   <div style="display:flex;align-items:center;justify-content:center;gap:12px;width:100%">
-    <button type="button" id="schedulePrevWeek">‹</button>
+    <button
+  type="button"
+  id="schedulePrevWeek"
+  style="width:36px;height:36px;min-width:36px;padding:0;background:#f5c542;color:#111;border-radius:8px;font-size:22px;font-weight:bold;display:flex;align-items:center;justify-content:center"
+>‹</button>
     <strong id="scheduleWeekLabel">THIS WEEK</strong>
-    <button type="button" id="scheduleNextWeek">›</button>
+<button
+  type="button"
+  id="scheduleNextWeek"
+  style="width:36px;height:36px;min-width:36px;padding:0;background:#f5c542;color:#111;border-radius:8px;font-size:22px;font-weight:bold;display:flex;align-items:center;justify-content:center"
+>›</button>
   </div>
 
-<div style="display:flex;gap:8px;align-items:center">
+<div style="display:flex;gap:8px;width:100%;align-items:center">
 
-  <button
-    type="button"
-    id="clearStaffScheduleBtn"
-    style="background:#8b3030"
-  >
-    <i class="fas fa-trash-alt"></i> CLEAR SCHEDULE
-  </button>
+<button
+  type="button"
+  id="clearStaffScheduleBtn"
+  style="background:#8b3030;flex:1;min-width:0;padding:12px 5px;font-size:12px;white-space:nowrap"
+>
+  <i class="fas fa-trash-alt"></i> CLEAR SCHEDULE
+</button>
 
-  <button type="button" id="saveStaffScheduleBtn">
-    <i class="fas fa-save"></i> SAVE SCHEDULE
-  </button>
+<button
+  type="button"
+  id="saveStaffScheduleBtn"
+  style="flex:1;min-width:0;padding:12px 5px;font-size:12px;white-space:nowrap"
+>
+  <i class="fas fa-save"></i> SAVE SCHEDULE
+</button>
 
 </div>
 </div>        <div id="staffWeeklySchedule">
