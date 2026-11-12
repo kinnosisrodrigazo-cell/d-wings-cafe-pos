@@ -1286,6 +1286,47 @@ button:disabled{opacity:.5}
           <div id="todayAttendanceList">
             <p class="small">Attendance records will appear here.</p>
           </div>
+          <!-- ATTENDANCE PHOTO VIEWER -->
+<div id="attendancePhotoModal" class="hidden"
+     style="
+       position:fixed;
+       inset:0;
+       z-index:99999;
+       background:#000c;
+       align-items:center;
+       justify-content:center;
+       padding:15px;
+     ">
+
+  <div style="
+    background:#181818;
+    color:white;
+    width:100%;
+    max-width:420px;
+    padding:20px;
+    border-radius:14px;
+  ">
+
+    <h3>STAFF TIME IN PHOTO</h3>
+
+    <img id="attendancePhotoImage"
+         alt="Staff attendance photo"
+         style="
+           width:100%;
+           border-radius:10px;
+           display:none;
+         ">
+
+    <p id="attendancePhotoInfo" class="small"></p>
+
+    <button type="button"
+            id="closeAttendancePhotoBtn"
+            style="width:100%;margin-top:12px">
+      CLOSE
+    </button>
+
+  </div>
+</div>
 
         </div>
       </div>
@@ -3507,6 +3548,32 @@ async function saveAttendancePhoto(employeeId, date, photoBlob){
   });
 }
 
+  async function getAttendancePhoto(employeeId, date){
+  const database = await openAttendancePhotoDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(
+      ATTENDANCE_PHOTO_STORE,
+      "readonly"
+    );
+
+    const request = transaction
+      .objectStore(ATTENDANCE_PHOTO_STORE)
+      .get(`${employeeId}_${date}`);
+
+    request.onsuccess = () => {
+      const record = request.result || null;
+      database.close();
+      resolve(record);
+    };
+
+    request.onerror = () => {
+      database.close();
+      reject(request.error);
+    };
+  });
+}
+
 async function cleanupOldAttendancePhotos(){
   const database = await openAttendancePhotoDB();
   const cutoff = Date.now() -
@@ -4083,6 +4150,7 @@ async function markStaffAbsent(employeeId, employeeName, date){
     }
   }
 }
+
 // LOAD TODAY'S ATTENDANCE
 async function loadTodayAttendance(){
 
@@ -4090,6 +4158,9 @@ async function loadTodayAttendance(){
     document.getElementById("todayAttendanceList");
 
   const { date } = getManilaDateTime();
+
+  const isOwner =
+    String(currentUserRole || "").toLowerCase() === "owner";
 
   attendanceList.innerHTML =
     "<p class='small'>Loading attendance...</p>";
@@ -4115,63 +4186,75 @@ async function loadTodayAttendance(){
         (a.employeeName || "").localeCompare(b.employeeName || "")
       );
 
-
-attendanceList.innerHTML = `
-  <div style="overflow-x:auto">
-    <table style="
-      width:100%;
-      border-collapse:collapse;
-      table-layout:fixed;
-      font-size:13px;
-    ">
-      <thead>
-        <tr style="background:#222;color:white">
-          <th style="width:25%;padding:10px 5px;text-align:left">EMPLOYEE</th>
-          <th style="width:25%;padding:10px 5px;text-align:center">TIME IN</th>
-          <th style="width:25%;padding:10px 5px;text-align:center">TIME OUT</th>
-          <th style="width:25%;padding:10px 5px;text-align:center">STATUS</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${records.map(record => `
-          <tr style="border-bottom:1px solid #ddd">
-            <td style="padding:10px 5px;text-align:left;font-weight:bold">
-              ${record.employeeName || "Unknown"}
-            </td>
-            <td style="padding:10px 5px;text-align:center">
-              ${record.timeIn || "—"}
-            </td>
-            <td style="padding:10px 5px;text-align:center">
-              ${record.timeOut || "—"}
-            </td>
-            <td style="
-              padding:10px 5px;
-              text-align:center;
-              font-size:11px;
-              font-weight:bold;
-             color:${
-  record.status === "ABSENT"
-    ? "#ff4d5a"
-    : record.timeOut
-    ? "#16a34a"
-    : "#d97706"
-};
-            ">
-             ${
-  record.status === "ABSENT"
-    ? "ABSENT"
-    : record.timeOut
-    ? "COMPLETED"
-    : "WORKING"
-}
-            </td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  </div>
-`;
-
+    attendanceList.innerHTML = `
+      <div style="overflow-x:auto">
+        <table style="
+          width:100%;
+          border-collapse:collapse;
+          table-layout:fixed;
+          font-size:13px;
+        ">
+          <thead>
+            <tr style="background:#222;color:white">
+              <th style="width:${isOwner ? "20%" : "25%"};padding:10px 5px;text-align:left">STAFF</th>
+              <th style="width:${isOwner ? "20%" : "25%"};padding:10px 5px;text-align:center">TIME IN</th>
+              <th style="width:${isOwner ? "20%" : "25%"};padding:10px 5px;text-align:center">TIME OUT</th>
+              <th style="width:${isOwner ? "20%" : "25%"};padding:10px 5px;text-align:center">STATUS</th>
+              ${isOwner ? '<th style="width:20%;padding:10px 5px;text-align:center">PHOTO</th>' : ""}
+            </tr>
+          </thead>
+          <tbody>
+            ${records.map(record => `
+              <tr style="border-bottom:1px solid #ddd">
+                <td style="padding:10px 5px;text-align:left;font-weight:bold">
+                  ${record.employeeName || "Unknown"}
+                </td>
+                <td style="padding:10px 5px;text-align:center">
+                  ${record.timeIn || "—"}
+                </td>
+                <td style="padding:10px 5px;text-align:center">
+                  ${record.timeOut || "—"}
+                </td>
+                <td style="
+                  padding:10px 5px;
+                  text-align:center;
+                  font-size:11px;
+                  font-weight:bold;
+                  color:${
+                    record.status === "ABSENT"
+                      ? "#ff4d5a"
+                      : record.timeOut
+                      ? "#16a34a"
+                      : "#d97706"
+                  };
+                ">
+                  ${
+                    record.status === "ABSENT"
+                      ? "ABSENT"
+                      : record.timeOut
+                      ? "COMPLETED"
+                      : "WORKING"
+                  }
+                </td>
+                ${isOwner ? `
+                  <td style="padding:10px 5px;text-align:center">
+                    ${
+                      record.timeIn && record.photoStored === true
+                        ? `<button type="button"
+                             onclick="viewAttendancePhoto('${record.employeeId}','${record.date}')"
+                             style="padding:6px 9px;font-size:11px">
+                             VIEW
+                           </button>`
+                        : "—"
+                    }
+                  </td>
+                ` : ""}
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
 
   }catch(error){
 
@@ -4181,6 +4264,71 @@ attendanceList.innerHTML = `
       "<p class='small'>Unable to load attendance records.</p>";
   }
 }
+
+
+
+  
+async function viewAttendancePhoto(employeeId, date){
+
+  if(currentUserRole !== "owner"){
+    alert("Owner only.");
+    return;
+  }
+
+  const modal = document.getElementById("attendancePhotoModal");
+  const image = document.getElementById("attendancePhotoImage");
+  const info = document.getElementById("attendancePhotoInfo");
+
+  modal.style.display = "flex";
+  modal.classList.remove("hidden");
+
+  image.style.display = "none";
+  info.textContent = "Loading photo...";
+
+  try{
+    const savedPhoto = await getAttendancePhoto(employeeId, date);
+
+    if(!savedPhoto || !savedPhoto.photo){
+      info.textContent = "Photo not available on this tablet.";
+      return;
+    }
+
+    if(image.dataset.objectUrl){
+      URL.revokeObjectURL(image.dataset.objectUrl);
+    }
+
+    const photoURL = URL.createObjectURL(savedPhoto.photo);
+
+    image.dataset.objectUrl = photoURL;
+    image.src = photoURL;
+    image.style.display = "block";
+
+    info.textContent =
+      "DATE: " + date + "\n" +
+      "STAFF ID: " + employeeId;
+
+    info.style.whiteSpace = "pre-line";
+
+  }catch(error){
+    console.error(error);
+    info.textContent = "Unable to load photo.";
+  }
+}
+
+document.getElementById("closeAttendancePhotoBtn").onclick = () => {
+  const modal = document.getElementById("attendancePhotoModal");
+  const image = document.getElementById("attendancePhotoImage");
+
+  if(image.dataset.objectUrl){
+    URL.revokeObjectURL(image.dataset.objectUrl);
+    delete image.dataset.objectUrl;
+  }
+
+  image.src = "";
+  image.style.display = "none";
+  modal.style.display = "none";
+  modal.classList.add("hidden");
+};
 
 async function loadDailyReport(){
   const selectedDate =
