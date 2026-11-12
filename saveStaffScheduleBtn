@@ -1225,15 +1225,7 @@ button:disabled{opacity:.5}
         </div>
       </div>
 
-      <!-- REQUEST REST DAY -->
-      <div class="panel">
-        <h3>REQUEST REST DAY</h3>
-        <div id="staffRestDayRequests">
-          <p class="small">Rest day requests will appear here.</p>
-        </div>
-      </div>
 
-    </div>
 
     <!-- RIGHT COLUMN -->
     <div class="staff-right-column">
