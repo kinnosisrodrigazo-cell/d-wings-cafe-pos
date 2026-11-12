@@ -4266,8 +4266,6 @@ async function loadTodayAttendance(){
 }
 
 
-
-  
 async function viewAttendancePhoto(employeeId, date){
 
   if(currentUserRole !== "owner"){
@@ -4286,6 +4284,22 @@ async function viewAttendancePhoto(employeeId, date){
   info.textContent = "Loading photo...";
 
   try{
+
+    const attendanceRef = doc(
+      db,
+      "attendance",
+      `${employeeId}_${date}`
+    );
+
+    const attendanceSnap = await getDoc(attendanceRef);
+
+    if(!attendanceSnap.exists()){
+      info.textContent = "Attendance record not found.";
+      return;
+    }
+
+    const record = attendanceSnap.data();
+
     const savedPhoto = await getAttendancePhoto(employeeId, date);
 
     if(!savedPhoto || !savedPhoto.photo){
@@ -4304,16 +4318,24 @@ async function viewAttendancePhoto(employeeId, date){
     image.style.display = "block";
 
     info.textContent =
+      "STAFF: " + (record.employeeName || "Unknown") + "\n" +
       "DATE: " + date + "\n" +
-      "STAFF ID: " + employeeId;
+      "TIME IN: " + (record.timeIn || "—") + "\n" +
+      "GPS LATITUDE: " + (record.gpsLatitude ?? "—") + "\n" +
+      "GPS LONGITUDE: " + (record.gpsLongitude ?? "—") + "\n" +
+      "GPS ACCURACY: " + (record.gpsAccuracy ?? "—") + " meters\n" +
+      "DISTANCE FROM CAFE: " + (record.distanceFromCafe ?? "—") + " meters";
 
     info.style.whiteSpace = "pre-line";
 
   }catch(error){
-    console.error(error);
-    info.textContent = "Unable to load photo.";
+
+    console.error("Attendance photo viewer error:", error);
+    info.textContent = "Unable to load attendance photo.";
+
   }
 }
+
 
 document.getElementById("closeAttendancePhotoBtn").onclick = () => {
   const modal = document.getElementById("attendancePhotoModal");
