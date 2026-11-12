@@ -1772,12 +1772,7 @@ function renderStaffWeeklySchedule(){
 
   const canEdit =
     String(currentUserRole || "").toLowerCase() === "owner";
-const historySection =
-  document.getElementById("attendanceHistorySection");
 
-if(historySection){
-  historySection.style.display = isOwner ? "" : "none";
-}
   const saveButton =
     document.getElementById("saveStaffScheduleBtn");
 
@@ -4199,7 +4194,12 @@ async function loadTodayAttendance(){
 
   const isOwner =
     String(currentUserRole || "").toLowerCase() === "owner";
+const historySection =
+  document.getElementById("attendanceHistorySection");
 
+if(historySection){
+  historySection.style.display = isOwner ? "" : "none";
+}
   attendanceList.innerHTML =
     "<p class='small'>Loading attendance...</p>";
 
