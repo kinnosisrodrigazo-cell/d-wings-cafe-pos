@@ -2406,7 +2406,9 @@ if(!auth.currentUser){
       },
       { merge: true }
     );
-
+await loadWeeklySchedule();
+    
+renderStaffAttendanceReminders();
     alert("Weekly staff schedule saved successfully!");
 
   }catch(error){
