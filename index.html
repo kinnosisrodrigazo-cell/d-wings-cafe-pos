@@ -2326,7 +2326,7 @@ ${
           const approvals = {
             ...staffAttendanceReminderApprovals,
             [key]: {
-              approvedBy: auth.currentUser.uid,
+              approvedBy: "OWNER",
               approvedAt: new Date().toISOString()
             }
           };
