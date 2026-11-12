@@ -6165,8 +6165,16 @@ document.getElementById("avatarSelection").classList.add("hidden");
     return;
   }
 
-  try {
+try {
    await verifyUser(user);
+
+   // Automatically delete attendance photos older than 14 days
+   try {
+     await cleanupOldAttendancePhotos();
+   } catch (photoCleanupError) {
+     console.error("Attendance photo cleanup error:", photoCleanupError);
+   }
+
   } catch (error) {
     console.error("VERIFY USER ERROR:", error);
 
