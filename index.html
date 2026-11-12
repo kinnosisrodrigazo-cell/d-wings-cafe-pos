@@ -1209,9 +1209,21 @@ button:disabled{opacity:.5}
     <button type="button" id="scheduleNextWeek">›</button>
   </div>
 
+<div style="display:flex;gap:8px;align-items:center">
+
+  <button
+    type="button"
+    id="clearStaffScheduleBtn"
+    style="background:#8b3030"
+  >
+    <i class="fas fa-trash-alt"></i> CLEAR SCHEDULE
+  </button>
+
   <button type="button" id="saveStaffScheduleBtn">
     <i class="fas fa-save"></i> SAVE SCHEDULE
   </button>
+
+</div>
 </div>        <div id="staffWeeklySchedule">
           <p class="small">Weekly schedule will appear here.</p>
         </div>
@@ -2439,7 +2451,81 @@ renderStaffAttendanceReminders();
       '<i class="fas fa-save"></i> SAVE SCHEDULE';
   }
 
+  });
+
+document.getElementById("clearStaffScheduleBtn").addEventListener("click", async () => {
+
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
+    alert("Only the owner can clear the staff schedule.");
+    return;
+  }
+
+  if(!auth.currentUser){
+    alert("Please sign in again.");
+    return;
+  }
+
+  const dates = getScheduleWeekDates();
+  const weekStart = dates[0];
+
+  if(!confirm("Clear ALL staff assignments for this selected week? This cannot be undone.")){
+    return;
+  }
+
+  const clearButton =
+    document.getElementById("clearStaffScheduleBtn");
+
+  clearButton.disabled = true;
+  clearButton.innerHTML = "CLEARING...";
+
+  try{
+
+    const clearedSchedule = {};
+
+    Object.entries(staffScheduleDraft || {}).forEach(([employeeId, assignment]) => {
+
+      const updated = {...(assignment || {})};
+
+      dates.forEach(date => {
+        delete updated[date];
+      });
+
+      clearedSchedule[employeeId] = updated;
+
+    });
+
+    await setDoc(
+      doc(db, "schedules", weekStart),
+      {
+        weekStart: weekStart,
+        assignments: clearedSchedule,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    staffScheduleDraft = clearedSchedule;
+
+    await loadWeeklySchedule();
+
+    alert("Selected week's staff schedule cleared successfully!");
+
+  }catch(error){
+
+    console.error("Schedule clearing error:", error);
+
+    alert("Unable to clear schedule. Please try again.");
+
+  }finally{
+
+    clearButton.disabled = false;
+    clearButton.innerHTML =
+      '<i class="fas fa-trash-alt"></i> CLEAR SCHEDULE';
+
+  }
+
 });
+
 
 let reportOrders = [];
 let reportDateLoaded = "";
