@@ -1286,6 +1286,34 @@ button:disabled{opacity:.5}
           <div id="todayAttendanceList">
             <p class="small">Attendance records will appear here.</p>
           </div>
+         <!-- ATTENDANCE HISTORY -->
+<div id="attendanceHistorySection" style="margin-top:20px">
+
+  <hr>
+
+  <h4>ATTENDANCE HISTORY</h4>
+
+  <label for="attendanceHistoryDate">SELECT DATE</label>
+
+  <input
+    type="date"
+    id="attendanceHistoryDate"
+    style="width:100%;padding:12px"
+  >
+
+  <button
+    type="button"
+    id="viewAttendanceHistoryBtn"
+    style="width:100%;margin-top:10px"
+  >
+    VIEW ATTENDANCE HISTORY
+  </button>
+
+  <div id="attendanceHistoryList" style="margin-top:15px">
+    <p class="small">Select a date to view attendance history.</p>
+  </div>
+
+</div>
           <!-- ATTENDANCE PHOTO VIEWER -->
 <div id="attendancePhotoModal" class="hidden"
      style="
@@ -1744,7 +1772,12 @@ function renderStaffWeeklySchedule(){
 
   const canEdit =
     String(currentUserRole || "").toLowerCase() === "owner";
+const historySection =
+  document.getElementById("attendanceHistorySection");
 
+if(historySection){
+  historySection.style.display = isOwner ? "" : "none";
+}
   const saveButton =
     document.getElementById("saveStaffScheduleBtn");
 
@@ -4271,6 +4304,129 @@ async function loadTodayAttendance(){
 }
 
 
+// ATTENDANCE HISTORY WILL BE INSERTED HERE
+// LOAD ATTENDANCE HISTORY
+async function loadAttendanceHistory(){
+
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
+    alert("Owner only.");
+    return;
+  }
+
+  const selectedDate =
+    document.getElementById("attendanceHistoryDate").value;
+
+  const historyList =
+    document.getElementById("attendanceHistoryList");
+
+  if(!selectedDate){
+    historyList.innerHTML =
+      "<p class='small'>Please select a date.</p>";
+    return;
+  }
+
+  historyList.innerHTML =
+    "<p class='small'>Loading attendance history...</p>";
+
+  try{
+
+    const attendanceQuery = query(
+      collection(db, "attendance"),
+      where("date", "==", selectedDate)
+    );
+
+    const snapshot = await getDocs(attendanceQuery);
+
+    if(snapshot.empty){
+      historyList.innerHTML =
+        "<p class='small'>No attendance records found for this date.</p>";
+      return;
+    }
+
+    const records = snapshot.docs
+      .map(doc => doc.data())
+      .sort((a,b) =>
+        (a.employeeName || "").localeCompare(b.employeeName || "")
+      );
+
+    historyList.innerHTML = `
+      <div style="overflow-x:auto">
+        <table style="
+          width:100%;
+          border-collapse:collapse;
+          table-layout:fixed;
+          font-size:13px;
+        ">
+          <thead>
+            <tr style="background:#222;color:white">
+              <th style="padding:10px 5px;text-align:left">STAFF</th>
+              <th style="padding:10px 5px;text-align:center">TIME IN</th>
+              <th style="padding:10px 5px;text-align:center">TIME OUT</th>
+              <th style="padding:10px 5px;text-align:center">STATUS</th>
+              <th style="padding:10px 5px;text-align:center">PHOTO</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${records.map(record => `
+              <tr style="border-bottom:1px solid #ddd">
+                <td style="padding:10px 5px;font-weight:bold">
+                  ${escapeHTML(record.employeeName || "Unknown")}
+                </td>
+                <td style="padding:10px 5px;text-align:center">
+                  ${escapeHTML(record.timeIn || "—")}
+                </td>
+                <td style="padding:10px 5px;text-align:center">
+                  ${escapeHTML(record.timeOut || "—")}
+                </td>
+                <td style="padding:10px 5px;text-align:center">
+                  ${
+                    record.status === "ABSENT"
+                      ? "ABSENT"
+                      : record.timeOut
+                      ? "COMPLETED"
+                      : "WORKING"
+                  }
+                </td>
+                <td style="padding:10px 5px;text-align:center">
+                  ${
+                    record.timeIn && record.photoStored === true
+                      ? `<button type="button"
+                           class="attendance-history-photo-btn"
+                           data-employee-id="${escapeHTML(record.employeeId || "")}"
+                           data-date="${escapeHTML(record.date || selectedDate)}"
+                           style="padding:6px 9px;font-size:11px">
+                           VIEW
+                         </button>`
+                      : "—"
+                  }
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    historyList
+      .querySelectorAll(".attendance-history-photo-btn")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          viewAttendancePhoto(
+            button.dataset.employeeId,
+            button.dataset.date
+          );
+        });
+      });
+
+  }catch(error){
+
+    console.error("Attendance history error:", error);
+
+    historyList.innerHTML =
+      "<p class='small'>Unable to load attendance history.</p>";
+
+  }
+}
 async function viewAttendancePhoto(employeeId, date){
 
   if(String(currentUserRole || "").toLowerCase() !== "owner"){
@@ -4378,7 +4534,9 @@ document.getElementById("closeAttendancePhotoBtn").onclick = () => {
   modal.style.display = "none";
   modal.classList.add("hidden");
 };
-
+// ATTENDANCE HISTORY BUTTON
+document.getElementById("viewAttendanceHistoryBtn").onclick =
+  loadAttendanceHistory;
 async function loadDailyReport(){
   const selectedDate =
     document.getElementById("reportDate").value;
