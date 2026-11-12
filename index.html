@@ -2347,10 +2347,25 @@ async function loadScheduleEmployees(){
         ...employeeDoc.data()
       }))
       .filter(employee => employee.active === true)
-      .sort((a, b) =>
-        (a.name || "").localeCompare(b.name || "")
-      );
+.sort((a, b) => {
 
+  const staffOrder = [
+    "KC",
+    "RHEA",
+    "JADE",
+    "NICHOLE",
+    "AARON",
+    "ANGELICA",
+    "LEI"
+  ];
+
+  return staffOrder.indexOf(
+    (a.name || "").trim().toUpperCase()
+  ) - staffOrder.indexOf(
+    (b.name || "").trim().toUpperCase()
+  );
+
+});
     staffScheduleLoaded = true;
 
     await loadWeeklySchedule();
