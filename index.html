@@ -1469,32 +1469,73 @@ button:disabled{opacity:.5}
   </div>
   
 </section>
+
 <!-- OWNER DASHBOARD -->
 <section id="dashboardPage" class="hidden">
 
   <div class="panel">
     <h3>OWNER DASHBOARD</h3>
-    <p class="small">D' WINGS CAFE MANAGEMENT OVERVIEW</p>
+    <p class="small">D' WINGS CAFE BUSINESS PERFORMANCE</p>
   </div>
 
-  <!-- DAILY SALES AND QUOTA -->
+  <!-- BUSINESS PERFORMANCE -->
   <div class="panel">
-    <h3>DAILY SALES & QUOTA</h3>
-    <div id="dashboardDailySales">
-  <p class="small">Loading daily sales...</p>
-</div>
+    <h3>DAILY BUSINESS PERFORMANCE</h3>
+
+    <div id="dashboardBusinessSummary">
+      <p class="small">Loading business performance...</p>
+    </div>
   </div>
 
-  <!-- DAILY PAYROLL -->
-  <div class="panel">
-    <h3>DAILY EMPLOYEE PAYROLL</h3>
-    <div id="dashboardDailyPayroll"></div>
+  <!-- DAILY AND WEEKLY PAYROLL -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+
+    <div class="panel">
+      <h3>TODAY'S PAYROLL</h3>
+      <div id="dashboardDailyPayroll">
+        <p class="small">Loading today's payroll...</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>WEEKLY PAYROLL</h3>
+      <div id="dashboardWeeklyPayroll">
+        <p class="small">Loading weekly payroll...</p>
+      </div>
+    </div>
+
   </div>
 
-  <!-- WEEKLY PAYROLL -->
+  <!-- INDIVIDUAL PAYSLIPS -->
   <div class="panel">
-    <h3>WEEKLY PAYROLL</h3>
-    <div id="dashboardWeeklyPayroll"></div>
+    <h3>STAFF PAYSLIPS</h3>
+    <div id="dashboardPayslips">
+      <p class="small">Loading staff payslips...</p>
+    </div>
+  </div>
+
+  <!-- DAILY ORDER COUNT GRAPH -->
+  <div class="panel">
+    <h3>COMPLETED ORDERS PER DAY</h3>
+    <div id="dashboardOrdersChart"></div>
+  </div>
+
+  <!-- SALES EXPENSES PROFIT GRAPH -->
+  <div class="panel">
+    <h3>DAILY SALES, EXPENSES & PROFIT</h3>
+    <div id="dashboardPerformanceChart"></div>
+  </div>
+
+  <!-- WEEKLY PROFIT GRAPH -->
+  <div class="panel">
+    <h3>WEEKLY PROFIT</h3>
+    <div id="dashboardWeeklyProfitChart"></div>
+  </div>
+
+  <!-- AVERAGE WEEKLY PROFIT -->
+  <div class="panel">
+    <h3>AVERAGE DAILY PROFIT</h3>
+    <div id="dashboardAverageProfitChart"></div>
   </div>
 
   <!-- EMPLOYEE SCHEDULE -->
@@ -1504,6 +1545,7 @@ button:disabled{opacity:.5}
   </div>
 
 </section>
+
 </div>
 </main>
   <div id="flavorModal" class="hidden">
@@ -3714,86 +3756,200 @@ function getDailyIncentiveInfo(date, sales){
 }
 
 let salesAmountsVisible = false;
-async function loadDashboardDailySales(){
 
-  const dashboardSalesEl =
-    document.getElementById("dashboardDailySales");
+async function loadDashboardBusinessPerformance(){
 
-  if(!dashboardSalesEl) return;
+  const summaryEl = document.getElementById("dashboardBusinessSummary");
+  if(!summaryEl) return;
 
-  dashboardSalesEl.innerHTML =
-    "<p class='small'>Loading daily sales...</p>";
+  summaryEl.innerHTML = "<p class='small'>Loading business performance...</p>";
 
   try{
 
-    const today = new Date().toLocaleDateString("en-CA", {
+    const today = getManilaDateTime().date;
+
+    const weekDate = new Date(today + "T12:00:00");
+    const weekday = weekDate.getDay();
+
+    weekDate.setDate(
+      weekDate.getDate() - (weekday === 0 ? 6 : weekday - 1)
+    );
+
+    const weekStart = weekDate.toLocaleDateString("en-CA", {
       timeZone: "Asia/Manila"
     });
 
-    const ordersQuery = query(
-      collection(db, "orders"),
-      where("orderDate", "==", today)
-    );
+    const [
+      ordersSnapshot,
+      employeesSnapshot,
+      attendanceSnapshot,
+      scheduleSnapshot
+    ] = await Promise.all([
 
-    const snapshot = await getDocs(ordersQuery);
+      getDocs(query(
+        collection(db, "orders"),
+        where("orderDate", "==", today)
+      )),
 
-    const todayOrders = snapshot.docs.map(doc => doc.data());
+      getDocs(collection(db, "employees")),
 
-    const completedOrders = todayOrders.filter(order =>
-      (order.status || "COMPLETED") !== "VOID"
-    );
+      getDocs(query(
+        collection(db, "attendance"),
+        where("date", "==", today)
+      )),
 
-    const netSales = completedOrders.reduce(
+      getDoc(doc(db, "schedules", weekStart))
+
+    ]);
+
+    // COMPLETED ORDERS ONLY
+    const completedOrders = ordersSnapshot.docs
+      .map(doc => doc.data())
+      .filter(order =>
+        String(order.status || "").toUpperCase() === "COMPLETED"
+      );
+
+    const totalSales = completedOrders.reduce(
       (sum, order) => sum + (Number(order.total) || 0),
       0
     );
 
-    const incentiveInfo =
-      getDailyIncentiveInfo(today, netSales);
+    // LOAD ACTIVE STAFF
+    const activeStaff = employeesSnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .filter(employee => employee.active === true);
 
-    dashboardSalesEl.innerHTML = `
-      <p class="small">TODAY'S SALES</p>
+    // LOAD TODAY'S ATTENDANCE
+    const attendanceByStaff = {};
 
-      <h2 style="color:#e7ad3e">
-        ${peso(netSales)}
-      </h2>
+    attendanceSnapshot.forEach(docSnap => {
+      const record = docSnap.data();
+      attendanceByStaff[record.employeeId] = record;
+    });
 
-      <div class="row">
-        <strong>COMPLETED ORDERS</strong>
-        <strong>${completedOrders.length}</strong>
+    // LOAD TODAY'S SCHEDULE
+    const assignments = scheduleSnapshot.exists()
+      ? (scheduleSnapshot.data().assignments || {})
+      : {};
+
+    // STAFF WHO ACTUALLY WORKED TODAY
+    const workingStaff = activeStaff.filter(employee => {
+
+      const attendance = attendanceByStaff[employee.id];
+
+      return (
+        assignments[employee.id]?.[today] === "WORK" &&
+        attendance?.timeIn &&
+        String(attendance.status || "").toUpperCase() !== "ABSENT"
+      );
+
+    });
+
+    // DAILY STAFF SALARIES
+    const staffSalary = workingStaff.reduce(
+      (sum, employee) =>
+        sum + (Number(employee.dailyRate) || 500),
+      0
+    );
+
+    // DAILY INCENTIVE EXPENSE
+    const day = new Date(today + "T12:00:00").getDay();
+
+    let incentiveExpense = 0;
+
+    if(totalSales >= 20000){
+      incentiveExpense = workingStaff.length * 500;
+    }else if(totalSales >= 15000){
+      incentiveExpense = 300;
+    }else if(totalSales >= 10000){
+      incentiveExpense = (day >= 1 && day <= 4) ? 200 : 100;
+    }
+
+    // OTHER BUSINESS EXPENSES
+    const rentExpense = 3000;
+    const packagingExpense = totalSales * 0.50;
+
+    const totalExpenses =
+      staffSalary +
+      rentExpense +
+      packagingExpense +
+      incentiveExpense;
+
+    const totalProfit = totalSales - totalExpenses;
+
+    summaryEl.innerHTML = `
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+        gap:10px;
+      ">
+
+        <div class="panel" style="margin:0">
+          <p class="small">TOTAL SALES</p>
+          <h2 style="color:#e7ad3e">${peso(totalSales)}</h2>
+        </div>
+
+        <div class="panel" style="margin:0">
+          <p class="small">TOTAL EXPENSES</p>
+          <h2 style="color:#ff7777">${peso(totalExpenses)}</h2>
+        </div>
+
+        <div class="panel" style="margin:0">
+          <p class="small">TOTAL PROFIT</p>
+          <h2 style="color:${totalProfit >= 0 ? "#7de39a" : "#ff7777"}">
+            ${peso(totalProfit)}
+          </h2>
+        </div>
+
       </div>
 
-      <div class="row">
-        <strong>SALES TARGET</strong>
-        <strong>₱20,000</strong>
+      <div class="panel" style="margin-top:12px">
+        <h4>EXPENSE BREAKDOWN</h4>
+
+        <div class="row">
+          <span>Staff salaries (${workingStaff.length} working)</span>
+          <strong>${peso(staffSalary)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Daily rent</span>
+          <strong>${peso(rentExpense)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Food packaging (50% of sales)</span>
+          <strong>${peso(packagingExpense)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Staff incentives</span>
+          <strong>${peso(incentiveExpense)}</strong>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <strong>COMPLETED ORDERS</strong>
+          <strong>${completedOrders.length}</strong>
+        </div>
       </div>
 
-      <div style="height:14px;background:#444;border-radius:20px;overflow:hidden">
-        <div style="
-          height:14px;
-          width:${Math.min(100, netSales / 20000 * 100)}%;
-          background:#e7ad3e;
-          border-radius:20px;
-        "></div>
-      </div>
-
-      <p style="color:#7de39a;font-weight:bold">
-        ${escapeHTML(incentiveInfo.earned || "NO INCENTIVE EARNED YET")}
-      </p>
-
-      <p class="small">
-        ${escapeHTML(incentiveInfo.next)}
-      </p>
     `;
 
   }catch(error){
 
-    console.error("Dashboard daily sales error:", error);
+    console.error("Business performance error:", error);
 
-    dashboardSalesEl.innerHTML =
-      "<p class='small'>Unable to load daily sales.</p>";
+    summaryEl.innerHTML =
+      "<p class='small'>Unable to load business performance.</p>";
+
   }
 }
+
   
 // ======================================
 // ATTENDANCE CAMERA + GPS + LOCAL PHOTOS
@@ -6923,8 +7079,7 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
 
   document.getElementById("dashboardPage").classList.remove("hidden");
 
-  loadDashboardDailySales();
-
+loadDashboardBusinessPerformance();
   document.querySelectorAll(".terminal-nav button").forEach(button => {
     button.classList.remove("active");
   });
