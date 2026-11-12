@@ -2196,18 +2196,17 @@ if(attendance.status === "ABSENT"){
 
         const approvalKey =
           `${employee.id}_${date}_${type}`;
+const approval =
+  staffAttendanceReminderApprovals[approvalKey] || null;
 
-        if(staffAttendanceReminderApprovals[approvalKey]){
-          return;
-        }
-
-        reminders.push({
-          employeeId: employee.id,
-          employeeName: employee.name,
-          date,
-          type,
-          approvalKey
-        });
+reminders.push({
+  employeeId: employee.id,
+  employeeName: employee.name,
+  date,
+  type,
+  approvalKey,
+  approval
+});
 
       });
 
@@ -2270,26 +2269,36 @@ if(attendance.status === "ABSENT"){
         ${reminder.date} · ${reminder.type}
       </div>
 
-      ${
-        isOwner
-        ? `
-          <button
-            type="button"
-            class="approve-attendance-reminder-btn"
-            data-key="${escapeScheduleHtml(reminder.approvalKey)}"
-            style="padding:7px 12px;font-size:11px"
-          >
-            APPROVE
-          </button>
-        `
-        : `
-          <span class="small">OWNER APPROVAL REQUIRED</span>
-        `
-      }
-
+${
+  reminder.approval
+  ? `
+    <div style="
+      color:#35c978;
+      font-size:12px;
+      font-weight:bold;
+      margin-top:8px;
+    ">
+      ✓ APPROVED
     </div>
-
-  `).join("");
+    <div class="small" style="margin-top:4px">
+      Approved by: ${escapeScheduleHtml(reminder.approval.approvedBy || "OWNER")}
+    </div>
+  `
+  : isOwner
+  ? `
+    <button
+      type="button"
+      class="approve-attendance-reminder-btn"
+      data-key="${escapeScheduleHtml(reminder.approvalKey)}"
+      style="padding:7px 12px;font-size:11px"
+    >
+      APPROVE
+    </button>
+  `
+  : `
+    <span class="small">OWNER APPROVAL REQUIRED</span>
+  `
+}
 
   // OWNER APPROVAL BUTTONS
   reminderList
