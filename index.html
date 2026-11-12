@@ -1318,6 +1318,11 @@ button:disabled{opacity:.5}
          ">
 
     <p id="attendancePhotoInfo" class="small"></p>
+    <button type="button"
+        id="viewAttendanceLocationBtn"
+        style="width:100%;margin-top:10px">
+  VIEW LOCATION IN GOOGLE MAPS
+</button>
 
     <button type="button"
             id="closeAttendancePhotoBtn"
@@ -4276,6 +4281,11 @@ async function viewAttendancePhoto(employeeId, date){
   const modal = document.getElementById("attendancePhotoModal");
   const image = document.getElementById("attendancePhotoImage");
   const info = document.getElementById("attendancePhotoInfo");
+  const locationBtn =
+  document.getElementById("viewAttendanceLocationBtn");
+
+locationBtn.disabled = true;
+locationBtn.onclick = null;
 
   modal.style.display = "flex";
   modal.classList.remove("hidden");
@@ -4299,6 +4309,23 @@ async function viewAttendancePhoto(employeeId, date){
     }
 
     const record = attendanceSnap.data();
+    if(
+  record.gpsLatitude != null &&
+  record.gpsLongitude != null &&
+  Number.isFinite(Number(record.gpsLatitude)) &&
+  Number.isFinite(Number(record.gpsLongitude))
+){
+  locationBtn.disabled = false;
+  locationBtn.onclick = () => {
+    const mapsURL =
+      "https://www.google.com/maps?q=" +
+      encodeURIComponent(
+        record.gpsLatitude + "," + record.gpsLongitude
+      );
+
+    window.open(mapsURL, "_blank", "noopener");
+  };
+}
 
     const savedPhoto = await getAttendancePhoto(employeeId, date);
 
