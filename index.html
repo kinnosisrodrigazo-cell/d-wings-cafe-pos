@@ -4135,7 +4135,10 @@ ${status !== "VOID" ? `
     VOID ORDER
   </button>
 
-  ${order.servingStatus === "COMPLETED" ? `
+${order.servingStatus === "COMPLETED" &&
+  !["UNLI 269 WINGS", "UNLI 299 WINGS"].some(unliName =>
+    (order.items || []).some(item => item.name === unliName)
+  ) ? `
     <button
       class="secondary"
       data-restore="${orderDoc.id}"
