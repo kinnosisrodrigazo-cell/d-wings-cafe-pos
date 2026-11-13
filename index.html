@@ -9107,7 +9107,9 @@ async function finishUnliSession(orderId){
     alert("Unable to finish UNLI session. Please try again.");
 
   }
-  // RESTORE UNLI SESSION TO ORDER QUEUE
+}
+
+// RESTORE UNLI SESSION TO ORDER QUEUE
 async function restoreUnliToQueue(orderId){
 
   const order = activeQueueOrders.find(item => item.id === orderId);
