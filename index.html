@@ -4029,11 +4029,12 @@ async function loadDashboardRankings(){
 
     const ordersSnapshot = await getDocs(collection(db, "orders"));
 
-    const completedOrders = ordersSnapshot.docs
-      .map(docSnap => docSnap.data())
-      .filter(order =>
-        String(order.status || "").toUpperCase() === "COMPLETED"
-      );
+const allOrders = ordersSnapshot.docs
+  .map(docSnap => docSnap.data());
+
+const completedOrders = allOrders.filter(order =>
+  String(order.status || "").toUpperCase() === "COMPLETED"
+);
 
     const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, char => ({
       "&":"&amp;",
@@ -4129,12 +4130,12 @@ async function loadDashboardRankings(){
 
     // RECENT ORDERS
 
-    const recentOrders = [...completedOrders]
-      .sort((a,b) =>
-        (getOrderDate(b)?.getTime() || 0) -
-        (getOrderDate(a)?.getTime() || 0)
-      )
-      .slice(0,10);
+const recentOrders = [...allOrders]
+  .sort((a,b) =>
+    (getOrderDate(b)?.getTime() || 0) -
+    (getOrderDate(a)?.getTime() || 0)
+  )
+  .slice(0,10);
 
     // TOP CUSTOMERS
 
@@ -4210,21 +4211,23 @@ async function loadDashboardRankings(){
                 <th style="${headerStyle}">PRODUCT</th>
                 <th style="${headerStyle};text-align:right">AMOUNT</th>
                 <th style="${headerStyle};text-align:right">TIME</th>
+<th style="${headerStyle};text-align:center">STATUS</th>
               </tr>
             </thead>
-            <tbody>
-              ${recentToShow.length ? recentToShow.map((order,index) => `
-                <tr>
-                  <td style="${cellStyle};color:#D6AD55;font-weight:700">${index+1}</td>
-                  <td style="${cellStyle}">${escapeHTML(order.customerName || "Walk-in")}</td>
-                  <td style="${cellStyle}">${escapeHTML((order.items || []).map(item => item.name).join(", ") || "—")}</td>
-                  <td style="${cellStyle};text-align:right;white-space:nowrap">${formatAmount(order.total)}</td>
-                  <td style="${cellStyle};text-align:right;white-space:nowrap">${formatTime(order)}</td>
-                </tr>
-              `).join("") : `
-                <tr><td colspan="5" style="${cellStyle};text-align:center;color:#999">No orders yet</td></tr>
-              `}
-            </tbody>
+<tbody>
+  ${recentToShow.length ? recentToShow.map((order,index) => `
+    <tr>
+      <td style="${cellStyle};color:#D6AD55;font-weight:700">${index+1}</td>
+      <td style="${cellStyle}">${escapeHTML(order.customerName || "Walk-in")}</td>
+      <td style="${cellStyle}">${escapeHTML((order.items || []).map(item => item.name).join(", ") || "—")}</td>
+      <td style="${cellStyle};text-align:right;white-space:nowrap">${formatAmount(order.total)}</td>
+      <td style="${cellStyle};text-align:right;white-space:nowrap">${formatTime(order)}</td>
+      <td style="${cellStyle};text-align:center;font-weight:700;color:${String(order.status || "COMPLETED").toUpperCase() === "VOID" ? "#E57373" : "#81C784"}">${escapeHTML(order.status || "COMPLETED")}</td>
+    </tr>
+  `).join("") : `
+    <tr><td colspan="6" style="${cellStyle};text-align:center;color:#999">No orders yet</td></tr>
+  `}
+</tbody>
           </table>
         </div>
       `;
