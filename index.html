@@ -1577,7 +1577,7 @@ button:disabled{opacity:.5}
 
     <!-- TOP CUSTOMERS -->
     <div class="panel" style="margin:0;min-width:0">
-      <h3>TOP NAMES WHO ORDER</h3>
+      <h3>TOP CUSTOMERS</h3>
       <div id="dashboardTopCustomers">
         <p class="small">Loading customers...</p>
       </div>
@@ -3981,7 +3981,302 @@ async function loadDashboardOrdersChart(){
 }
 
   
+async function loadDashboardRankings(){
 
+  const bestContainer = document.getElementById("dashboardBestProducts");
+  const recentContainer = document.getElementById("dashboardRecentOrders");
+  const customersContainer = document.getElementById("dashboardTopCustomers");
+
+  if(!bestContainer || !recentContainer || !customersContainer) return;
+
+  bestContainer.innerHTML = "<p class='small'>Loading products...</p>";
+  recentContainer.innerHTML = "<p class='small'>Loading orders...</p>";
+  customersContainer.innerHTML = "<p class='small'>Loading customers...</p>";
+
+  try{
+
+    const ordersSnapshot = await getDocs(collection(db, "orders"));
+
+    const completedOrders = ordersSnapshot.docs
+      .map(docSnap => docSnap.data())
+      .filter(order =>
+        String(order.status || "").toUpperCase() === "COMPLETED"
+      );
+
+    const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    })[char]);
+
+    const getOrderDate = order => {
+      const value = order.orderTime || order.createdAt;
+
+      if(value && typeof value.toDate === "function"){
+        return value.toDate();
+      }
+
+      if(value instanceof Date) return value;
+
+      return null;
+    };
+
+    const formatTime = order => {
+      const date = getOrderDate(order);
+
+      return date
+        ? date.toLocaleTimeString("en-PH", {
+            hour:"numeric",
+            minute:"2-digit",
+            hour12:true,
+            timeZone:"Asia/Manila"
+          })
+        : "—";
+    };
+
+    const formatAmount = amount =>
+      "₱" + (Number(amount) || 0).toLocaleString("en-PH", {
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+      });
+
+    const tableStyle = `
+      width:100%;
+      border-collapse:collapse;
+      font-size:11px;
+      color:#ffffff;
+    `;
+
+    const headerStyle = `
+      color:#D6AD55;
+      font-size:10px;
+      font-weight:700;
+      text-align:left;
+      padding:10px 5px;
+      border-bottom:1px solid #393A40;
+      white-space:nowrap;
+    `;
+
+    const cellStyle = `
+      padding:11px 5px;
+      border-bottom:1px solid #303136;
+      vertical-align:middle;
+    `;
+
+    let showAllProducts = false;
+    let showAllRecent = false;
+    let showAllCustomers = false;
+
+    // BEST SELLING PRODUCTS
+
+    const productTotals = {};
+
+    completedOrders.forEach(order => {
+
+      (order.items || []).forEach(item => {
+
+        const name = String(item.name || "Unnamed Product");
+        const qty = Number(item.qty) || 0;
+
+        if(!productTotals[name]){
+          productTotals[name] = 0;
+        }
+
+        productTotals[name] += qty;
+
+      });
+
+    });
+
+    const bestProducts = Object.entries(productTotals)
+      .map(([name, qty]) => ({name, qty}))
+      .sort((a,b) => b.qty - a.qty)
+      .slice(0,10);
+
+    // RECENT ORDERS
+
+    const recentOrders = [...completedOrders]
+      .sort((a,b) =>
+        (getOrderDate(b)?.getTime() || 0) -
+        (getOrderDate(a)?.getTime() || 0)
+      )
+      .slice(0,10);
+
+    // TOP CUSTOMERS
+
+    const customerTotals = {};
+
+    completedOrders.forEach(order => {
+
+      const name = String(order.customerName || "").trim();
+
+      if(!name || name.toLowerCase() === "walk-in") return;
+
+      if(!customerTotals[name]){
+        customerTotals[name] = 0;
+      }
+
+      customerTotals[name]++;
+
+    });
+
+    const topCustomers = Object.entries(customerTotals)
+      .map(([name, orders]) => ({name, orders}))
+      .sort((a,b) => b.orders - a.orders)
+      .slice(0,10);
+
+    function renderDashboard(){
+
+      // BEST SELLING PRODUCTS
+
+      const productsToShow = bestProducts.slice(
+        0,
+        showAllProducts ? 10 : 5
+      );
+
+      bestContainer.innerHTML = `
+        <div style="overflow-x:auto">
+          <table style="${tableStyle}">
+            <thead>
+              <tr>
+                <th style="${headerStyle}">#</th>
+                <th style="${headerStyle}">PRODUCTS</th>
+                <th style="${headerStyle};text-align:right">ITEM SOLD</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${productsToShow.length ? productsToShow.map((item,index) => `
+                <tr>
+                  <td style="${cellStyle};color:#D6AD55;font-weight:700">${index+1}</td>
+                  <td style="${cellStyle}">${escapeHTML(item.name)}</td>
+                  <td style="${cellStyle};text-align:right;font-weight:700">${item.qty}</td>
+                </tr>
+              `).join("") : `
+                <tr><td colspan="3" style="${cellStyle};text-align:center;color:#999">No sales yet</td></tr>
+              `}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // RECENT ORDERS
+
+      const recentToShow = recentOrders.slice(
+        0,
+        showAllRecent ? 10 : 5
+      );
+
+      recentContainer.innerHTML = `
+        <div style="overflow-x:auto">
+          <table style="${tableStyle}">
+            <thead>
+              <tr>
+                <th style="${headerStyle}">#</th>
+                <th style="${headerStyle}">CUSTOMER NAME</th>
+                <th style="${headerStyle}">PRODUCT</th>
+                <th style="${headerStyle};text-align:right">AMOUNT</th>
+                <th style="${headerStyle};text-align:right">TIME</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recentToShow.length ? recentToShow.map((order,index) => `
+                <tr>
+                  <td style="${cellStyle};color:#D6AD55;font-weight:700">${index+1}</td>
+                  <td style="${cellStyle}">${escapeHTML(order.customerName || "Walk-in")}</td>
+                  <td style="${cellStyle}">${escapeHTML((order.items || []).map(item => item.name).join(", ") || "—")}</td>
+                  <td style="${cellStyle};text-align:right;white-space:nowrap">${formatAmount(order.total)}</td>
+                  <td style="${cellStyle};text-align:right;white-space:nowrap">${formatTime(order)}</td>
+                </tr>
+              `).join("") : `
+                <tr><td colspan="5" style="${cellStyle};text-align:center;color:#999">No orders yet</td></tr>
+              `}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // TOP CUSTOMERS
+
+      const customersToShow = topCustomers.slice(
+        0,
+        showAllCustomers ? 10 : 5
+      );
+
+      customersContainer.innerHTML = `
+        <div style="overflow-x:auto">
+          <table style="${tableStyle}">
+            <thead>
+              <tr>
+                <th style="${headerStyle}">#</th>
+                <th style="${headerStyle}">CUSTOMER NAME</th>
+                <th style="${headerStyle};text-align:right">ORDERS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${customersToShow.length ? customersToShow.map((item,index) => `
+                <tr>
+                  <td style="${cellStyle};color:#D6AD55;font-weight:700">${index+1}</td>
+                  <td style="${cellStyle}">${escapeHTML(item.name)}</td>
+                  <td style="${cellStyle};text-align:right;font-weight:700">${item.orders}</td>
+                </tr>
+              `).join("") : `
+                <tr><td colspan="3" style="${cellStyle};text-align:center;color:#999">No named customers yet</td></tr>
+              `}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // VIEW ALL BUTTONS
+
+      const bestButton = document.getElementById("viewAllBestProducts");
+      const recentButton = document.getElementById("viewAllRecentOrders");
+      const customersButton = document.getElementById("viewAllTopCustomers");
+
+      if(bestButton){
+        bestButton.style.display = bestProducts.length > 5 ? "" : "none";
+        bestButton.textContent = showAllProducts ? "VIEW LESS" : "VIEW ALL 10";
+        bestButton.onclick = () => {
+          showAllProducts = !showAllProducts;
+          renderDashboard();
+        };
+      }
+
+      if(recentButton){
+        recentButton.style.display = recentOrders.length > 5 ? "" : "none";
+        recentButton.textContent = showAllRecent ? "VIEW LESS" : "VIEW ALL 10";
+        recentButton.onclick = () => {
+          showAllRecent = !showAllRecent;
+          renderDashboard();
+        };
+      }
+
+      if(customersButton){
+        customersButton.style.display = topCustomers.length > 5 ? "" : "none";
+        customersButton.textContent = showAllCustomers ? "VIEW LESS" : "VIEW ALL 10";
+        customersButton.onclick = () => {
+          showAllCustomers = !showAllCustomers;
+          renderDashboard();
+        };
+      }
+
+    }
+
+    renderDashboard();
+
+  }catch(error){
+
+    console.error("Dashboard Rankings Error:", error);
+
+    bestContainer.innerHTML = "<p class='small'>Unable to load products.</p>";
+    recentContainer.innerHTML = "<p class='small'>Unable to load orders.</p>";
+    customersContainer.innerHTML = "<p class='small'>Unable to load customers.</p>";
+
+  }
+
+}
 async function loadDashboardPerformanceChart(){
 
   const container = document.getElementById("dashboardPerformanceChart");
@@ -8509,6 +8804,7 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
 loadDashboardBusinessPerformance();
 loadDashboardPayroll();
 loadDashboardPayslips();
+loadDashboardRankings();
 
 loadDashboardOrdersChart();
 loadDashboardPerformanceChart();
