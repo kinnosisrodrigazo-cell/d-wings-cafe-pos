@@ -8829,6 +8829,18 @@ function renderOrderQueue(){
           ? "UNLI 299"
           : "UNLI 269";
 
+      const unliQuantity = (order.items || [])
+        .filter(item =>
+          item.name === "UNLI 299 WINGS" ||
+          item.name === "UNLI 269 WINGS"
+        )
+        .reduce((total, item) => total + (Number(item.qty) || 0), 0);
+
+      const peopleIcons = Array.from(
+        { length: Math.min(unliQuantity, 30) },
+        () => '<i class="fa-solid fa-user" style="color:#e7ad3e;font-size:15px"></i>'
+      ).join("");
+
       return `
         <div class="unli-monitor-card">
 
@@ -8838,7 +8850,13 @@ function renderOrderQueue(){
   ${escapeHTML(order.customerName || "Walk-in")}
 </strong>
 
-            <span class="unli-package">${packageText}</span>
+            
+<span class="unli-package">${packageText}</span>
+
+<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:130px">
+  ${peopleIcons}
+</div>
+
 
           </div>
 
