@@ -4222,6 +4222,29 @@ ${order.servingStatus === "COMPLETED" &&
       "<p class='small'>Unable to load order history. Please try again.</p>";
   }
 }
+
+  // REAL-TIME ORDER HISTORY LISTENER
+function startOrderHistoryListener(){
+
+  if(orderHistoryUnsubscribe) return;
+
+  const ordersQuery = query(
+    collection(db, "orders"),
+    orderBy("createdAt", "desc"),
+    limit(50)
+  );
+
+  orderHistoryUnsubscribe = onSnapshot(
+    ordersQuery,
+    () => {
+      loadOrderHistory();
+    },
+    error => {
+      console.error("Order history listener error:", error);
+    }
+  );
+}
+  
 function getDailyIncentive(date, sales){
   const day = new Date(date + "T12:00:00").getDay();
 
@@ -8634,6 +8657,7 @@ let dwingsPresenceLatestSnapshot = null;
 let orderQueueUnsubscribe = null;
 let orderQueueTimer = null;
 let activeQueueOrders = [];
+  let orderHistoryUnsubscribe = null;
   let unliExpiryInProgress = new Set();
   // ===================================
 // D' WINGS CAFE - REAL-TIME ORDER QUEUE
@@ -9472,7 +9496,7 @@ document.getElementById("onlineStaff").innerHTML = "";
   }
 };
 
-document.getElementById("orderHistoryBtn").onclick = loadOrderHistory;
+document.getElementById("orderHistoryBtn").onclick = startOrderHistoryListener;
 
 document.getElementById("viewReportBtn").onclick = loadDailyReport;
 document.querySelectorAll(".terminal-nav button").forEach(button=>{
