@@ -2480,9 +2480,6 @@ document.getElementById("dashboardPrevWeek").addEventListener("click", () => {
   updateDashboardWeekLabel();
   loadDashboardOrdersChart();
   loadDashboardPerformanceChart();
-  loadDashboardWeeklyProfitChart();
-  loadDashboardAverageProfitChart();
-  loadDashboardScheduleChart();
 
 });
 
@@ -2493,9 +2490,6 @@ document.getElementById("dashboardNextWeek").addEventListener("click", () => {
   updateDashboardWeekLabel();
   loadDashboardOrdersChart();
   loadDashboardPerformanceChart();
-  loadDashboardWeeklyProfitChart();
-  loadDashboardAverageProfitChart();
-  loadDashboardScheduleChart();
 
 });
 
@@ -3994,11 +3988,8 @@ function refreshDashboardOrderData(){
 
   loadDashboardBusinessPerformance();
   loadDashboardRankings();
-
   loadDashboardOrdersChart();
   loadDashboardPerformanceChart();
-  loadDashboardWeeklyProfitChart();
-  loadDashboardAverageProfitChart();
 
 }
 
@@ -8845,8 +8836,6 @@ document.getElementById("dashboardPage").classList.remove("hidden");
 loadDashboardPayroll();
 loadDashboardPayslips();
 startDashboardRealtime();
-
-loadDashboardScheduleChart();
 
 document.querySelectorAll(".terminal-nav button").forEach(button => {
   button.classList.remove("active");
