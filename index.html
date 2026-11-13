@@ -44,13 +44,28 @@ button:disabled{opacity:.5}
 .product-group:first-child {
   margin-top: 25px;
 }
-/* All Products - Mobile Portrait */
+/* All Categories - Mobile Portrait */
 @media (max-width: 600px) and (orientation: portrait) {
-  #products:not(:has(.product-group)) {
+
+  #products.fries-layout {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
     gap: 8px;
   }
+
+  #products.fries-layout .product-group {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  #products.fries-layout .product-group-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 8px;
+  }
+
 }
   #products:not(:has(.product-group)) {
   padding-top: 25px;
