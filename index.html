@@ -1435,7 +1435,10 @@ header h2 {
     <h2>Sales Terminal</h2>
   </div>
     <div class="sales-layout">
- <div class="order-list-card">
+<div
+  class="order-list-card"
+  data-history-status="${escapeHTML(status)}"
+  data-history-search="${escapeHTML(`${order.orderNumber || "LEGACY"} ${order.customerName || "Walk-in"}`.toLowerCase())}">
     <div id="categoryTabs" class="category-tabs"></div>
     <div class="grid" id="products"></div>
   </div>
@@ -1838,17 +1841,37 @@ header h2 {
 </section>
 
   
+
 <section id="historyPage" class="hidden">
   <!-- ORDER HISTORY -->
   <div class="panel">
     <h3>ORDER HISTORY</h3>
+
     <button id="orderHistoryBtn" class="secondary" style="width:100%">
       VIEW ORDER HISTORY
     </button>
+
+    <div id="orderHistoryTools" class="hidden" style="margin-top:15px">
+
+      <input
+        type="text"
+        id="historySearch"
+        placeholder="Search order number or customer name..."
+        style="width:100%;margin-bottom:12px"
+      >
+
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button type="button" class="history-filter active" data-history-filter="ALL">ALL</button>
+        <button type="button" class="history-filter" data-history-filter="COMPLETED">COMPLETED</button>
+        <button type="button" class="history-filter" data-history-filter="VOID">VOID</button>
+      </div>
+
+    </div>
+
     <div id="orderHistory" class="hidden"></div>
   </div>
-
 </section>
+
 
 <section id="reportPage" class="hidden">
   <!-- DAILY SALES REPORT -->
@@ -4078,6 +4101,7 @@ async function loadOrderHistory(){
   const historyEl = document.getElementById("orderHistory");
 
   historyEl.classList.remove("hidden");
+  document.getElementById("orderHistoryTools").classList.remove("hidden");
   historyEl.innerHTML = "<p class='small'>Loading orders...</p>";
 
   try{
@@ -4156,6 +4180,8 @@ ${order.servingStatus === "COMPLETED" &&
          `;
     }).join("");
 
+    applyOrderHistoryFilters();
+
     historyEl.querySelectorAll("[data-void]").forEach(button=>{
       button.onclick = async()=>{
         const reason = prompt("Enter the reason for voiding this order:");
@@ -4224,7 +4250,29 @@ ${order.servingStatus === "COMPLETED" &&
   }
 }
 
-  // REAL-TIME ORDER HISTORY LISTENER
+// ORDER HISTORY SEARCH AND FILTER
+function applyOrderHistoryFilters(){
+
+  const search = orderHistorySearchText.toLowerCase();
+
+  document.querySelectorAll("#orderHistory .order-list-card").forEach(card => {
+
+    const cardStatus = card.dataset.historyStatus || "";
+    const cardSearch = card.dataset.historySearch || "";
+
+    const matchesSearch = cardSearch.includes(search);
+
+    const matchesStatus =
+      orderHistoryStatusFilter === "ALL" ||
+      cardStatus === orderHistoryStatusFilter;
+
+    card.style.display =
+      matchesSearch && matchesStatus ? "" : "none";
+
+  });
+}
+
+// REAL-TIME ORDER HISTORY LISTENER
 function startOrderHistoryListener(){
 
   if(orderHistoryUnsubscribe) return;
@@ -8659,6 +8707,8 @@ let orderQueueUnsubscribe = null;
 let orderQueueTimer = null;
 let activeQueueOrders = [];
   let orderHistoryUnsubscribe = null;
+  let orderHistorySearchText = "";
+let orderHistoryStatusFilter = "ALL";
   let unliExpiryInProgress = new Set();
   // ===================================
 // D' WINGS CAFE - REAL-TIME ORDER QUEUE
@@ -9498,6 +9548,28 @@ document.getElementById("onlineStaff").innerHTML = "";
 };
 
 document.getElementById("orderHistoryBtn").onclick = startOrderHistoryListener;
+  // ORDER HISTORY SEARCH INPUT
+document.getElementById("historySearch").addEventListener("input", event => {
+  orderHistorySearchText = event.target.value.trim().toLowerCase();
+  applyOrderHistoryFilters();
+});
+
+// ORDER HISTORY FILTER BUTTONS
+document.querySelectorAll("[data-history-filter]").forEach(button => {
+
+  button.addEventListener("click", () => {
+
+    orderHistoryStatusFilter = button.dataset.historyFilter;
+
+    document.querySelectorAll("[data-history-filter]").forEach(btn => {
+      btn.classList.toggle("active", btn === button);
+    });
+
+    applyOrderHistoryFilters();
+
+  });
+
+});
 
 document.getElementById("viewReportBtn").onclick = loadDailyReport;
 document.querySelectorAll(".terminal-nav button").forEach(button=>{
