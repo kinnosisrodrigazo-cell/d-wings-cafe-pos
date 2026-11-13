@@ -1856,7 +1856,21 @@ header h2 {
         placeholder="Search order number or customer name..."
         style="width:100%;margin-bottom:12px"
       >
+      <select id="historyDateFilter" style="width:100%;margin-bottom:12px">
+        <option value="ALL">ALL DATES</option>
+        <option value="TODAY">TODAY</option>
+        <option value="YESTERDAY">YESTERDAY</option>
+        <option value="WEEK">THIS WEEK</option>
+        <option value="MONTH">THIS MONTH</option>
+        <option value="CUSTOM">CUSTOM DATE</option>
+      </select>
 
+      <input
+        type="date"
+        id="historyCustomDate"
+        class="hidden"
+        style="width:100%;margin-bottom:12px"
+      >
       <div style="display:flex;gap:8px;margin-bottom:14px">
         <button type="button" class="history-filter active" data-history-filter="ALL">ALL</button>
         <button type="button" class="history-filter" data-history-filter="COMPLETED">COMPLETED</button>
@@ -4126,6 +4140,7 @@ async function loadOrderHistory(){
 <div
   class="order-list-card"
   data-history-status="${escapeHTML(status)}"
+  data-history-date="${escapeHTML(order.orderDate || "")}"
   data-history-search="${escapeHTML(`${order.orderNumber || "LEGACY"} ${order.customerName || "Walk-in"}`.toLowerCase())}">
           <div class="row">
             <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
@@ -4250,15 +4265,30 @@ ${order.servingStatus === "COMPLETED" &&
   }
 }
 
+
 // ORDER HISTORY SEARCH AND FILTER
 function applyOrderHistoryFilters(){
 
   const search = orderHistorySearchText.toLowerCase();
+  const today = getTodayDate();
+
+  // Calculate yesterday using Philippine date format
+  const todayDate = new Date(today + "T00:00:00Z");
+  todayDate.setUTCDate(todayDate.getUTCDate() - 1);
+  const yesterday = todayDate.toISOString().slice(0, 10);
+
+  // Calculate Monday of the current week
+  const currentDate = new Date(today + "T00:00:00Z");
+  const day = currentDate.getUTCDay();
+  const daysFromMonday = (day + 6) % 7;
+  currentDate.setUTCDate(currentDate.getUTCDate() - daysFromMonday);
+  const weekStart = currentDate.toISOString().slice(0, 10);
 
   document.querySelectorAll("#orderHistory .order-list-card").forEach(card => {
 
     const cardStatus = card.dataset.historyStatus || "";
     const cardSearch = card.dataset.historySearch || "";
+    const cardDate = card.dataset.historyDate || "";
 
     const matchesSearch = cardSearch.includes(search);
 
@@ -4266,11 +4296,27 @@ function applyOrderHistoryFilters(){
       orderHistoryStatusFilter === "ALL" ||
       cardStatus === orderHistoryStatusFilter;
 
+    let matchesDate = true;
+
+    if(orderHistoryDateFilter === "TODAY"){
+      matchesDate = cardDate === today;
+    }else if(orderHistoryDateFilter === "YESTERDAY"){
+      matchesDate = cardDate === yesterday;
+    }else if(orderHistoryDateFilter === "WEEK"){
+      matchesDate = cardDate >= weekStart && cardDate <= today;
+    }else if(orderHistoryDateFilter === "MONTH"){
+      matchesDate = cardDate.startsWith(today.slice(0, 7));
+    }else if(orderHistoryDateFilter === "CUSTOM"){
+      matchesDate = !orderHistoryCustomDate ||
+        cardDate === orderHistoryCustomDate;
+    }
+
     card.style.display =
-      matchesSearch && matchesStatus ? "" : "none";
+      matchesSearch && matchesStatus && matchesDate ? "" : "none";
 
   });
 }
+
 
 // REAL-TIME ORDER HISTORY LISTENER
 function startOrderHistoryListener(){
@@ -8709,6 +8755,8 @@ let activeQueueOrders = [];
   let orderHistoryUnsubscribe = null;
   let orderHistorySearchText = "";
 let orderHistoryStatusFilter = "ALL";
+  let orderHistoryDateFilter = "ALL";
+let orderHistoryCustomDate = "";
   let unliExpiryInProgress = new Set();
   // ===================================
 // D' WINGS CAFE - REAL-TIME ORDER QUEUE
@@ -9570,7 +9618,31 @@ document.querySelectorAll("[data-history-filter]").forEach(button => {
   });
 
 });
+// ORDER HISTORY DATE FILTER
+document.getElementById("historyDateFilter").addEventListener("change", event => {
 
+  orderHistoryDateFilter = event.target.value;
+
+  const customDateInput = document.getElementById("historyCustomDate");
+
+  if(orderHistoryDateFilter === "CUSTOM"){
+    customDateInput.classList.remove("hidden");
+  }else{
+    customDateInput.classList.add("hidden");
+    orderHistoryCustomDate = "";
+  }
+
+  applyOrderHistoryFilters();
+
+});
+
+// CUSTOM DATE INPUT
+document.getElementById("historyCustomDate").addEventListener("change", event => {
+
+  orderHistoryCustomDate = event.target.value;
+  applyOrderHistoryFilters();
+
+});
 document.getElementById("viewReportBtn").onclick = loadDailyReport;
 document.querySelectorAll(".terminal-nav button").forEach(button=>{
   button.addEventListener("click",()=>{
