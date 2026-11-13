@@ -8638,7 +8638,9 @@ if(exportBtn){
     currentUserRole !== "owner"
   );
 }
-
+if(exportBtn){
+  exportBtn.onclick = exportDailyReport;
+}
 if(!document.getElementById("reportDate").value){
   document.getElementById("reportDate").value = getTodayDate();
 }
