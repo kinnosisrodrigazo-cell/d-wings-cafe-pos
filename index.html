@@ -3177,10 +3177,7 @@ if (selectedCategory === "Wings") {
 
   productsEl.style.display = "";
 
-  productsEl.classList.toggle(
-    "fries-layout",
-    selectedCategory === "Fries"
-  );
+  productsEl.classList.add("fries-layout");
 
   productsEl.innerHTML = renderProductCards(
     [...filteredProducts].sort((a, b) => Number(a.price) - Number(b.price))
