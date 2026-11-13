@@ -8379,13 +8379,13 @@ document.getElementById("checkoutModal").classList.add("hidden");
     document.getElementById("singlePaymentBtn").classList.remove("selected");
 document.getElementById("splitPaymentBtn").classList.remove("selected");
 
-  document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button => {
-    button.classList.remove("active");
-  });
+document.querySelectorAll("[data-split-payment]").forEach(button => {
+  button.classList.remove("active", "selected");
+});
 
-  document.getElementById("orderMessage").textContent = "";
+document.getElementById("orderMessage").textContent = "";
 
-  renderCart();
+renderCart();
 
 document.getElementById("login").classList.add("hidden");
 document.getElementById("app")?.classList.add("hidden");
@@ -9111,9 +9111,9 @@ document.getElementById("splitPaymentBtn").classList.remove("selected");
     button.classList.remove("active");
   });
 
-  document.querySelectorAll("[data-payment]").forEach(button => {
-    button.classList.remove("active");
-  });
+ document.querySelectorAll("[data-payment]").forEach(button => {
+  button.classList.remove("active", "selected");
+});
 
   document.getElementById("paymentMethod").value = "";
   document.getElementById("firstPaymentAmount").value = "";
@@ -9136,13 +9136,13 @@ document.getElementById("singlePaymentBtn").classList.remove("selected");
 
   splitPaymentMethods = [];
 
-  document.querySelectorAll("[data-split-payment]").forEach(button => {
-    button.classList.remove("active");
-  });
+ document.querySelectorAll("[data-split-payment]").forEach(button => {
+  button.classList.remove("active", "selected");
+});
 
-  document.querySelectorAll("[data-payment]").forEach(button => {
-    button.classList.remove("active");
-  });
+document.querySelectorAll("[data-payment]").forEach(button => {
+  button.classList.remove("active", "selected");
+});
 
   document.getElementById("paymentMethod").value = "";
   document.getElementById("cashReceived").value = "";
@@ -9160,11 +9160,13 @@ document.querySelectorAll("[data-payment]").forEach(button => {
 
     document.getElementById("paymentMethod").value = method;
 
-    document.querySelectorAll("[data-payment]").forEach(option => {
-      option.classList.remove("active");
-    });
+ 
+document.querySelectorAll("[data-payment]").forEach(option => {
+  option.classList.remove("active", "selected");
+});
 
-    button.classList.add("active");
+button.classList.add("active", "selected");
+
 
     document.getElementById("cashReceivedRow").classList.toggle(
       "hidden",
@@ -9183,14 +9185,14 @@ document.querySelectorAll("[data-split-payment]").forEach(button => {
   button.onclick = () => {
     const method = button.dataset.splitPayment;
 
-    if (splitPaymentMethods.includes(method)) {
-      splitPaymentMethods = splitPaymentMethods.filter(item => item !== method);
-      button.classList.remove("active");
+if (splitPaymentMethods.includes(method)) {
+  splitPaymentMethods = splitPaymentMethods.filter(item => item !== method);
+  button.classList.remove("active", "selected");
     } else {
       if (splitPaymentMethods.length >= 2) return;
 
       splitPaymentMethods.push(method);
-      button.classList.add("active");
+      button.classList.add("active", "selected");
     }
 
     document.getElementById("paymentMethod").value =
@@ -9435,9 +9437,11 @@ document.getElementById("newOrderBtn").onclick=()=>{
   document.getElementById("singlePaymentBtn").classList.remove("active");
   document.getElementById("splitPaymentBtn").classList.remove("active");
 
-  document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button => {
-    button.classList.remove("active");
-  });  document.getElementById("orderMessage").textContent = "";
+ document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button => {
+    button.classList.remove("active", "selected");
+});
+  
+  document.getElementById("orderMessage").textContent = "";
   document.getElementById("checkoutMessage").textContent = "";
 
   document.getElementById("checkoutModal").classList.add("hidden");
