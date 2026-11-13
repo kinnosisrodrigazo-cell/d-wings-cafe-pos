@@ -9052,13 +9052,14 @@ async function completeUnliSession(orderId){
       unliExpiredAt: serverTimestamp()
     });
 
-  }catch(error){
+   }catch(error){
 
     console.error("UNLI expiration error:", error);
 
     unliExpiryInProgress.delete(orderId);
 
   }
+}
   // MANUALLY FINISH UNLI SESSION
 async function finishUnliSession(orderId){
 
@@ -9082,7 +9083,7 @@ async function finishUnliSession(orderId){
 
   }
 }
-}
+
 
   async function startPreparingOrder(orderId){
 
