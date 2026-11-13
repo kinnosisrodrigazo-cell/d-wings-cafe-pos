@@ -298,7 +298,30 @@ button:disabled{opacity:.5}
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:8px;
 }
+/* MOBILE PORTRAIT - COMPACT HEADER */
+header h2 {
+  font-size: 13px !important;
+  white-space: nowrap;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
 
+header img {
+  width: 35px !important;
+  height: 35px !important;
+}
+
+#dateTimeDisplay {
+  font-size: 9px !important;
+  padding: 4px 6px !important;
+  white-space: nowrap;
+}
+
+#dailyOrderSearchBtn {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0;
+}
 }
 
 /* TABLET LANDSCAPE - COMPACT HEADER */
@@ -320,10 +343,12 @@ button:disabled{opacity:.5}
     height: 40px !important;
   }
 
-  header h2 {
-    font-size: 18px;
-    white-space: nowrap;
-  }
+header h2 {
+  font-size: 15px !important;
+  white-space: nowrap;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
 
   #dateTimeDisplay {
     font-size: 10px;
