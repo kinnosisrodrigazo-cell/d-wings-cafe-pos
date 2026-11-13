@@ -964,7 +964,7 @@ header h2 {
   font-size: 28px;
   font-weight: 800;
   line-height: 1.2;
-  text-align: right;
+  text-align: center;
   font-variant-numeric: tabular-nums;
   letter-spacing: 1px;
   margin: 5px 0 8px;
@@ -8854,19 +8854,24 @@ const peopleIcons = Array.from(
 </strong>
 
             
-<span class="unli-package">${packageText}</span>
+<div style="display:flex;flex-direction:column;align-items:flex-start;gap:5px">
+  <strong style="font-size:19px;font-weight:800;color:#fff;letter-spacing:.3px">
+    ${escapeHTML(order.customerName || "Walk-in")}
+  </strong>
 
-<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:130px">
-  ${peopleIcons}
+  <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+    ${peopleIcons}
+  </div>
 </div>
+
+<span class="unli-package">${packageText}</span>
 
 
           </div>
 
-          <div class="unli-countdown-label">TIME REMAINING</div>
-
-          <div
-            class="unli-countdown healthy"
+<div class="unli-countdown-label" style="text-align:center">
+  TIME REMAINING
+</div>
             data-unli-end-time="${endMillis}"
             data-unli-order-id="${escapeHTML(order.id)}">
             60:00
