@@ -1533,29 +1533,62 @@ button:disabled{opacity:.5}
     <div id="dashboardOrdersChart"></div>
   </div>
 
-  <!-- SALES EXPENSES PROFIT GRAPH -->
+
+  <!-- DAILY SALES, EXPENSES & PROFIT -->
   <div class="panel">
     <h3>DAILY SALES, EXPENSES & PROFIT</h3>
-    <div id="dashboardPerformanceChart"></div>
+
+    <div id="dashboardPerformanceChart">
+      <p class="small">Loading 7-day performance...</p>
+    </div>
   </div>
 
-  <!-- WEEKLY PROFIT GRAPH -->
-  <div class="panel">
-    <h3>WEEKLY PROFIT</h3>
-    <div id="dashboardWeeklyProfitChart"></div>
+  <!-- BUSINESS RANKINGS -->
+  <div style="
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    align-items:start;
+  ">
+
+    <!-- BEST SELLING PRODUCTS -->
+    <div class="panel" style="margin:0;min-width:0">
+      <h3>BEST SELLING PRODUCTS</h3>
+      <div id="dashboardBestProducts">
+        <p class="small">Loading products...</p>
+      </div>
+      <button type="button" id="viewAllBestProducts"
+        class="secondary" style="width:100%;margin-top:10px">
+        VIEW ALL 10
+      </button>
+    </div>
+
+    <!-- RECENT ORDERS -->
+    <div class="panel" style="margin:0;min-width:0">
+      <h3>RECENT ORDERS</h3>
+      <div id="dashboardRecentOrders">
+        <p class="small">Loading orders...</p>
+      </div>
+      <button type="button" id="viewAllRecentOrders"
+        class="secondary" style="width:100%;margin-top:10px">
+        VIEW ALL 10
+      </button>
+    </div>
+
+    <!-- TOP CUSTOMERS -->
+    <div class="panel" style="margin:0;min-width:0">
+      <h3>TOP NAMES WHO ORDER</h3>
+      <div id="dashboardTopCustomers">
+        <p class="small">Loading customers...</p>
+      </div>
+      <button type="button" id="viewAllTopCustomers"
+        class="secondary" style="width:100%;margin-top:10px">
+        VIEW ALL 10
+      </button>
+    </div>
+
   </div>
 
-  <!-- AVERAGE WEEKLY PROFIT -->
-  <div class="panel">
-    <h3>AVERAGE DAILY PROFIT</h3>
-    <div id="dashboardAverageProfitChart"></div>
-  </div>
-
-  <!-- EMPLOYEE SCHEDULE -->
-  <div class="panel">
-    <h3>EMPLOYEE SCHEDULE CHART</h3>
-    <div id="dashboardSchedule"></div>
-  </div>
 
 </section>
 
