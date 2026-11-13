@@ -884,6 +884,7 @@ header h2 {
   margin-top: 14px;
 }
 
+
 .unli-monitor-card {
   position: relative;
   min-width: 0;
@@ -891,10 +892,11 @@ header h2 {
   background: linear-gradient(145deg, #202020 0%, #111 100%);
   color: #f5f5f5;
   border: 1px solid rgba(231,173,62,.32);
-  border-radius: 20px;
-  padding: 22px;
-  box-shadow: 0 12px 30px rgba(0,0,0,.32);
+  border-radius: 14px;
+  padding: 12px 15px;
+  box-shadow: 0 5px 16px rgba(0,0,0,.25);
 }
+
 
 .unli-monitor-card::before {
   content: "";
@@ -959,14 +961,15 @@ header h2 {
 }
 
 .unli-countdown {
-  font-size: clamp(48px, 7vw, 68px);
-  font-weight: 900;
-  line-height: 1.15;
-  text-align: center;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: right;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 2px;
-  margin: 4px 0 14px;
+  letter-spacing: 1px;
+  margin: 5px 0 8px;
 }
+
 
 .unli-countdown.healthy {
   color: #39d98a;
@@ -8808,6 +8811,7 @@ function renderOrderQueue(){
     }).join("");
   }
 
+
   // UNLI MONITORING
   if(unliOrders.length === 0){
 
@@ -8818,27 +8822,7 @@ function renderOrderQueue(){
 
     unliContainer.innerHTML = unliOrders.map(order => {
 
-      const startMillis = order.unliStartedAt?.toMillis?.() || 0;
       const endMillis = order.unliEndsAt?.toMillis?.() || 0;
-
-      const startDate = startMillis ? new Date(startMillis) : null;
-      const endDate = endMillis ? new Date(endMillis) : null;
-
-      const startText = startDate
-        ? startDate.toLocaleTimeString("en-PH", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
-          })
-        : "Unavailable";
-
-      const endText = endDate
-        ? endDate.toLocaleTimeString("en-PH", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
-          })
-        : "Unavailable";
 
       const packageText =
         order.unliPackage === "UNLI 299 WINGS"
@@ -8848,60 +8832,36 @@ function renderOrderQueue(){
       return `
         <div class="unli-monitor-card">
 
-          <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
 
-            <div>
-              <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
-              <div class="queue-status">UNLI SESSION ACTIVE</div>
-            </div>
+            <strong style="font-size:14px">
+              ${escapeHTML(order.customerName || "Walk-in")}
+            </strong>
 
             <span class="unli-package">${packageText}</span>
 
           </div>
 
-          <p class="small">
-            CUSTOMER: ${escapeHTML(order.customerName || "Walk-in")}
-          </p>
-
-          <p class="small">
-            ORDER TYPE: ${escapeHTML(order.orderType || "DINE IN")}
-          </p>
-
-          <div class="unli-time-details">
-            <div>
-              <span>START TIME</span>
-              <strong>${startText}</strong>
-            </div>
-
-            <div>
-              <span>END TIME</span>
-              <strong>${endText}</strong>
-            </div>
-          </div>
-
           <div class="unli-countdown-label">TIME REMAINING</div>
 
-<div
-  class="unli-countdown healthy"
-  data-unli-end-time="${endMillis}"
-  data-unli-order-id="${escapeHTML(order.id)}">
-  60:00
-</div>
+          <div
+            class="unli-countdown healthy"
+            data-unli-end-time="${endMillis}"
+            data-unli-order-id="${escapeHTML(order.id)}">
+            60:00
+          </div>
 
-<div class="unli-progress-track">
-  <div class="unli-progress-fill healthy"
-       data-unli-progress="${escapeHTML(order.id)}">
-  </div>
-</div>
-
-<div class="unli-session-caption">
-  60-MINUTE UNLI SESSION
-</div>
+          <div class="unli-progress-track">
+            <div class="unli-progress-fill healthy"
+                 data-unli-progress="${escapeHTML(order.id)}">
+            </div>
+          </div>
 
         </div>
       `;
     }).join("");
   }
+
 
   // PREPARING BUTTON
   container.querySelectorAll("[data-prepare-order]").forEach(button => {
