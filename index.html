@@ -8882,12 +8882,23 @@ const peopleIcons = Array.from(
   </div>
 </div>
 
-<button
-  type="button"
-  data-finish-unli="${escapeHTML(order.id)}"
-  style="width:100%;margin-top:12px;padding:10px;background:#e7ad3e;color:#111;border:0;border-radius:8px;font-weight:800;cursor:pointer">
-  FINISH UNLI
-</button>
+<div style="display:flex;gap:8px;margin-top:12px">
+
+  <button
+    type="button"
+    data-finish-unli="${escapeHTML(order.id)}"
+    style="flex:1;padding:9px 5px;background:#239b57;color:#fff;border:0;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer">
+    FINISH UNLI
+  </button>
+
+  <button
+    type="button"
+    data-restore-unli="${escapeHTML(order.id)}"
+    style="flex:1;padding:9px 5px;background:#e67e22;color:#fff;border:0;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer">
+    RESTORE TO ORDER QUEUE
+  </button>
+
+</div>
 
         </div>
       `;
@@ -8898,6 +8909,12 @@ const peopleIcons = Array.from(
 unliContainer.querySelectorAll("[data-finish-unli]").forEach(button => {
   button.addEventListener("click", () => {
     finishUnliSession(button.dataset.finishUnli);
+  });
+});
+  // RESTORE UNLI TO ORDER QUEUE
+unliContainer.querySelectorAll("[data-restore-unli]").forEach(button => {
+  button.addEventListener("click", () => {
+    restoreUnliToQueue(button.dataset.restoreUnli);
   });
 });
   // PREPARING BUTTON
@@ -9090,6 +9107,31 @@ async function finishUnliSession(orderId){
     alert("Unable to finish UNLI session. Please try again.");
 
   }
+  // RESTORE UNLI SESSION TO ORDER QUEUE
+async function restoreUnliToQueue(orderId){
+
+  const order = activeQueueOrders.find(item => item.id === orderId);
+
+  if(!order || order.servingStatus !== "UNLI_ACTIVE") return;
+
+  if(!confirm("Restore this UNLI order to the Order Queue? The 60-minute timer will restart when it is served again.")) return;
+
+  try{
+
+    await updateDoc(doc(db, "orders", orderId), {
+      servingStatus: "PREPARING",
+      unliStartedAt: null,
+      unliEndsAt: null,
+      unliExpiredAt: null
+    });
+
+  }catch(error){
+
+    console.error("UNLI restore error:", error);
+    alert("Unable to restore UNLI order. Please try again.");
+
+  }
+}
 }
 
 
