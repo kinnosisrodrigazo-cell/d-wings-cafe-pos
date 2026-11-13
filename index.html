@@ -305,13 +305,23 @@ button:disabled{opacity:.5}
 /* TABLET LANDSCAPE - FULL WIDTH PRODUCT GRID */
 @media (min-width: 601px) and (max-width: 1200px) and (orientation: landscape) {
 
+  #salesPage .sales-layout {
+    width: 100%;
+  }
+
+  #salesPage .sales-layout > .order-list-card {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
   #products,
-  #products.fries-layout,
-  #products:not(:has(.product-group)) {
+  #products.fries-layout {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     gap: 8px;
   }
 
@@ -326,6 +336,7 @@ button:disabled{opacity:.5}
     grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     gap: 8px;
   }
 
