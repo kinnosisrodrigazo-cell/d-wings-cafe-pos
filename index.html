@@ -8837,10 +8837,12 @@ function renderOrderQueue(){
         )
         .reduce((total, item) => total + (Number(item.qty) || 0), 0);
 
-      const peopleIcons = Array.from(
-        { length: Math.min(unliQuantity, 30) },
-        () => '<i class="fa-solid fa-user" style="color:#e7ad3e;font-size:15px"></i>'
-      ).join("");
+
+const peopleIcons = Array.from(
+  { length: Math.min(unliQuantity, 30) },
+  () => '<span style="color:#e7ad3e;font-size:18px">♟</span>'
+).join("");
+
 
       return `
         <div class="unli-monitor-card">
