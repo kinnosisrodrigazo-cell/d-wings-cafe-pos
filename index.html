@@ -4157,8 +4157,8 @@ async function loadDashboardPerformanceChart(){
           {
             label:"Sales",
             data:dates.map(date => dailySales[date]),
-            backgroundColor:"#14532d",
-            borderColor:"#14532d",
+backgroundColor:"#ff4444",
+borderColor:"#ff4444",
             borderWidth:1
           },
 
@@ -4182,33 +4182,47 @@ async function loadDashboardPerformanceChart(){
 
       },
 
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
 
-        plugins:{
-          legend:{
-            display:true,
-            position:"bottom"
-          }
-        },
+options:{
+  responsive:true,
+  maintainAspectRatio:false,
 
-        scales:{
-          x:{
-            stacked:false
-          },
-          y:{
-            stacked:false,
-            beginAtZero:true,
-            ticks:{
-              callback:value => "₱" + Number(value).toLocaleString("en-PH")
-            }
-          }
-        }
-
+  plugins:{
+    legend:{
+      display:true,
+      position:"bottom",
+      labels:{
+        color:"#ffffff"
       }
+    }
+  },
 
-    });
+  scales:{
+    x:{
+      stacked:false,
+      ticks:{
+        color:"#ffffff"
+      },
+      grid:{
+        color:"rgba(255,255,255,0.10)"
+      }
+    },
+
+    y:{
+      stacked:false,
+      beginAtZero:true,
+      ticks:{
+        color:"#ffffff",
+        callback:value => "₱" + Number(value).toLocaleString("en-PH")
+      },
+      grid:{
+        color:"rgba(255,255,255,0.10)"
+      }
+    }
+  }
+
+}
+
 
   }catch(error){
 
