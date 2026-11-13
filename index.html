@@ -8823,6 +8823,7 @@ function renderOrderQueue(){
     unliContainer.innerHTML = unliOrders.map(order => {
 
       const endMillis = order.unliEndsAt?.toMillis?.() || 0;
+      console.log("UNLI ORDER ITEMS:", order.items);
 
       const packageText =
         order.unliPackage === "UNLI 299 WINGS"
