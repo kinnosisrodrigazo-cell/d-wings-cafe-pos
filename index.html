@@ -877,7 +877,33 @@ header h2 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+/* TABLET LANDSCAPE - ALL CATEGORIES IN ONE LINE */
+@media (min-width: 601px) and (max-width: 1200px) and (orientation: landscape) {
 
+  #categoryTabs {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    gap: 5px;
+    overflow-x: auto;
+  }
+
+  #categoryTabs .category-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 4px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  #categoryTabs .category-icon {
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+  }
+}
 </style>
 </head>
 <body>
