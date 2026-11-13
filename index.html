@@ -253,7 +253,6 @@ button:disabled{opacity:.5}
   min-width:0;
   max-width:none;
 }
-}
 
 .sales-layout > .panel:first-child{
   width:100%;
@@ -300,6 +299,41 @@ button:disabled{opacity:.5}
   gap:8px;
 }
 
+}
+
+/* TABLET LANDSCAPE - COMPACT HEADER */
+@media (min-width: 601px) and (max-width: 1200px) and (orientation: landscape) {
+
+  header {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  header > div {
+    gap: 6px !important;
+    min-width: 0;
+  }
+
+  header img {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  header h2 {
+    font-size: 18px;
+    white-space: nowrap;
+  }
+
+  #dateTimeDisplay {
+    font-size: 10px;
+    padding: 5px 8px !important;
+  }
+
+  #userLabel {
+    font-size: 10px;
+    white-space: nowrap;
+  }
 }
 
 /* TABLET LANDSCAPE - FULL WIDTH PRODUCT GRID */
@@ -5729,6 +5763,8 @@ async function loadDashboardPayslips(){
                   font-size:20px;
                 }
               }
+
+              
             </style>
           </head>
 
