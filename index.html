@@ -875,90 +875,160 @@ header h2 {
   margin-top: 4px;
 }
 
-/* UNLI MONITORING CARDS */
+
+/* PREMIUM UNLI MONITORING */
 #activeUnliQueue {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
   margin-top: 14px;
 }
 
 .unli-monitor-card {
+  position: relative;
   min-width: 0;
-  background: #1b1b1b;
-  color: #fff;
-  border: 1px solid #66502a;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 5px 18px rgba(0,0,0,.2);
+  overflow: hidden;
+  background: linear-gradient(145deg, #202020 0%, #111 100%);
+  color: #f5f5f5;
+  border: 1px solid rgba(231,173,62,.32);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.32);
+}
+
+.unli-monitor-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #9b6b20, #e7ad3e, #f8d98c);
 }
 
 .unli-package {
-  background: #e7ad3e;
-  color: #111;
-  padding: 7px 12px;
-  border-radius: 20px;
-  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #f5ca69, #d99a2b);
+  color: #17120a;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-weight: 800;
   font-size: 12px;
+  letter-spacing: .5px;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(231,173,62,.18);
 }
 
 .unli-time-details {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 18px 0;
+  gap: 10px;
+  margin: 18px 0 14px;
 }
 
 .unli-time-details div {
-  background: #252525;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .unli-time-details span {
   display: block;
   color: #999;
   font-size: 10px;
-  margin-bottom: 5px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
 }
 
 .unli-time-details strong {
+  display: block;
+  color: #f5f5f5;
   font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 
 .unli-countdown-label {
   color: #aaa;
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 1px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
   text-align: center;
-  margin-top: 15px;
+  margin-top: 18px;
 }
 
 .unli-countdown {
-  font-size: clamp(38px, 6vw, 58px);
-  font-weight: 800;
+  font-size: clamp(48px, 7vw, 68px);
+  font-weight: 900;
+  line-height: 1.15;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  margin-top: 5px;
+  letter-spacing: 2px;
+  margin: 4px 0 14px;
 }
 
 .unli-countdown.healthy {
-  color: #22c55e;
+  color: #39d98a;
+  text-shadow: 0 0 22px rgba(57,217,138,.16);
 }
 
 .unli-countdown.warning {
-  color: #f59e0b;
+  color: #ffb020;
+  text-shadow: 0 0 22px rgba(255,176,32,.18);
 }
 
 .unli-countdown.expired {
-  color: #ef4444;
+  color: #ff5c5c;
+  text-shadow: 0 0 22px rgba(255,92,92,.2);
+}
+
+.unli-progress-track {
+  width: 100%;
+  height: 9px;
+  overflow: hidden;
+  background: #343434;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.unli-progress-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transition: width .8s linear, background .3s ease;
+}
+
+.unli-progress-fill.healthy {
+  background: linear-gradient(90deg, #168b55, #39d98a);
+  box-shadow: 0 0 12px rgba(57,217,138,.28);
+}
+
+.unli-progress-fill.warning {
+  background: linear-gradient(90deg, #c77a13, #ffb020);
+  box-shadow: 0 0 12px rgba(255,176,32,.24);
+}
+
+.unli-progress-fill.expired {
+  background: linear-gradient(90deg, #b72e37, #ff5c5c);
+}
+
+.unli-session-caption {
+  text-align: center;
+  color: #777;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  margin-top: 10px;
 }
 
 @media (max-width: 699px) {
   #activeUnliQueue {
     grid-template-columns: 1fr;
+  }
+
+  .unli-monitor-card {
+    padding: 18px;
   }
 }
 
@@ -967,6 +1037,8 @@ header h2 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+  
 /* TABLET LANDSCAPE - ALL CATEGORIES IN ONE LINE */
 @media (min-width: 601px) and (max-width: 1200px) and (orientation: landscape) {
 
@@ -8809,12 +8881,22 @@ function renderOrderQueue(){
 
           <div class="unli-countdown-label">TIME REMAINING</div>
 
-          <div
-            class="unli-countdown healthy"
-            data-unli-end-time="${endMillis}"
-            data-unli-order-id="${escapeHTML(order.id)}">
-            60:00
-          </div>
+<div
+  class="unli-countdown healthy"
+  data-unli-end-time="${endMillis}"
+  data-unli-order-id="${escapeHTML(order.id)}">
+  60:00
+</div>
+
+<div class="unli-progress-track">
+  <div class="unli-progress-fill healthy"
+       data-unli-progress="${escapeHTML(order.id)}">
+  </div>
+</div>
+
+<div class="unli-session-caption">
+  60-MINUTE UNLI SESSION
+</div>
 
         </div>
       `;
@@ -8917,7 +8999,28 @@ function updateQueueTimers(){
 
     const minutes = Math.floor(remainingSeconds / 60);
     const seconds = remainingSeconds % 60;
+// UPDATE UNLI PROGRESS BAR
+const progressFill = document.querySelector(
+  `.unli-progress-fill[data-unli-progress="${orderId}"]`
+);
 
+if(progressFill){
+
+  const progressPercent = Math.min(
+    100,
+    (remainingSeconds / 3600) * 100
+  );
+
+  progressFill.style.width = progressPercent + "%";
+
+  progressFill.className =
+    "unli-progress-fill " +
+    (remainingSeconds === 0
+      ? "expired"
+      : remainingSeconds <= 600
+        ? "warning"
+        : "healthy");
+}
     timer.textContent =
       String(minutes).padStart(2,"0") + ":" +
       String(seconds).padStart(2,"0");
