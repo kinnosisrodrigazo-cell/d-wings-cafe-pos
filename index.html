@@ -4092,11 +4092,13 @@ const completedOrders = allOrders.filter(order =>
       white-space:nowrap;
     `;
 
-    const cellStyle = `
-      padding:11px 5px;
-      border-bottom:1px solid #303136;
-      vertical-align:middle;
-    `;
+const cellStyle = `
+  padding:8px 3px;
+  border-bottom:1px solid #303136;
+  vertical-align:middle;
+  overflow-wrap:anywhere;
+  font-size:10px;
+`;
 
     let showAllProducts = false;
     let showAllRecent = false;
@@ -4171,7 +4173,7 @@ const recentOrders = [...allOrders]
 
       bestContainer.innerHTML = `
         <div style="overflow-x:auto">
-          <table style="${tableStyle}">
+         <table style="${tableStyle};width:100%;table-layout:fixed">
             <thead>
               <tr>
                 <th style="${headerStyle}">#</th>
@@ -4202,16 +4204,16 @@ const recentOrders = [...allOrders]
       );
 
       recentContainer.innerHTML = `
-        <div style="overflow-x:auto">
+        <div style="width:100%;overflow:hidden">
           <table style="${tableStyle}">
             <thead>
               <tr>
-                <th style="${headerStyle}">#</th>
-                <th style="${headerStyle}">CUSTOMER NAME</th>
-                <th style="${headerStyle}">PRODUCT</th>
-                <th style="${headerStyle};text-align:right">AMOUNT</th>
-                <th style="${headerStyle};text-align:right">TIME</th>
-<th style="${headerStyle};text-align:center">STATUS</th>
+<th style="${headerStyle};width:5%">#</th>
+<th style="${headerStyle};width:19%;white-space:normal">CUSTOMER NAME</th>
+<th style="${headerStyle};width:25%;white-space:normal">PRODUCT</th>
+<th style="${headerStyle};width:16%;text-align:right">AMOUNT</th>
+<th style="${headerStyle};width:16%;text-align:right">TIME</th>
+<th style="${headerStyle};width:19%;text-align:center">STATUS</th>
               </tr>
             </thead>
 <tbody>
@@ -4219,7 +4221,7 @@ const recentOrders = [...allOrders]
     <tr>
       <td style="${cellStyle};color:#D6AD55;font-weight:700">${index+1}</td>
       <td style="${cellStyle}">${escapeHTML(order.customerName || "Walk-in")}</td>
-      <td style="${cellStyle}">${escapeHTML((order.items || []).map(item => item.name).join(", ") || "—")}</td>
+      <td style="${cellStyle};white-space:normal;overflow-wrap:anywhere">${escapeHTML((order.items || []).map(item => item.name).join(", ") || "—")}</td>
       <td style="${cellStyle};text-align:right;white-space:nowrap">${formatAmount(order.total)}</td>
       <td style="${cellStyle};text-align:right;white-space:nowrap">${formatTime(order)}</td>
       <td style="${cellStyle};text-align:center;font-weight:700;color:${String(order.status || "COMPLETED").toUpperCase() === "VOID" ? "#E57373" : "#81C784"}">${escapeHTML(order.status || "COMPLETED")}</td>
