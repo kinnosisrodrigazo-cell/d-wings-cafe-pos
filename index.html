@@ -3981,6 +3981,7 @@ async function loadDashboardOrdersChart(){
 }
 
   
+
 async function loadDashboardPerformanceChart(){
 
   const container = document.getElementById("dashboardPerformanceChart");
@@ -4021,7 +4022,6 @@ async function loadDashboardPerformanceChart(){
 
     ]);
 
-    // COMPLETED SALES ONLY
     const dailySales = {};
 
     dates.forEach(date => {
@@ -4041,7 +4041,6 @@ async function loadDashboardPerformanceChart(){
 
     });
 
-    // ACTIVE STAFF
     const activeStaff = employeesSnapshot.docs
       .map(docSnap => ({
         id: docSnap.id,
@@ -4049,7 +4048,6 @@ async function loadDashboardPerformanceChart(){
       }))
       .filter(employee => employee.active === true);
 
-    // ATTENDANCE RECORDS
     const attendanceMap = {};
 
     attendanceSnapshot.forEach(docSnap => {
@@ -4062,7 +4060,6 @@ async function loadDashboardPerformanceChart(){
 
     });
 
-    // WEEKLY SCHEDULE
     const assignments = scheduleSnapshot.exists()
       ? scheduleSnapshot.data().assignments || {}
       : {};
@@ -4072,7 +4069,6 @@ async function loadDashboardPerformanceChart(){
 
     dates.forEach(date => {
 
-      // FUTURE DAYS HAVE ZERO VALUES
       if(date > today){
         dailyExpenses[date] = 0;
         dailyProfit[date] = 0;
@@ -4081,7 +4077,6 @@ async function loadDashboardPerformanceChart(){
 
       const totalSales = dailySales[date] || 0;
 
-      // STAFF WHO ACTUALLY WORKED
       const workingStaff = activeStaff.filter(employee => {
 
         const attendance =
@@ -4095,14 +4090,12 @@ async function loadDashboardPerformanceChart(){
 
       });
 
-      // STAFF SALARIES
       const staffSalary = workingStaff.reduce(
         (sum, employee) =>
           sum + (Number(employee.dailyRate) || 500),
         0
       );
 
-      // STAFF INCENTIVES
       const day = new Date(date + "T12:00:00").getDay();
 
       let incentiveExpense = 0;
@@ -4115,7 +4108,6 @@ async function loadDashboardPerformanceChart(){
         incentiveExpense = (day >= 1 && day <= 4) ? 200 : 100;
       }
 
-      // OTHER EXPENSES
       const rentExpense = 3000;
       const packagingExpense = totalSales * 0.50;
 
@@ -4150,7 +4142,7 @@ async function loadDashboardPerformanceChart(){
 
     new Chart(canvas, {
 
-      type:"line",
+      type:"bar",
 
       data:{
         labels:dates.map(date =>
@@ -4165,25 +4157,25 @@ async function loadDashboardPerformanceChart(){
           {
             label:"Sales",
             data:dates.map(date => dailySales[date]),
-            borderColor:"#d4af37",
-            backgroundColor:"#d4af37",
-            tension:0.3
+            backgroundColor:"#14532d",
+            borderColor:"#14532d",
+            borderWidth:1
           },
 
           {
             label:"Expenses",
             data:dates.map(date => dailyExpenses[date]),
-            borderColor:"#ff7777",
-            backgroundColor:"#ff7777",
-            tension:0.3
+            backgroundColor:"#22a447",
+            borderColor:"#22a447",
+            borderWidth:1
           },
 
           {
             label:"Profit",
             data:dates.map(date => dailyProfit[date]),
-            borderColor:"#7de39a",
-            backgroundColor:"#7de39a",
-            tension:0.3
+            backgroundColor:"#a3c644",
+            borderColor:"#a3c644",
+            borderWidth:1
           }
 
         ]
@@ -4202,7 +4194,11 @@ async function loadDashboardPerformanceChart(){
         },
 
         scales:{
+          x:{
+            stacked:false
+          },
           y:{
+            stacked:false,
             beginAtZero:true,
             ticks:{
               callback:value => "₱" + Number(value).toLocaleString("en-PH")
@@ -4224,6 +4220,7 @@ async function loadDashboardPerformanceChart(){
   }
 
 }
+
 
 async function loadDashboardBusinessPerformance(){
 
