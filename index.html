@@ -8882,6 +8882,12 @@ const peopleIcons = Array.from(
                  data-unli-progress="${escapeHTML(order.id)}">
             </div>
           </div>
+          <button
+  type="button"
+  onclick="finishUnliSession('${escapeHTML(order.id)}')"
+  style="width:100%;margin-top:12px;padding:10px;background:#e7ad3e;color:#111;border:0;border-radius:8px;font-weight:800;cursor:pointer">
+  FINISH UNLI
+</button>
 
         </div>
       `;
@@ -9056,6 +9062,29 @@ async function completeUnliSession(orderId){
     unliExpiryInProgress.delete(orderId);
 
   }
+  // MANUALLY FINISH UNLI SESSION
+async function finishUnliSession(orderId){
+
+  const order = activeQueueOrders.find(item => item.id === orderId);
+
+  if(!order || order.servingStatus !== "UNLI_ACTIVE") return;
+
+  if(!confirm("Are you sure you want to finish this UNLI session?")) return;
+
+  try{
+
+    await updateDoc(doc(db, "orders", orderId), {
+      servingStatus: "COMPLETED",
+      completedAt: serverTimestamp()
+    });
+
+  }catch(error){
+
+    console.error("Manual UNLI finish error:", error);
+    alert("Unable to finish UNLI session. Please try again.");
+
+  }
+}
 }
 
   async function startPreparingOrder(orderId){
