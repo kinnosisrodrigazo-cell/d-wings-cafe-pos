@@ -3635,6 +3635,8 @@ if(product.name === "UNLI 299 WINGS"){
     document.getElementById("dipChoice").value = "";
 
 document.getElementById("flavorOptions").innerHTML =
+  `<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">FLAVOR</div>` +
+  wingFlavors.map(flavor => {
   wingFlavors.map(flavor => {
     const unavailable = isWingFlavorUnavailable(flavor);
 
