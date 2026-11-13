@@ -4157,16 +4157,16 @@ async function loadDashboardPerformanceChart(){
           {
             label:"Sales",
             data:dates.map(date => dailySales[date]),
-backgroundColor:"#ff4444",
-borderColor:"#ff4444",
+backgroundColor:"#14532d",
+borderColor:"#14532d",
             borderWidth:1
           },
 
           {
             label:"Expenses",
             data:dates.map(date => dailyExpenses[date]),
-            backgroundColor:"#22a447",
-            borderColor:"#22a447",
+backgroundColor:"#ff4444",
+borderColor:"#ff4444",
             borderWidth:1
           },
 
@@ -4221,8 +4221,9 @@ options:{
     }
   }
 
-}
+  }
 
+    });
 
   }catch(error){
 
