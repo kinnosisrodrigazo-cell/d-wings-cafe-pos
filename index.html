@@ -875,6 +875,93 @@ header h2 {
   margin-top: 4px;
 }
 
+/* UNLI MONITORING CARDS */
+#activeUnliQueue {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.unli-monitor-card {
+  min-width: 0;
+  background: #1b1b1b;
+  color: #fff;
+  border: 1px solid #66502a;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 5px 18px rgba(0,0,0,.2);
+}
+
+.unli-package {
+  background: #e7ad3e;
+  color: #111;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.unli-time-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.unli-time-details div {
+  background: #252525;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.unli-time-details span {
+  display: block;
+  color: #999;
+  font-size: 10px;
+  margin-bottom: 5px;
+}
+
+.unli-time-details strong {
+  font-size: 14px;
+}
+
+.unli-countdown-label {
+  color: #aaa;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-align: center;
+  margin-top: 15px;
+}
+
+.unli-countdown {
+  font-size: clamp(38px, 6vw, 58px);
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  margin-top: 5px;
+}
+
+.unli-countdown.healthy {
+  color: #22c55e;
+}
+
+.unli-countdown.warning {
+  color: #f59e0b;
+}
+
+.unli-countdown.expired {
+  color: #ef4444;
+}
+
+@media (max-width: 699px) {
+  #activeUnliQueue {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (min-width: 700px) {
   #activeOrderQueue {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1217,7 +1304,13 @@ header h2 {
       border-radius:2px;
     "></div>
 
+<h3 style="margin:22px 0 10px">REGULAR ORDERS</h3>
 <div id="activeOrderQueue"></div>
+
+<h3 style="margin:28px 0 10px;color:#e7ad3e">
+  UNLI MONITORING
+</h3>
+<div id="activeUnliQueue"></div>
 
 </section>
 
@@ -3919,13 +4012,16 @@ async function loadOrderHistory(){
     );
 
     const snapshot = await getDocs(ordersQuery);
+    const historyDocs = snapshot.docs.filter(orderDoc =>
+  orderDoc.data().servingStatus !== "UNLI_ACTIVE"
+);
 
-    if(snapshot.empty){
+    if(historyDocs.length === 0){
       historyEl.innerHTML = "<p class='small'>No orders found.</p>";
       return;
     }
 
-    historyEl.innerHTML = snapshot.docs.map(orderDoc=>{
+    historyEl.innerHTML = historyDocs.map(orderDoc=>{
       const order = orderDoc.data();
       const status = order.status || "COMPLETED";
 
@@ -8460,6 +8556,7 @@ let dwingsPresenceLatestSnapshot = null;
 let orderQueueUnsubscribe = null;
 let orderQueueTimer = null;
 let activeQueueOrders = [];
+  let unliExpiryInProgress = new Set();
   // ===================================
 // D' WINGS CAFE - REAL-TIME ORDER QUEUE
 // ===================================
@@ -8473,7 +8570,7 @@ function startOrderQueue(){
 
   const ordersQuery = query(
     collection(db, "orders"),
-    where("servingStatus", "in", ["PENDING", "PREPARING"])
+    where("servingStatus", "in", ["PENDING", "PREPARING", "UNLI_ACTIVE"])
   );
 
   orderQueueUnsubscribe = onSnapshot(
@@ -8508,25 +8605,39 @@ function startOrderQueue(){
   }, 1000);
 }
 
+
 function renderOrderQueue(){
+
   const container = document.getElementById("activeOrderQueue");
-  if(!container) return;
+  const unliContainer = document.getElementById("activeUnliQueue");
+
+  if(!container || !unliContainer) return;
 
   const queueCount = document.getElementById("queueCount");
   const queueIndicator = document.getElementById("queueIndicator");
 
-  const pendingCount = activeQueueOrders.filter(
+  const regularOrders = activeQueueOrders.filter(order =>
+    order.servingStatus === "PENDING" ||
+    order.servingStatus === "PREPARING"
+  );
+
+  const unliOrders = activeQueueOrders.filter(order =>
+    order.servingStatus === "UNLI_ACTIVE"
+  );
+
+  const pendingCount = regularOrders.filter(
     order => order.servingStatus === "PENDING"
   ).length;
 
-  const preparingCount = activeQueueOrders.filter(
+  const preparingCount = regularOrders.filter(
     order => order.servingStatus === "PREPARING"
   ).length;
 
   if(queueCount){
     queueCount.textContent =
       pendingCount + " PENDING | " +
-      preparingCount + " PREPARING";
+      preparingCount + " PREPARING | " +
+      unliOrders.length + " UNLI ACTIVE";
   }
 
   if(queueIndicator){
@@ -8534,100 +8645,181 @@ function renderOrderQueue(){
       activeQueueOrders.length > 0 ? "#d64545" : "#239b57";
   }
 
-  if(activeQueueOrders.length === 0){
+  // REGULAR ORDERS
+  if(regularOrders.length === 0){
+
     container.innerHTML =
-      "<p class='small'>No pending orders.</p>";
-    return;
-  }
+      "<p class='small'>No pending regular orders.</p>";
 
-  container.innerHTML = activeQueueOrders.map(order => {
+  }else{
 
-    const orderTimestamp = order.orderTime || order.createdAt;
-    const orderMillis = orderTimestamp?.toMillis?.() || 0;
+    container.innerHTML = regularOrders.map(order => {
 
-    const orderDate = orderTimestamp?.toDate
-      ? orderTimestamp.toDate()
-      : null;
+      const orderTimestamp = order.orderTime || order.createdAt;
+      const orderMillis = orderTimestamp?.toMillis?.() || 0;
 
-    const orderTimeText = orderDate
-      ? orderDate.toLocaleTimeString("en-PH", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit"
-        })
-      : "Waiting for time...";
+      const orderDate = orderTimestamp?.toDate
+        ? orderTimestamp.toDate()
+        : null;
 
-    const isPreparing = order.servingStatus === "PREPARING";
+      const orderTimeText = orderDate
+        ? orderDate.toLocaleTimeString("en-PH", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+          })
+        : "Waiting for time...";
 
-    const preparingMillis = order.preparingAt?.toMillis?.() || 0;
+      const isPreparing = order.servingStatus === "PREPARING";
+      const preparingMillis = order.preparingAt?.toMillis?.() || 0;
 
-    const itemsHTML = (order.items || []).map(item => `
-      <div>
-        ${escapeHTML(item.name || "")}
-        × ${Number(item.qty) || 0}
-      </div>
-    `).join("");
+      const itemsHTML = (order.items || []).map(item => `
+        <div>
+          ${escapeHTML(item.name || "")}
+          × ${Number(item.qty) || 0}
+        </div>
+      `).join("");
 
-    return `
-      <div class="order-queue-card"
-           data-order-id="${order.id}">
+      return `
+        <div class="order-queue-card"
+             data-order-id="${escapeHTML(order.id)}">
 
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+
+            <div>
+              <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
+
+              <div class="queue-status">
+                ${isPreparing ? "PREPARING" : "PENDING"}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="queue-action-btn ${isPreparing ? "preparing" : ""}"
+              data-prepare-order="${escapeHTML(order.id)}"
+              aria-label="${isPreparing ? "Preparing" : "Start preparing"}"
+              ${isPreparing ? "disabled" : ""}>
+              ${isPreparing ? "✓" : "♨"}
+            </button>
+
+          </div>
+
+          <p class="small" style="margin:8px 0 4px">
+            CUSTOMER: ${escapeHTML(order.customerName || "Walk-in")}
+          </p>
+
+          <div class="queue-items">
+            ${itemsHTML}
+          </div>
+
+          <p class="small">${escapeHTML(order.orderType || "")}</p>
+
+          <p class="small">ORDER TIME: ${orderTimeText}</p>
 
           <div>
-            <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
-
-            <div class="queue-status">
-              ${isPreparing ? "PREPARING" : "PENDING"}
+            <div class="small">ORDER TIMER</div>
+            <div class="queue-timer" data-order-time="${orderMillis}">
+              00:00:00
             </div>
           </div>
 
-          <button
-            type="button"
-            class="queue-action-btn ${isPreparing ? "preparing" : ""}"
-            data-prepare-order="${order.id}"
-            aria-label="${isPreparing ? "Preparing" : "Start preparing"}"
-            ${isPreparing ? "disabled" : ""}>
-            ${isPreparing ? "✓" : "♨"}
-          </button>
-
-        </div>
-
-        <p class="small" style="margin:8px 0 4px">
-          CUSTOMER: ${escapeHTML(order.customerName || "Walk-in")}
-        </p>
-
-        <div class="queue-items">
-          ${itemsHTML}
-        </div>
-
-        <p class="small">
-          ${escapeHTML(order.orderType || "")}
-        </p>
-
-        <p class="small">
-          ORDER TIME: ${orderTimeText}
-        </p>
-
-        <div>
-          <div class="small">ORDER TIMER</div>
-          <div class="queue-timer"
-               data-order-time="${orderMillis}">
-            00:00:00
+          <div>
+            <div class="small">PREPARATION TIMER</div>
+            <div class="queue-prep-timer" data-preparing-time="${preparingMillis}">
+              00:00:00
+            </div>
           </div>
-        </div>
 
-        <div>
-          <div class="small">PREPARATION TIMER</div>
-          <div class="queue-prep-timer"
-               data-preparing-time="${preparingMillis}">
-            00:00:00
+        </div>
+      `;
+    }).join("");
+  }
+
+  // UNLI MONITORING
+  if(unliOrders.length === 0){
+
+    unliContainer.innerHTML =
+      "<p class='small'>No active UNLI sessions.</p>";
+
+  }else{
+
+    unliContainer.innerHTML = unliOrders.map(order => {
+
+      const startMillis = order.unliStartedAt?.toMillis?.() || 0;
+      const endMillis = order.unliEndsAt?.toMillis?.() || 0;
+
+      const startDate = startMillis ? new Date(startMillis) : null;
+      const endDate = endMillis ? new Date(endMillis) : null;
+
+      const startText = startDate
+        ? startDate.toLocaleTimeString("en-PH", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+          })
+        : "Unavailable";
+
+      const endText = endDate
+        ? endDate.toLocaleTimeString("en-PH", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+          })
+        : "Unavailable";
+
+      const packageText =
+        order.unliPackage === "UNLI 299 WINGS"
+          ? "UNLI 299"
+          : "UNLI 269";
+
+      return `
+        <div class="unli-monitor-card">
+
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+
+            <div>
+              <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
+              <div class="queue-status">UNLI SESSION ACTIVE</div>
+            </div>
+
+            <span class="unli-package">${packageText}</span>
+
           </div>
-        </div>
 
-      </div>
-    `;
-  }).join("");
+          <p class="small">
+            CUSTOMER: ${escapeHTML(order.customerName || "Walk-in")}
+          </p>
+
+          <p class="small">
+            ORDER TYPE: ${escapeHTML(order.orderType || "DINE IN")}
+          </p>
+
+          <div class="unli-time-details">
+            <div>
+              <span>START TIME</span>
+              <strong>${startText}</strong>
+            </div>
+
+            <div>
+              <span>END TIME</span>
+              <strong>${endText}</strong>
+            </div>
+          </div>
+
+          <div class="unli-countdown-label">TIME REMAINING</div>
+
+          <div
+            class="unli-countdown healthy"
+            data-unli-end-time="${endMillis}"
+            data-unli-order-id="${escapeHTML(order.id)}">
+            60:00
+          </div>
+
+        </div>
+      `;
+    }).join("");
+  }
 
   // PREPARING BUTTON
   container.querySelectorAll("[data-prepare-order]").forEach(button => {
@@ -8636,37 +8828,38 @@ function renderOrderQueue(){
     });
   });
 
-// SWIPE UP TO COMPLETE
-container.querySelectorAll(".order-queue-card").forEach(card => {
+  // SWIPE UP TO COMPLETE REGULAR OR UNLI ORDER
+  container.querySelectorAll(".order-queue-card").forEach(card => {
 
-  let startX = 0;
-  let startY = 0;
+    let startX = 0;
+    let startY = 0;
 
-  card.addEventListener("pointerdown", event => {
-    if(event.target.closest("button")) return;
+    card.addEventListener("pointerdown", event => {
+      if(event.target.closest("button")) return;
 
-    startX = event.clientX;
-    startY = event.clientY;
+      startX = event.clientX;
+      startY = event.clientY;
+    });
+
+    card.addEventListener("pointerup", event => {
+      if(event.target.closest("button")) return;
+
+      const deltaX = Math.abs(event.clientX - startX);
+      const deltaY = startY - event.clientY;
+
+      if(deltaY > 90 && deltaY > deltaX * 1.5){
+        completeQueuedOrder(card.dataset.orderId);
+      }
+    });
   });
-
-  card.addEventListener("pointerup", event => {
-    if(event.target.closest("button")) return;
-
-    const deltaX = Math.abs(event.clientX - startX);
-    const deltaY = startY - event.clientY;
-
-    if(deltaY > 90 && deltaY > deltaX * 1.5){
-      completeQueuedOrder(card.dataset.orderId);
-    }
-  });
-});
 
   updateQueueTimers();
 }
 
-  function updateQueueTimers(){
+  
+function updateQueueTimers(){
 
-  // ORDER TIMER
+  // REGULAR ORDER TIMER
   document.querySelectorAll(".queue-timer").forEach(timer => {
 
     const startTime = Number(timer.dataset.orderTime);
@@ -8705,7 +8898,77 @@ container.querySelectorAll(".order-queue-card").forEach(card => {
       String(minutes).padStart(2,"0") + ":" +
       String(seconds).padStart(2,"0");
   });
+
+  // UNLI COUNTDOWN
+  document.querySelectorAll(".unli-countdown").forEach(timer => {
+
+    const endTime = Number(timer.dataset.unliEndTime);
+    const orderId = timer.dataset.unliOrderId;
+
+    if(!endTime || !orderId){
+      timer.textContent = "TIMER ERROR";
+      return;
+    }
+
+    const remainingSeconds = Math.max(
+      0,
+      Math.ceil((endTime - Date.now()) / 1000)
+    );
+
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+
+    timer.textContent =
+      String(minutes).padStart(2,"0") + ":" +
+      String(seconds).padStart(2,"0");
+
+    timer.classList.remove("healthy", "warning", "expired");
+
+    if(remainingSeconds === 0){
+
+      timer.classList.add("expired");
+      completeUnliSession(orderId);
+
+    }else if(remainingSeconds <= 600){
+
+      timer.classList.add("warning");
+
+    }else{
+
+      timer.classList.add("healthy");
+
+    }
+  });
 }
+
+// AUTOMATICALLY COMPLETE EXPIRED UNLI SESSION
+async function completeUnliSession(orderId){
+
+  if(unliExpiryInProgress.has(orderId)) return;
+
+  const order = activeQueueOrders.find(item => item.id === orderId);
+
+  if(!order || order.servingStatus !== "UNLI_ACTIVE") return;
+
+  unliExpiryInProgress.add(orderId);
+
+  try{
+
+    await updateDoc(doc(db, "orders", orderId), {
+      servingStatus: "COMPLETED",
+      completedAt: serverTimestamp(),
+      unliExpiredAt: serverTimestamp()
+    });
+
+  }catch(error){
+
+    console.error("UNLI expiration error:", error);
+
+    unliExpiryInProgress.delete(orderId);
+
+  }
+}
+
   async function startPreparingOrder(orderId){
 
   const order = activeQueueOrders.find(item => item.id === orderId);
@@ -8728,6 +8991,7 @@ container.querySelectorAll(".order-queue-card").forEach(card => {
     order.preparing = false;
   }
 }
+
 async function completeQueuedOrder(orderId){
 
   const order = activeQueueOrders.find(item => item.id === orderId);
@@ -8745,6 +9009,11 @@ async function completeQueuedOrder(orderId){
     alert("Order time is missing. Unable to complete this order.");
     return;
   }
+
+  const unliItem = (order.items || []).find(item =>
+    item.name === "UNLI 269 WINGS" ||
+    item.name === "UNLI 299 WINGS"
+  );
 
   order.completing = true;
 
@@ -8765,14 +9034,36 @@ async function completeQueuedOrder(orderId){
     : 0;
 
   try{
-    await updateDoc(doc(db, "orders", orderId), {
-      servingStatus: "COMPLETED",
-      completedAt: serverTimestamp(),
-      servingDuration: servingDuration,
-      preparationDuration: preparationDuration,
-      completedBy: auth.currentUser?.email || "",
-      completedByUid: auth.currentUser?.uid || ""
-    });
+
+    if(unliItem){
+
+      const unliEndsAt = Timestamp.fromMillis(
+        completedAt.toMillis() + (60 * 60 * 1000)
+      );
+
+      await updateDoc(doc(db, "orders", orderId), {
+        servingStatus: "UNLI_ACTIVE",
+        unliPackage: unliItem.name,
+        unliStartedAt: completedAt,
+        unliEndsAt: unliEndsAt,
+        servingDuration: servingDuration,
+        preparationDuration: preparationDuration,
+        completedBy: auth.currentUser?.email || "",
+        completedByUid: auth.currentUser?.uid || ""
+      });
+
+    }else{
+
+      await updateDoc(doc(db, "orders", orderId), {
+        servingStatus: "COMPLETED",
+        completedAt: serverTimestamp(),
+        servingDuration: servingDuration,
+        preparationDuration: preparationDuration,
+        completedBy: auth.currentUser?.email || "",
+        completedByUid: auth.currentUser?.uid || ""
+      });
+
+    }
 
   }catch(error){
     console.error("Order completion error:", error);
@@ -8780,6 +9071,7 @@ async function completeQueuedOrder(orderId){
     order.completing = false;
   }
 }
+
 function renderOnlineStaff() {
   const container = document.getElementById("onlineStaff");
   if (!container) return;
@@ -8944,6 +9236,7 @@ onAuthStateChanged(auth, async user => {
     }
 
     activeQueueOrders = [];
+    unliExpiryInProgress.clear();
     document.getElementById("activeOrderQueue").innerHTML = "";
 
     if (availabilityUnsubscribe) {
