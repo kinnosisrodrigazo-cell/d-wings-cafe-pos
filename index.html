@@ -9323,26 +9323,6 @@ function updateQueueTimers(){
   document.querySelectorAll(".queue-prep-timer").forEach(timer => {
 
     const startTime = Number(timer.dataset.preparingTime);
-    if(!startTime) return;
-
-    const elapsed = Math.max(0, Date.now() - startTime);
-
-    const hours = Math.floor(elapsed / 3600000);
-    const minutes = Math.floor((elapsed % 3600000) / 60000);
-    const seconds = Math.floor((elapsed % 60000) / 1000);
-
-    timer.textContent =
-      String(hours).padStart(2,"0") + ":" +
-      String(minutes).padStart(2,"0") + ":" +
-      String(seconds).padStart(2,"0");
-  });
-
-}
-
-  // PREPARATION TIMER
-  document.querySelectorAll(".queue-prep-timer").forEach(timer => {
-
-    const startTime = Number(timer.dataset.preparingTime);
 
     if(!startTime){
       timer.textContent = "00:00:00";
