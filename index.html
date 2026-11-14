@@ -1235,6 +1235,33 @@ header h2 {
 #salesPage.hidden {
   display: none !important;
 }
+  /* TABLET LANDSCAPE - COMPACT WINGS FLAVOR POPUP */
+@media (min-width:601px) and (max-width:1200px) and (orientation:landscape) {
+
+  #flavorModal {
+    padding:8px;
+    align-items:center;
+  }
+
+  #flavorModal .panel {
+    width:100%;
+    max-width:460px;
+    max-height:82vh;
+    padding:14px;
+    overflow-y:auto;
+  }
+
+  #flavorModal .flavor-option {
+    padding:7px 10px;
+    gap:8px;
+    border-radius:7px;
+  }
+
+  #flavorModal .flavor-option input {
+    width:17px;
+    height:17px;
+  }
+}
 </style>
 </head>
 <body>
