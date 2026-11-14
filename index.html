@@ -10286,8 +10286,8 @@ document.getElementById("newOrderBtn").onclick=()=>{
   document.getElementById("singlePaymentOptions").classList.add("hidden");
   document.getElementById("splitPaymentOptions").classList.add("hidden");
 
-  document.getElementById("singlePaymentBtn").classList.remove("active");
-  document.getElementById("splitPaymentBtn").classList.remove("active");
+document.getElementById("singlePaymentBtn").classList.remove("active", "selected");
+document.getElementById("splitPaymentBtn").classList.remove("active", "selected");
 
  document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button => {
     button.classList.remove("active", "selected");
