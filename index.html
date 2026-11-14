@@ -98,6 +98,30 @@ button:disabled{opacity:.5}
   margin:2px;
   border-radius:5px;
 }
+  /* GREEN CIRCULAR QUANTITY BUTTONS */
+.cart-small-btn[data-decrease],
+.cart-small-btn[data-add] {
+  width:32px;
+  height:32px;
+  min-width:32px;
+  padding:0;
+  margin:2px;
+  border-radius:50%;
+  background:#168b45;
+  color:#fff;
+  border:1px solid #20aa59;
+  font-size:19px;
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.cart-small-btn[data-decrease]:hover,
+.cart-small-btn[data-add]:hover {
+  background:#20aa59;
+}
 .category-tabs {
   display: flex;
   justify-content: space-between;
