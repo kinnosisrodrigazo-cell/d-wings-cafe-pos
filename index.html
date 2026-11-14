@@ -1285,6 +1285,39 @@ header h2 {
     height:17px;
   }
 }
+  /* FIT FLAVOR NAMES INSIDE 5x3 BOXES */
+@media (min-width:601px) and (max-width:1200px) and (orientation:landscape) {
+
+  #flavorOptions .flavor-option {
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    min-height:65px;
+    padding:6px 3px;
+    gap:5px;
+    font-size:10px;
+    line-height:1.2;
+    overflow:hidden;
+  }
+
+  #flavorOptions .flavor-option span {
+    display:block;
+    width:100%;
+    min-width:0;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    word-break:normal;
+    text-align:center;
+  }
+
+  #flavorOptions .flavor-option input {
+    flex-shrink:0;
+    width:16px;
+    height:16px;
+  }
+}
 </style>
 </head>
 <body>
