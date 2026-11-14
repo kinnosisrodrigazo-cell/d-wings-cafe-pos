@@ -8752,12 +8752,15 @@ const sale = {
   orderDate: today,
   status: "COMPLETED",
 
-  // ORDER QUEUE TRACKING
-  servingStatus: "PENDING",
-  orderTime: serverTimestamp(),
-  completedAt: null,
-  servingDuration: null,
-  restoredAt: null,
+// ORDER QUEUE TRACKING
+servingStatus: "PREPARING",
+preparingAt: serverTimestamp(),
+preparingBy: auth.currentUser?.email || "",
+preparingByUid: auth.currentUser?.uid || "",
+orderTime: serverTimestamp(),
+completedAt: null,
+servingDuration: null,
+restoredAt: null,
 
   customerName:
     document.getElementById("customerName").value.trim() || "Walk-in",
@@ -9109,12 +9112,22 @@ function renderOrderQueue(){
       const isPreparing = order.servingStatus === "PREPARING";
       const preparingMillis = order.preparingAt?.toMillis?.() || 0;
 
-      const itemsHTML = (order.items || []).map(item => `
-        <div>
-          ${escapeHTML(item.name || "")}
-          × ${Number(item.qty) || 0}
-        </div>
-      `).join("");
+const itemsHTML = (order.items || []).map(item => `
+  <div style="margin-bottom:8px">
+    <strong>
+      ${escapeHTML(item.name || "")}
+      × ${Number(item.qty) || 0}
+    </strong>
+
+    ${
+      Array.isArray(item.flavors) && item.flavors.length
+        ? `<div class="small" style="margin-left:12px;color:#e7ad3e">
+            FLAVORS: ${item.flavors.map(flavor => escapeHTML(flavor)).join(", ")}
+          </div>`
+        : ""
+    }
+  </div>
+`).join("");
 
       return `
         <div class="order-queue-card"
@@ -9150,15 +9163,6 @@ function renderOrderQueue(){
           </div>
 
           <p class="small">${escapeHTML(order.orderType || "")}</p>
-
-          <p class="small">ORDER TIME: ${orderTimeText}</p>
-
-          <div>
-            <div class="small">ORDER TIMER</div>
-            <div class="queue-timer" data-order-time="${orderMillis}">
-              00:00:00
-            </div>
-          </div>
 
           <div>
             <div class="small">PREPARATION TIMER</div>
@@ -9310,13 +9314,15 @@ unliContainer.querySelectorAll("[data-restore-unli]").forEach(button => {
   updateQueueTimers();
 }
 
+// AUTO UPDATE PREPARATION TIMER EVERY SECOND
+setInterval(updateQueueTimers, 1000); 
   
 function updateQueueTimers(){
 
-  // REGULAR ORDER TIMER
-  document.querySelectorAll(".queue-timer").forEach(timer => {
+  // PREPARATION TIMER
+  document.querySelectorAll(".queue-prep-timer").forEach(timer => {
 
-    const startTime = Number(timer.dataset.orderTime);
+    const startTime = Number(timer.dataset.preparingTime);
     if(!startTime) return;
 
     const elapsed = Math.max(0, Date.now() - startTime);
@@ -9330,6 +9336,8 @@ function updateQueueTimers(){
       String(minutes).padStart(2,"0") + ":" +
       String(seconds).padStart(2,"0");
   });
+
+}
 
   // PREPARATION TIMER
   document.querySelectorAll(".queue-prep-timer").forEach(timer => {
