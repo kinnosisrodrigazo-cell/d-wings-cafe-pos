@@ -1166,26 +1166,38 @@ header h2 {
   justify-content: center;
   gap: 0;
 }
-/* PC + TABLET LANDSCAPE - SALES AND CART SIDE BY SIDE */
+/* PC + TABLET LANDSCAPE - DYNAMIC SALES AND CART */
 @media (min-width: 901px), (min-width: 601px) and (max-width: 1200px) and (orientation: landscape) {
 
   #salesPage {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+  }
+
+  #salesPage > .row,
+  #salesPage > .sales-layout {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #salesPage:has(> #cartPanel:not(.hidden)) {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 36%);
     align-items: start;
     gap: 18px;
   }
 
-  #salesPage > .row {
+  #salesPage:has(> #cartPanel:not(.hidden)) > .row {
     grid-column: 1 / -1;
   }
 
-  #salesPage > .sales-layout {
+  #salesPage:has(> #cartPanel:not(.hidden)) > .sales-layout {
     grid-column: 1;
-    min-width: 0;
   }
 
-  #salesPage > #cartPanel {
+  #salesPage:has(> #cartPanel:not(.hidden)) > #cartPanel {
     grid-column: 2;
     width: 100%;
     min-width: 0;
@@ -1194,6 +1206,29 @@ header h2 {
     top: 15px;
     max-height: calc(100vh - 30px);
     overflow-y: auto;
+  }
+}
+  /* TABLET LANDSCAPE - COMPACT TWO COLUMN LAYOUT */
+@media (min-width:601px) and (max-width:1200px) and (orientation:landscape) {
+
+  #salesPage:has(> #cartPanel:not(.hidden)) {
+    grid-template-columns:minmax(0, 1fr) 300px;
+    gap:10px;
+  }
+
+  #salesPage > #cartPanel {
+    padding:12px;
+  }
+
+  #products,
+  #products.fries-layout {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px;
+  }
+
+  #products .product-group-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px;
   }
 }
 </style>
