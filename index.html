@@ -627,6 +627,29 @@ header h2 {
   margin-top:18px;
 }
 
+/* TABLET LANDSCAPE - 5 FLAVORS × 3 ROWS */
+@media (min-width:601px) and (max-width:1200px) and (orientation:landscape) {
+  #flavorOptions{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:6px;
+    margin-top:10px;
+  }
+
+  #flavorOptions .flavor-option{
+    justify-content:center;
+    padding:9px 3px;
+    gap:5px;
+    font-size:11px;
+    text-align:center;
+    min-width:0;
+  }
+
+  #flavorOptions .flavor-option span{
+    overflow-wrap:anywhere;
+  }
+}
+
 .dip-btn{
   background:#383838;
   color:#fff;
