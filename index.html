@@ -108,7 +108,7 @@ button:disabled{opacity:.5}
   text-align: center;
   margin-bottom: 0;
 }
-  
+
 #salesPage .panel > h3 {
   margin-top: 0;
   margin-bottom: 5px;
@@ -125,6 +125,48 @@ button:disabled{opacity:.5}
   padding:6px 16px 6px 7px;
   border-radius:30px;
   font-size:14px;
+}
+
+/* TABLET PORTRAIT - FIT ALL 8 CATEGORIES */
+@media (min-width:601px) and (max-width:900px) and (orientation:portrait){
+
+  #categoryTabs{
+    display:grid;
+    grid-template-columns:repeat(8,minmax(0,1fr));
+    gap:4px;
+  }
+
+  #categoryTabs .category-btn{
+    width:100%;
+    min-width:0;
+    justify-content:center;
+    padding:10px 2px;
+    font-size:clamp(8px,1.3vw,11px);
+    white-space:nowrap;
+  }
+  #products.fries-layout {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;
+    gap:8px;
+  }
+
+  #products .product-group {
+    width:100%;
+    grid-column:1 / -1;
+  }
+
+  #products .product-group-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;
+    gap:8px;
+  }
+
+  #products .product {
+    width:100%;
+    min-width:0;
+  }
 }
 
 .category-icon{
@@ -241,10 +283,28 @@ button:disabled{opacity:.5}
 }
 .sales-layout{
   display:flex;
-  justify-content:stretch;
-  align-items:flex-start;
-  gap:18px;
+  flex-direction:column;
+  align-items:stretch;
+  gap:12px;
   width:100%;
+  min-width:0;
+}
+
+#categoryTabs{
+  display:flex;
+  flex-wrap:nowrap;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
+  min-width:0;
+}
+
+#products{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  width:100%;
+  min-width:0;
+  gap:8px;
 }
 
 .sales-layout > .order-list-card{
@@ -3497,6 +3557,7 @@ document.getElementById("categoryTabs").innerHTML =
   );
 
  const productsEl = document.getElementById("products");
+  productsEl.classList.toggle("fries-layout", selectedCategory !== "Wings");
 
 const renderProductCards = items => items.map(p => {
   const index = menu.indexOf(p);
@@ -3583,9 +3644,6 @@ if (selectedCategory === "Wings") {
 } else {
 
   productsEl.style.display = "";
-
-  productsEl.classList.add("fries-layout");
-
   productsEl.innerHTML = renderProductCards(
     [...filteredProducts].sort((a, b) => Number(a.price) - Number(b.price))
   );
