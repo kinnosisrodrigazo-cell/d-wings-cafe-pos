@@ -4162,13 +4162,14 @@ function renderCart(){
             ${peso(item.price * item.qty)}
           </strong>
           <div class="cart-buttons">
-            ${item.name.startsWith("UNLI") || !item.flavors ? `
-              <button class="secondary cart-small-btn" data-decrease="${i}">−</button>
-              <button class="secondary cart-small-btn" data-add="${i}">+</button>
-            ` : `
-              <button class="secondary cart-small-btn" data-edit="${i}">EDIT</button>
-            `}
-            <button class="secondary cart-small-btn" data-remove="${i}">REMOVE</button>
+<button class="secondary cart-small-btn" data-decrease="${i}">−</button>
+<button class="secondary cart-small-btn" data-add="${i}">+</button>
+
+${item.flavors ? `
+  <button class="secondary cart-small-btn" data-edit="${i}">EDIT</button>
+` : ""}
+
+<button class="secondary cart-small-btn" data-remove="${i}">REMOVE</button>
           </div>
         </div>
       </div>
