@@ -1166,7 +1166,36 @@ header h2 {
   justify-content: center;
   gap: 0;
 }
+/* PC + TABLET LANDSCAPE - SALES AND CART SIDE BY SIDE */
+@media (min-width: 901px), (min-width: 601px) and (max-width: 1200px) and (orientation: landscape) {
 
+  #salesPage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: start;
+    gap: 18px;
+  }
+
+  #salesPage > .row {
+    grid-column: 1 / -1;
+  }
+
+  #salesPage > .sales-layout {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  #salesPage > #cartPanel {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    position: sticky;
+    top: 15px;
+    max-height: calc(100vh - 30px);
+    overflow-y: auto;
+  }
+}
 </style>
 </head>
 <body>
