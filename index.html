@@ -3993,11 +3993,13 @@ document.getElementById("flavorTitle").textContent =
   "EDIT " + item.name;
   
 document.getElementById("flavorInstruction").textContent =
-  item.category === "Chicken Rings"
-    ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
-    : pendingRequiredFlavors
-      ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
-      : "SELECT ANY OR ALL 15 FLAVORS.";
+  product.name === "DIP"
+    ? "₱25 EACH — SELECT ANY OR ALL."
+    : product.category === "Chicken Rings"
+      ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
+      : pendingRequiredFlavors
+        ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
+        : "SELECT ANY OR ALL 15 FLAVORS.";
 
     const includedSection =
       document.getElementById("includedSection");
@@ -4411,8 +4413,8 @@ if(item.category === "Chicken Rings"){
         pendingRequiresDip = !item.name.startsWith("UNLI") &&
           (!!item.dip || item.name.includes("+ RICE + DIP"));
 
-        document.getElementById("flavorTitle").textContent =
-          "EDIT " + item.name;
+ document.getElementById("flavorTitle").textContent =
+  product.name === "DIP" ? "SELECT YOUR DIPS" : product.name;
 
 document.getElementById("flavorInstruction").textContent =
   product.name === "DIP"
