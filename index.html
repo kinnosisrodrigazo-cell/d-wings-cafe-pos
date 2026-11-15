@@ -3967,15 +3967,15 @@ if(product.name === "DIP"){
     : null;
 }
 
-    pendingIncludedItems = [];
-    pendingRequiresDip = false;
+pendingIncludedItems = [];
+pendingRequiresDip = false;
 
-    if(product.name.includes("+ RICE + DIP")){
-      pendingIncludedItems = ["RICE"];
-      pendingRequiresDip = true;
-    }
+if(product.name.includes("+ RICE + DIP")){
+  pendingIncludedItems = ["RICE"];
+  pendingRequiresDip = true;
+}
 
-   if(product.name === "UNLI 269 WINGS"){
+if(product.name === "UNLI 269 WINGS"){
   pendingIncludedItems = ["UNLIMITED RICE"];
   pendingRequiresDip = false;
 }
@@ -3991,7 +3991,7 @@ if(product.name === "UNLI 299 WINGS"){
 
 document.getElementById("flavorTitle").textContent =
   product.name === "DIP" ? "SELECT YOUR DIPS" : product.name;
-  
+
 document.getElementById("flavorInstruction").textContent =
   product.name === "DIP"
     ? "₱25 EACH — SELECT ANY OR ALL."
@@ -4030,7 +4030,7 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
 
 document.getElementById("flavorOptions").innerHTML =
 `<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${product.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +  pendingFlavorList.map(flavor => {
-    const unavailable = product.name === "DIP"
+const unavailable = product.name === "DIP"
   ? false
   : isWingFlavorUnavailable(flavor);
 
