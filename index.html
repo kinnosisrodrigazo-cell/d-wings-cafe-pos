@@ -806,12 +806,20 @@ header h2 {
 
 /* MOBILE PORTRAIT */
 @media (max-width: 600px) and (orientation: portrait) {
-  #categoryTabs {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;
-    width: 100%;
-  }
+#categoryTabs {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+#categoryTabs .category-btn {
+  grid-column: span 3;
+}
+
+#categoryTabs .category-btn:nth-child(n+5) {
+  grid-column: span 4;
+}
 
   .category-btn {
     display: flex;
