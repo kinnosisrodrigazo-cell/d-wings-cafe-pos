@@ -315,9 +315,10 @@ button:disabled{opacity:.5}
 }
 #categoryTabs{
   display:flex;
-  flex-wrap:nowrap;
-  justify-content:space-between;
+  flex-wrap:wrap;
+  justify-content:flex-start;
   align-items:center;
+  gap:6px;
   width:100%;
   min-width:0;
 }
@@ -354,7 +355,7 @@ button:disabled{opacity:.5}
   display:none !important;
 }
 
-@media(max-width:900px){
+@media (min-width: 601px) and (max-width: 900px) {
   .sales-layout{
     flex-direction:column;
   }
@@ -381,34 +382,11 @@ button:disabled{opacity:.5}
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:8px;
 }
-/* MOBILE PORTRAIT - COMPACT HEADER */
-header h2 {
-  font-size: 13px !important;
-  white-space: nowrap;
-  margin: 0;
-  letter-spacing: 0.3px;
-}
 
-header img {
-  width: 35px !important;
-  height: 35px !important;
-}
-
-#dateTimeDisplay {
-  font-size: 9px !important;
-  padding: 4px 6px !important;
-  white-space: nowrap;
-}
-
-#dailyOrderSearchBtn {
-  width: 32px !important;
-  height: 32px !important;
-  flex-shrink: 0;
-}
 }
 
 /* TABLET LANDSCAPE - COMPACT HEADER */
-@media (min-width: 601px) and (orientation: landscape) {
+@media (min-width: 601px) and (max-width: 1200px) and (orientation: landscape) {
   header {
     padding: 8px 12px;
     gap: 8px;
@@ -789,7 +767,7 @@ header h2 {
   font-weight: 500;
 }
  /* MOBILE LANDSCAPE */
-@media (max-width: 900px) and (orientation: landscape) {
+@media (max-width: 600px) and (orientation: landscape) {
   .category-tabs {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -894,6 +872,30 @@ header h2 {
     width: 100%;
     overflow-wrap: anywhere;
   }
+  /* MOBILE PORTRAIT - COMPACT HEADER */
+header h2 {
+  font-size: 13px !important;
+  white-space: nowrap;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+header img {
+  width: 35px !important;
+  height: 35px !important;
+}
+
+#dateTimeDisplay {
+  font-size: 9px !important;
+  padding: 4px 6px !important;
+  white-space: nowrap;
+}
+
+#dailyOrderSearchBtn {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0;
+}
 }
   /* ===================================
    D' WINGS CAFE - ORDER QUEUE
