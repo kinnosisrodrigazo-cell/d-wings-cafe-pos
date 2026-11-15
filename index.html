@@ -2377,28 +2377,6 @@ header h2 {
   </div>
 </div>
 
-<!-- NEW STANDALONE DIP POPUP -->
-<div id="dipProductModal" class="hidden">
-  <div class="panel">
-    <h3>SELECT YOUR DIPS</h3>
-    <p class="small">₱25 EACH — SELECT ANY OR ALL</p>
-
-    <div class="dip-options">
-      <label class="flavor-option">
-        <input type="checkbox" name="productDip" value="Ranch">
-        <span>RANCH — ₱25</span>
-      </label>
-
-      <label class="flavor-option">
-        <input type="checkbox" name="productDip" value="Garlic Mayo">
-        <span>GARLIC MAYO — ₱25</span>
-      </label>
-
-      <label class="flavor-option">
-        <input type="checkbox" name="productDip" value="Thousand Island">
-        <span>THOUSAND ISLAND — ₱25</span>
-      </label>
-    </div>
 
     <p id="dipProductMessage" class="small">
       Select at least one dip.
@@ -3973,28 +3951,18 @@ if(isProductUnavailable(product)){
   return;
 }
   
-if(product.name === "DIP"){
-  document.querySelectorAll('input[name="productDip"]').forEach(box=>{
-    box.checked = false;
-  });
 
-  document.getElementById("dipProductMessage").textContent =
-    "Select at least one dip.";
-
-  document.getElementById("confirmDipProduct").disabled = true;
-
-  document.getElementById("dipProductModal").classList.remove("hidden");
-
-  return;
-}
-
-  if(
+if(
   product.category === "Wings" ||
-  product.category === "Chicken Rings"
+  product.category === "Chicken Rings" ||
+  product.name === "DIP"
 ){
     pendingProduct = {...product, menuIndex:index};
 
-if(product.category === "Chicken Rings"){
+if(product.name === "DIP"){
+  pendingFlavorList = ["GARLIC MAYO", "RANCH", "THOUSAND ISLAND"];
+  pendingRequiredFlavors = null;
+} else if(product.category === "Chicken Rings"){
   pendingFlavorList = chickenRingFlavors;
   pendingRequiredFlavors = /HOOP FEAST/i.test(product.name) ? 2 : 1;
 } else {
@@ -4029,11 +3997,11 @@ if(product.name === "UNLI 299 WINGS"){
   pendingRequiresDip = false;
 }
 
-    document.getElementById("flavorTitle").textContent =
-      product.name;
-
+document.getElementById("flavorTitle").textContent =
+  "EDIT " + item.name;
+  
 document.getElementById("flavorInstruction").textContent =
-  product.category === "Chicken Rings"
+  item.category === "Chicken Rings"
     ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
     : pendingRequiredFlavors
       ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
@@ -4067,9 +4035,10 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
 });
 
 document.getElementById("flavorOptions").innerHTML =
-  `<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">FLAVOR</div>` +
-  pendingFlavorList.map(flavor => {
-    const unavailable = isWingFlavorUnavailable(flavor);
+`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${product.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +  pendingFlavorList.map(flavor => {
+    const unavailable = product.name === "DIP"
+  ? false
+  : isWingFlavorUnavailable(flavor);
 
     return `
       <label class="flavor-option">
@@ -4126,74 +4095,27 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
 
   renderCart();
 }
-
-// STANDALONE DIP POPUP CONTROLS
-
-document.querySelectorAll('input[name="productDip"]').forEach(box=>{
-  box.onchange = ()=>{
-    const selectedDips = document.querySelectorAll(
-      'input[name="productDip"]:checked'
-    );
-
-    document.getElementById("dipProductMessage").textContent =
-      `${selectedDips.length} dip(s) selected — ₱${selectedDips.length * 25}`;
-
-    document.getElementById("confirmDipProduct").disabled =
-      selectedDips.length === 0;
-  };
-});
-
-document.getElementById("confirmDipProduct").onclick = ()=>{
-  const selectedDips = [
-    ...document.querySelectorAll('input[name="productDip"]:checked')
-  ].map(box=>box.value);
-
-  if(selectedDips.length === 0) return;
-
-  const dipProduct = menu.find(item => item.name === "DIP");
-
-  if(!dipProduct){
-    alert("DIP product not found.");
-    return;
-  }
-
-  selectedDips.forEach(dip=>{
-    const itemName = "DIP - " + dip.toUpperCase();
-
-    const found = cart.find(item =>
-      item.name === itemName && !item.flavors
-    );
-
-    if(found){
-      found.qty++;
-    } else {
-      cart.push({
-        ...dipProduct,
-        name:itemName,
-        price:25,
-        qty:1
-      });
-    }
-  });
-
-  document.getElementById("dipProductModal").classList.add("hidden");
-
-  document.querySelectorAll('input[name="productDip"]').forEach(box=>{
-    box.checked = false;
-  });
-
-  renderCart();
-};
-
-document.getElementById("cancelDipProduct").onclick = ()=>{
-  document.getElementById("dipProductModal").classList.add("hidden");
-
-  document.querySelectorAll('input[name="productDip"]').forEach(box=>{
-    box.checked = false;
-  });
-};
+;
 
 function updateFlavorSelection(){
+
+  // STANDALONE DIP SELECTION
+  if(pendingProduct && pendingProduct.name === "DIP"){
+
+    const selected = document.querySelectorAll(
+      'input[name="wingFlavor"]:checked'
+    ).length;
+
+    document.getElementById("confirmFlavor").disabled =
+      selected === 0;
+
+    document.getElementById("flavorMessage").textContent =
+      selected === 0
+        ? "Select at least one dip."
+        : `${selected} dip(s) selected — ₱${selected * 25}`;
+
+    return;
+  }
   const selected = document.querySelectorAll(
     'input[name="wingFlavor"]:checked'
   ).length;
@@ -4231,7 +4153,51 @@ function updateFlavorSelection(){
   document.getElementById("flavorMessage").textContent = message;
 }
 
+
 document.getElementById("confirmFlavor").onclick = ()=>{
+    // ADD STANDALONE DIPS TO CART
+  if(pendingProduct && pendingProduct.name === "DIP"){
+
+    const selectedDips = [
+      ...document.querySelectorAll('input[name="wingFlavor"]:checked')
+    ].map(box => box.value);
+
+    if(selectedDips.length === 0) return;
+
+    selectedDips.forEach(dip => {
+      const itemName = "DIP - " + dip.toUpperCase();
+
+      const found = cart.find(item =>
+        item.name === itemName && !item.flavors
+      );
+
+      if(found){
+        found.qty++;
+      } else {
+        cart.push({
+          ...pendingProduct,
+          name: itemName,
+          price: 25,
+          qty: 1
+        });
+      }
+    });
+
+    document.getElementById("flavorModal").classList.add("hidden");
+
+    editingCartIndex = null;
+    pendingProduct = null;
+    pendingRequiredFlavors = null;
+    pendingIncludedItems = [];
+    pendingRequiresDip = false;
+
+    document.getElementById("confirmFlavor").textContent =
+      "CONFIRM FLAVORS";
+
+    renderCart();
+    return;
+  }
+  
   const selectedFlavors = [
     ...document.querySelectorAll('input[name="wingFlavor"]:checked')
   ].map(box=>box.value);
@@ -4457,11 +4423,13 @@ if(item.category === "Chicken Rings"){
           "EDIT " + item.name;
 
 document.getElementById("flavorInstruction").textContent =
-  item.category === "Chicken Rings"
-    ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
-    : pendingRequiredFlavors
-      ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
-      : "SELECT ANY OR ALL 15 FLAVORS.";
+  product.name === "DIP"
+    ? "₱25 EACH — SELECT ANY OR ALL."
+    : product.category === "Chicken Rings"
+      ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
+      : pendingRequiredFlavors
+        ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
+        : "SELECT ANY OR ALL 15 FLAVORS.";
 
         document.getElementById("includedSection").classList.toggle(
           "hidden",
