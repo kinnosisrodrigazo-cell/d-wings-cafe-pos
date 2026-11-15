@@ -1668,7 +1668,62 @@ header h2 {
     <h2>Sales Terminal</h2>
   </div>
     <div class="sales-layout">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
 
+  <button
+    type="button"
+    id="productSearchBtn"
+    style="
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:11px 16px;
+      border:1px solid #444;
+      border-radius:10px;
+      background:#222;
+      color:#e7ad3e;
+      font-weight:bold;
+      cursor:pointer;
+    ">
+    <svg width="19" height="19" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round">
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m16 16 4 4"></path>
+    </svg>
+    SEARCH PRODUCTS
+  </button>
+
+  <div id="productSearchPanel" style="display:none;flex:1;gap:8px;">
+    <input
+      type="text"
+      id="productSearchInput"
+      placeholder="Search all products..."
+      style="
+        flex:1;
+        min-width:0;
+        padding:12px;
+        border:1px solid #555;
+        border-radius:9px;
+        background:#222;
+        color:white;
+        font-size:15px;
+      ">
+    <button
+      type="button"
+      id="closeProductSearch"
+      style="
+        padding:8px 13px;
+        border:1px solid #555;
+        border-radius:9px;
+        background:#333;
+        color:white;
+        cursor:pointer;
+      ">✕</button>
+  </div>
+
+</div>
     <div id="categoryTabs" class="category-tabs"></div>
     <div class="grid" id="products"></div>
   </div>
@@ -3659,6 +3714,7 @@ function renderDailyOrderSearch(searchTerm){
 }
 
 let selectedCategory = "Wings";
+  let productSearchQuery = "";
 function updateDateTime(){
   const now = new Date();
 
@@ -3735,10 +3791,35 @@ document.getElementById("categoryTabs").innerHTML =
       renderProducts();
     });
   });
+// PRODUCT SEARCH CONTROLS
+const searchBtn = document.getElementById("productSearchBtn");
+const searchPanel = document.getElementById("productSearchPanel");
+const searchInput = document.getElementById("productSearchInput");
+const closeSearchBtn = document.getElementById("closeProductSearch");
 
-  const filteredProducts = menu.filter(
-    p => p.category === selectedCategory
-  );
+searchBtn.onclick = () => {
+  searchPanel.style.display = "flex";
+  searchBtn.style.display = "none";
+  searchInput.focus();
+};
+
+closeSearchBtn.onclick = () => {
+  productSearchQuery = "";
+  searchInput.value = "";
+  searchPanel.style.display = "none";
+  searchBtn.style.display = "flex";
+  renderProducts();
+};
+
+searchInput.oninput = () => {
+  productSearchQuery = searchInput.value;
+  renderProducts();
+};
+const filteredProducts = productSearchQuery.trim()
+  ? menu.filter(p =>
+      p.name.toLowerCase().includes(productSearchQuery.trim().toLowerCase())
+    )
+  : menu.filter(p => p.category === selectedCategory);
 
  const productsEl = document.getElementById("products");
   productsEl.classList.toggle("fries-layout", selectedCategory !== "Wings");
@@ -3787,7 +3868,7 @@ const renderProductCards = items => items.map(p => {
   `;
 }).join("");
 
-if (selectedCategory === "Wings") {
+if (!productSearchQuery.trim() && selectedCategory === "Wings") {
   productsEl.style.display = "block";
 
   const unli = filteredProducts.filter(p =>
