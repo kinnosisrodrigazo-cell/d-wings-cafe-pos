@@ -151,12 +151,12 @@ button:disabled{opacity:.5}
   font-size:14px;
 }
 
-/* TABLET PORTRAIT - FIT ALL 8 CATEGORIES */
+/* TABLET PORTRAIT - FIT ALL 6 CATEGORIES */
 @media (min-width:601px) and (max-width:900px) and (orientation:portrait){
 
   #categoryTabs{
     display:grid;
-    grid-template-columns:repeat(8,minmax(0,1fr));
+    grid-template-columns:repeat(6,minmax(0,1fr));
     gap:4px;
   }
 
@@ -1198,9 +1198,7 @@ header h2 {
     height: 27px;
     font-size: 15px;
   }
-#categoryTabs .category-btn[data-category="Chicken Burger"] {
-  flex: 1.5 1 0;
-}
+
 
 } /* End of PC media query */
 
@@ -2397,6 +2395,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 await setPersistence(auth, browserLocalPersistence);
 
+
 const menu = [
   // WINGS
   {name:"UNLI 269 WINGS",price:269,category:"Wings"},
@@ -2417,19 +2416,29 @@ const menu = [
   {name:"DOUBLE DUO",price:139,category:"Fries"},
   {name:"TRIPLE CHEESE",price:129,category:"Fries"},
   {name:"CHILI CHEESE",price:139,category:"Fries"},
+  {name:"SOUR CHEESE",price:139,category:"Fries"},
+  {name:"CLASSIC",price:119,category:"Fries"},
   {name:"CHEESY BACON",price:139,category:"Fries"},
+  {name:"CHILI BACON",price:149,category:"Fries"},
   {name:"MAPLE BACON",price:149,category:"Fries"},
   {name:"TRIPLE CHEESY BACON",price:149,category:"Fries"},
-  {name:"PLAIN FRIES",price:119,category:"Fries"},
+  {name:"GARLIC PARMESAN",price:159,category:"Fries"},
+  {name:"HONEY BUTTER",price:159,category:"Fries"},
+  {name:"YANGNYEOM",price:159,category:"Fries"},
 
   // FLOATS
   {name:"CHOCO FLOAT",price:79,category:"Floats"},
+  {name:"ROYAL FLOAT",price:79,category:"Floats"},
   {name:"COKE FLOAT",price:79,category:"Floats"},
-  {name:"COFFEE FLOAT",price:89,category:"Floats"},
   {name:"OREO FLOAT",price:89,category:"Floats"},
-  {name:"MATCHA FLOAT",price:89,category:"Floats"},
+  {name:"MATCHA FLOAT",price:99,category:"Floats"},
   {name:"LYCHEE FLOAT",price:89,category:"Floats"},
-  {name:"MANGO FLOAT",price:89,category:"Floats"},
+  {name:"MANGO FLOAT",price:99,category:"Floats"},
+  {name:"OREO MATCHA FLOAT",price:119,category:"Floats"},
+  {name:"MANGO OREO FLOAT",price:119,category:"Floats"},
+  {name:"STRAWBERRY OREO FLOAT",price:99,category:"Floats"},
+  {name:"CHOCO OREO FLOAT",price:99,category:"Floats"},
+  {name:"STRAWBERRY FLOAT",price:89,category:"Floats"},
 
   // DRINKS
   {name:"CHOCO BLISS",price:85,category:"Drinks"},
@@ -2451,14 +2460,13 @@ const menu = [
   {name:"TAKE OUT BOX",price:5,category:"Extras"},
   {name:"KETCHUP",price:10,category:"Extras"},
 
-  // SANDWICH
-  {name:"SAUSAGE",price:89,category:"Sandwich"},
-
-  // CHICKEN BURGERS
-  {name:"CLASSIC",price:119,category:"Chicken Burger"},
-  {name:"GOLDEN (CHEESE)",price:139,category:"Chicken Burger"},
-  {name:"DOUBLE",price:189,category:"Chicken Burger"}
+  // CHICKEN RINGS
+  {name:"HOOP 'N STICK",price:59,category:"Chicken Rings"},
+  {name:"HOOP BOWL",price:99,category:"Chicken Rings"},
+  {name:"HOOP & FRIES",price:149,category:"Chicken Rings"},
+  {name:"HOOP FEAST",price:249,category:"Chicken Rings"}
 ];
+
 
 let cart = [];
 let splitPaymentMethods = [];
@@ -3397,15 +3405,14 @@ function startAvailabilitySync(){
 function renderAvailabilitySettings(){
   const container = document.getElementById("availabilitySettings");
 console.log("Availability render started", menu.length);
-  const categories = [
-    "Wings",
-    "Fries",
-    "Floats",
-    "Drinks",
-    "Extras",
-    "Sandwich",
-    "Chicken Burger"
-  ];
+const categories = [
+  "Wings",
+  "Fries",
+  "Floats",
+  "Drinks",
+  "Extras",
+  "Chicken Rings"
+];
 
   let html = "";
 
@@ -3704,15 +3711,13 @@ document.getElementById("closeDailyOrderSearch").addEventListener("click", () =>
 updateDateTime();
 setInterval(updateDateTime, 1000);
 function renderProducts(){
- const categories = [
+const categories = [
   { name: "Wings", icon: "🍗" },
   { name: "Fries", icon: "🍟" },
-  { name: "Chicken Ring", icon: "🍤" },
   { name: "Floats", icon: "🥤" },
   { name: "Drinks", icon: "🧋" },
   { name: "Extras", icon: "🍚" },
-  { name: "Sandwich", icon: "🥪" },
-  { name: "Chicken Burger", icon: "🍔" }
+  { name: "Chicken Rings", icon: "🍤" }
 ];
 
 document.getElementById("categoryTabs").innerHTML =
@@ -7933,15 +7938,14 @@ async function exportDailyReport(){
     };
 
     // PRODUCT CATEGORY LOOKUP
-    const categories = [
-      "Wings",
-      "Fries",
-      "Floats",
-      "Drinks",
-      "Extras",
-      "Sandwich",
-      "Chicken Burger"
-    ];
+const categories = [
+  "Wings",
+  "Fries",
+  "Floats",
+  "Drinks",
+  "Extras",
+  "Chicken Rings"
+];
 
     const getCategory = productName => {
       const product = menu.find(item =>
