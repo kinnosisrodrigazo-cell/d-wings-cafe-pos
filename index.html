@@ -3990,7 +3990,7 @@ if(product.name === "UNLI 299 WINGS"){
 }
 
 document.getElementById("flavorTitle").textContent =
-  "EDIT " + item.name;
+  product.name === "DIP" ? "SELECT YOUR DIPS" : product.name;
   
 document.getElementById("flavorInstruction").textContent =
   product.name === "DIP"
