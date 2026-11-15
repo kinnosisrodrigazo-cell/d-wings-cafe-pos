@@ -3389,7 +3389,16 @@ const wingFlavors = [
   "BUFFALO",
   "CHILI CHEESE"
 ];
+const chickenRingFlavors = [
+  "PLAIN",
+  "YANGNYEOM",
+  "SPICY SRIRACHA",
+  "HONEY BUTTER",
+  "SPICY HONEY GLAZED",
+  "CHEEZ BLIZZ"
+];
 
+let pendingFlavorList = wingFlavors;
 let pendingProduct = null;
 let pendingRequiredFlavors = null;
 let pendingIncludedItems = [];
@@ -3929,14 +3938,24 @@ if(isProductUnavailable(product)){
   alert(product.name + " is currently NOT AVAILABLE.");
   return;
 }
-  if(product.category === "Wings"){
+  if(
+  product.category === "Wings" ||
+  product.category === "Chicken Rings"
+){
     pendingProduct = {...product, menuIndex:index};
 
-    const match = product.name.match(/^(\d+)PCS/);
+if(product.category === "Chicken Rings"){
+  pendingFlavorList = chickenRingFlavors;
+  pendingRequiredFlavors = /HOOP FEAST/i.test(product.name) ? 2 : 1;
+} else {
+  pendingFlavorList = wingFlavors;
 
-    pendingRequiredFlavors = match
-      ? Number(match[1]) / 3
-      : null;
+  const match = product.name.match(/^(\d+)PCS/);
+
+  pendingRequiredFlavors = match
+    ? Number(match[1]) / 3
+    : null;
+}
 
     pendingIncludedItems = [];
     pendingRequiresDip = false;
@@ -3963,10 +3982,12 @@ if(product.name === "UNLI 299 WINGS"){
     document.getElementById("flavorTitle").textContent =
       product.name;
 
-    document.getElementById("flavorInstruction").textContent =
-      pendingRequiredFlavors
-        ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
-        : "SELECT ANY OR ALL 15 FLAVORS.";
+document.getElementById("flavorInstruction").textContent =
+  product.category === "Chicken Rings"
+    ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
+    : pendingRequiredFlavors
+      ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
+      : "SELECT ANY OR ALL 15 FLAVORS.";
 
     const includedSection =
       document.getElementById("includedSection");
@@ -3997,7 +4018,7 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
 
 document.getElementById("flavorOptions").innerHTML =
   `<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">FLAVOR</div>` +
-  wingFlavors.map(flavor => {
+  pendingFlavorList.map(flavor => {
     const unavailable = isWingFlavorUnavailable(flavor);
 
     return `
@@ -4061,17 +4082,17 @@ function updateFlavorSelection(){
     'input[name="wingFlavor"]:checked'
   ).length;
 
-document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
-  const unavailable = isWingFlavorUnavailable(box.value);
+  document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
+    const unavailable = isWingFlavorUnavailable(box.value);
 
-  box.disabled =
-    (!box.checked && unavailable) ||
-    (
-      pendingRequiredFlavors !== null &&
-      selected >= pendingRequiredFlavors &&
-      !box.checked
-    );
-});
+    box.disabled =
+      (!box.checked && unavailable) ||
+      (
+        pendingRequiredFlavors !== null &&
+        selected >= pendingRequiredFlavors &&
+        !box.checked
+      );
+  });
 
   const flavorValid = pendingRequiredFlavors === null
     ? selected >= 1
@@ -4296,11 +4317,21 @@ el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
         const item = cart[index];
 
         editingCartIndex = index;
-        pendingProduct = {...item};
-        pendingRequiredFlavors =
-          item.name.match(/^(\d+)PCS/)
-            ? Number(item.name.match(/^(\d+)PCS/)[1]) / 3
-            : null;
+pendingProduct = {...item};
+
+pendingFlavorList = item.category === "Chicken Rings"
+  ? chickenRingFlavors
+  : wingFlavors;
+
+if(item.category === "Chicken Rings"){
+  pendingRequiredFlavors = /HOOP FEAST/i.test(item.name) ? 2 : 1;
+} else {
+  const match = item.name.match(/^(\d+)PCS/);
+
+  pendingRequiredFlavors = match
+    ? Number(match[1]) / 3
+    : null;
+}
 
         pendingIncludedItems = [...(item.includedItems || [])];
         pendingRequiresDip = !item.name.startsWith("UNLI") &&
@@ -4309,10 +4340,12 @@ el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
         document.getElementById("flavorTitle").textContent =
           "EDIT " + item.name;
 
-        document.getElementById("flavorInstruction").textContent =
-          pendingRequiredFlavors
-            ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
-            : "SELECT ANY OR ALL 15 FLAVORS.";
+document.getElementById("flavorInstruction").textContent =
+  item.category === "Chicken Rings"
+    ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
+    : pendingRequiredFlavors
+      ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
+      : "SELECT ANY OR ALL 15 FLAVORS.";
 
         document.getElementById("includedSection").classList.toggle(
           "hidden",
@@ -4342,7 +4375,7 @@ el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
 });
 
 document.getElementById("flavorOptions").innerHTML =
-  wingFlavors.map(flavor => {
+  pendingFlavorList.map(flavor => {
     const unavailable = isWingFlavorUnavailable(flavor);
     const selected = item.flavors.includes(flavor);
 
