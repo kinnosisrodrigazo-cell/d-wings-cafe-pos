@@ -2371,11 +2371,47 @@ header h2 {
     <div id="flavorOptions" class="grid"></div>
     <p id="flavorMessage" class="small"></p>
     <div class="row">
-      <button class="secondary" id="cancelFlavor">CANCEL</button>
+ <button class="secondary" id="cancelFlavor">CANCEL</button>
       <button id="confirmFlavor">CONFIRM FLAVORS</button>
     </div>
   </div>
 </div>
+
+<!-- NEW STANDALONE DIP POPUP -->
+<div id="dipProductModal" class="hidden">
+  <div class="panel">
+    <h3>SELECT YOUR DIPS</h3>
+    <p class="small">₱25 EACH — SELECT ANY OR ALL</p>
+
+    <div class="dip-options">
+      <label class="flavor-option">
+        <input type="checkbox" name="productDip" value="Ranch">
+        <span>RANCH — ₱25</span>
+      </label>
+
+      <label class="flavor-option">
+        <input type="checkbox" name="productDip" value="Garlic Mayo">
+        <span>GARLIC MAYO — ₱25</span>
+      </label>
+
+      <label class="flavor-option">
+        <input type="checkbox" name="productDip" value="Thousand Island">
+        <span>THOUSAND ISLAND — ₱25</span>
+      </label>
+    </div>
+
+    <p id="dipProductMessage" class="small">
+      Select at least one dip.
+    </p>
+
+    <div class="row">
+      <button class="secondary" id="cancelDipProduct">CANCEL</button>
+      <button id="confirmDipProduct" disabled>ADD TO CART</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXISTING CHECKOUT POPUP -->
 <div id="checkoutModal" class="hidden" style="
   position:fixed;
   inset:0;
@@ -2395,11 +2431,9 @@ header h2 {
   ">
     <h2>CONFIRM ORDER</h2>
     <div id="checkoutSummary"></div>
-
     <p id="checkoutMessage" class="small"></p>
   </div>
 </div>
-  
 
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -3938,6 +3972,22 @@ if(isProductUnavailable(product)){
   alert(product.name + " is currently NOT AVAILABLE.");
   return;
 }
+  
+if(product.name === "DIP"){
+  document.querySelectorAll('input[name="productDip"]').forEach(box=>{
+    box.checked = false;
+  });
+
+  document.getElementById("dipProductMessage").textContent =
+    "Select at least one dip.";
+
+  document.getElementById("confirmDipProduct").disabled = true;
+
+  document.getElementById("dipProductModal").classList.remove("hidden");
+
+  return;
+}
+
   if(
   product.category === "Wings" ||
   product.category === "Chicken Rings"
@@ -4076,6 +4126,72 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
 
   renderCart();
 }
+
+// STANDALONE DIP POPUP CONTROLS
+
+document.querySelectorAll('input[name="productDip"]').forEach(box=>{
+  box.onchange = ()=>{
+    const selectedDips = document.querySelectorAll(
+      'input[name="productDip"]:checked'
+    );
+
+    document.getElementById("dipProductMessage").textContent =
+      `${selectedDips.length} dip(s) selected — ₱${selectedDips.length * 25}`;
+
+    document.getElementById("confirmDipProduct").disabled =
+      selectedDips.length === 0;
+  };
+});
+
+document.getElementById("confirmDipProduct").onclick = ()=>{
+  const selectedDips = [
+    ...document.querySelectorAll('input[name="productDip"]:checked')
+  ].map(box=>box.value);
+
+  if(selectedDips.length === 0) return;
+
+  const dipProduct = menu.find(item => item.name === "DIP");
+
+  if(!dipProduct){
+    alert("DIP product not found.");
+    return;
+  }
+
+  selectedDips.forEach(dip=>{
+    const itemName = "DIP - " + dip.toUpperCase();
+
+    const found = cart.find(item =>
+      item.name === itemName && !item.flavors
+    );
+
+    if(found){
+      found.qty++;
+    } else {
+      cart.push({
+        ...dipProduct,
+        name:itemName,
+        price:25,
+        qty:1
+      });
+    }
+  });
+
+  document.getElementById("dipProductModal").classList.add("hidden");
+
+  document.querySelectorAll('input[name="productDip"]').forEach(box=>{
+    box.checked = false;
+  });
+
+  renderCart();
+};
+
+document.getElementById("cancelDipProduct").onclick = ()=>{
+  document.getElementById("dipProductModal").classList.add("hidden");
+
+  document.querySelectorAll('input[name="productDip"]').forEach(box=>{
+    box.checked = false;
+  });
+};
 
 function updateFlavorSelection(){
   const selected = document.querySelectorAll(
