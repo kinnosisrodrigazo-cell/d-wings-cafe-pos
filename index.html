@@ -7162,25 +7162,32 @@ async function findAttendanceEmployee(){
 }
 
 
+
 function calculateLateAttendance(timeIn, shiftStart, dailyRate, attendanceDate){
 
   const [inHour, inMinute] = timeIn.split(":").map(Number);
-  const [startHour, startMinute] = shiftStart.split(":").map(Number);
 
+  // FIXED SCHEDULE: 3:00 PM FOR ALL EMPLOYEES
   const actualMinutes = inHour * 60 + inMinute;
-  const scheduledMinutes = startHour * 60 + startMinute;
+  const scheduledMinutes = 15 * 60;
 
   // Get the actual attendance weekday
   const day = new Date(attendanceDate + "T12:00:00").getDay();
 
-  // Monday to Thursday: 15-minute grace period
-  // Friday to Sunday: No grace period
-  const gracePeriod = (day >= 1 && day <= 4) ? 15 : 0;
+  let lateMinutes = 0;
 
-  const lateMinutes = Math.max(
-    0,
-    actualMinutes - scheduledMinutes - gracePeriod
-  );
+  if(day >= 1 && day <= 4){
+    // MONDAY TO THURSDAY
+    // No deduction until 3:15 PM
+    // At 3:16 PM, deduct 16 pesos
+    if(actualMinutes > scheduledMinutes + 15){
+      lateMinutes = actualMinutes - scheduledMinutes;
+    }
+  } else {
+    // FRIDAY TO SUNDAY
+    // Deduct every minute after 3:00 PM
+    lateMinutes = Math.max(0, actualMinutes - scheduledMinutes);
+  }
 
   const lateDeduction = lateMinutes;
 
@@ -7189,6 +7196,7 @@ function calculateLateAttendance(timeIn, shiftStart, dailyRate, attendanceDate){
     lateDeduction: Number(lateDeduction.toFixed(2))
   };
 }
+
 
 
 async function recordAttendance(type){
@@ -7258,8 +7266,7 @@ async function recordAttendance(type){
           throw new Error("ALREADY_IN");
         }
 
-        const shiftStart =
-          employee.defaultShiftStart || "15:00";
+const shiftStart = "15:00";
 
 const lateInfo = calculateLateAttendance(
   time,
@@ -7268,26 +7275,26 @@ const lateInfo = calculateLateAttendance(
   date
 );
 
-        transaction.set(attendanceRef, {
-          employeeId: employee.id,
-          employeeName: employee.name,
-          date: date,
-          timeIn: time,
-          timeOut: null,
-          scheduledStart: shiftStart,
-          lateMinutes: lateInfo.lateMinutes,
-          lateDeduction: lateInfo.lateDeduction,
+transaction.set(attendanceRef, {
+  employeeId: employee.id,
+  employeeName: employee.name,
+  date: date,
+  timeIn: time,
+  timeOut: null,
+  scheduledStart: "15:00",
+  lateMinutes: lateInfo.lateMinutes,
+  lateDeduction: lateInfo.lateDeduction,
 
-          gpsLatitude: gpsInfo.latitude,
-          gpsLongitude: gpsInfo.longitude,
-          gpsAccuracy: gpsInfo.accuracy,
-          distanceFromCafe: gpsInfo.distanceFromCafe,
+  gpsLatitude: gpsInfo.latitude,
+  gpsLongitude: gpsInfo.longitude,
+  gpsAccuracy: gpsInfo.accuracy,
+  distanceFromCafe: gpsInfo.distanceFromCafe,
 
-          photoStored: true,
-         photoStorage: "SUPABASE",
+  photoStored: true,
+  photoStorage: "SUPABASE",
 
-          createdAt: serverTimestamp()
-        });
+  createdAt: serverTimestamp()
+});
 
       }else if(type === "TIME OUT"){
 
@@ -7815,7 +7822,7 @@ async function saveManualAttendance(){
         date: date,
         timeIn: finalTimeIn,
         timeOut: finalTimeOut,
-        scheduledStart: shiftStart,
+        scheduledStart: "15:00",
         lateMinutes: lateInfo.lateMinutes,
         lateDeduction: lateInfo.lateDeduction,
         status: "PRESENT",
