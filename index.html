@@ -6089,54 +6089,123 @@ async function loadDashboardPayroll(){
 
     });
 
-    // WEEKLY PAYROLL SUMMARY ONLY
-    weeklyEl.innerHTML = `
 
-      <div class="panel" style="margin:0">
+// WEEKLY PAYROLL SUMMARY WITH INDIVIDUAL STAFF
 
-        <p class="small">WEEKLY TOTAL PAYROLL</p>
+const weeklyStaffBreakdown = staff.map(employee => {
 
-        <h2 style="color:#e7ad3e">
-          ${peso(weeklyNet)}
-        </h2>
+  let daysWorked = 0;
+  let grossSalary = 0;
+  let incentives = 0;
+  let lateDeductions = 0;
+  let netPay = 0;
+
+  const dailyRate = Number(employee.dailyRate) || 500;
+
+  elapsedDates.forEach(date => {
+
+    const result = dailyResults[date];
+
+    if(!result.staffWorkedIds.includes(employee.id)) return;
+
+    daysWorked++;
+    grossSalary += dailyRate;
+
+    const day = new Date(date + "T12:00:00").getDay();
+
+    let incentive = 0;
+
+    if(result.sales >= 25000){
+      incentive = 1000;
+    }else if(result.sales >= 20000){
+      incentive = 500;
+    }else if(result.sales >= 15000){
+      incentive = 300;
+    }else if(result.sales >= 10000){
+      incentive = (day >= 1 && day <= 4) ? 200 : 100;
+    }
+
+    const attendance = attendanceMap[`${employee.id}_${date}`] || {};
+    const late = Number(attendance.lateDeduction) || 0;
+
+    incentives += incentive;
+    lateDeductions += late;
+
+    netPay += Math.max(0, dailyRate + incentive - late);
+
+  });
+
+  return {
+    name:employee.name || "STAFF",
+    daysWorked,
+    grossSalary,
+    incentives,
+    lateDeductions,
+    netPay
+  };
+
+});
+
+weeklyEl.innerHTML = `
+
+  <div class="panel" style="margin:0">
+
+    <p class="small">WEEKLY TOTAL PAYROLL</p>
+
+    <h2 style="color:#e7ad3e">${peso(weeklyNet)}</h2>
+
+    <p class="small">
+      ${weeklyStaffIds.size} staff worked this week
+    </p>
+
+    <hr>
+
+    ${weeklyStaffBreakdown.map(employee => `
+
+      <div style="padding:10px 0;border-bottom:1px solid #333">
+
+        <div class="row">
+          <strong>${escapeHTML(employee.name)}</strong>
+          <strong>${peso(employee.netPay)}</strong>
+        </div>
 
         <p class="small">
-          ${weeklyStaffIds.size} staff worked this week
+          ${employee.daysWorked} days worked
+          · Gross: ${peso(employee.grossSalary)}
+          · Incentives: ${peso(employee.incentives)}
+          · Late: ${peso(employee.lateDeductions)}
         </p>
-
-        <p class="small">
-          ${weeklyStaffShifts} total staff workdays
-        </p>
-
-        <hr>
-
-        <div class="row">
-          <span>Basic salaries</span>
-          <strong>${peso(weeklyGross)}</strong>
-        </div>
-
-        <div class="row">
-          <span>Staff incentives</span>
-          <strong>${peso(weeklyIncentives)}</strong>
-        </div>
-
-        <div class="row">
-          <span>Late deductions</span>
-          <strong>${peso(weeklyLate)}</strong>
-        </div>
-
-        <hr>
-
-        <div class="row">
-          <strong>NET PAYROLL</strong>
-          <strong style="color:#7de39a">
-            ${peso(weeklyNet)}
-          </strong>
-        </div>
 
       </div>
 
-    `;
+    `).join("")}
+
+    <hr>
+
+    <div class="row">
+      <strong>GROSS PAYROLL</strong>
+      <strong>${peso(weeklyGross)}</strong>
+    </div>
+
+    <div class="row">
+      <span>Total incentives</span>
+      <strong>${peso(weeklyIncentives)}</strong>
+    </div>
+
+    <div class="row">
+      <span>Total late deductions</span>
+      <strong>${peso(weeklyLate)}</strong>
+    </div>
+
+    <div class="row">
+      <strong>FINAL NET PAYABLE</strong>
+      <strong style="color:#7de39a">${peso(weeklyNet)}</strong>
+    </div>
+
+  </div>
+
+`;
+
 
     // DAILY PROFIT BREAKDOWN
     dailyProfitEl.innerHTML = `
