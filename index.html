@@ -2252,6 +2252,70 @@ header img {
 
   </div>
 
+  <!-- OWNER-ONLY MANUAL ATTENDANCE EDITOR -->
+  <div class="panel hidden" id="manualAttendanceEditorPanel">
+
+    <h3>MANUAL ATTENDANCE EDITOR</h3>
+
+    <p class="small">
+      Manually enter or correct staff TIME IN and TIME OUT.
+    </p>
+
+    <label for="manualAttendanceEmployee">SELECT EMPLOYEE</label>
+    <select id="manualAttendanceEmployee" style="width:100%">
+      <option value="">Select employee</option>
+    </select>
+
+    <label for="manualAttendanceDate">ATTENDANCE DATE</label>
+    <input
+      type="date"
+      id="manualAttendanceDate"
+      style="width:100%"
+    >
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+      <div>
+        <label for="manualAttendanceTimeIn">TIME IN</label>
+        <input
+          type="time"
+          id="manualAttendanceTimeIn"
+          style="width:100%"
+        >
+      </div>
+
+      <div>
+        <label for="manualAttendanceTimeOut">TIME OUT</label>
+        <input
+          type="time"
+          id="manualAttendanceTimeOut"
+          style="width:100%"
+        >
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      id="loadManualAttendanceBtn"
+      class="secondary"
+      style="width:100%;margin-top:12px"
+    >
+      LOAD ATTENDANCE
+    </button>
+
+    <button
+      type="button"
+      id="saveManualAttendanceBtn"
+      style="width:100%;margin-top:8px;background:#22c55e;color:#000"
+    >
+      SAVE ATTENDANCE
+    </button>
+
+    <p id="manualAttendanceMessage" class="small"></p>
+
+  </div>
+
   <!-- INDIVIDUAL PAYSLIPS -->
   <div class="panel">
     <h3>STAFF PAYSLIPS</h3>
@@ -3253,7 +3317,12 @@ document.getElementById("dashboardNextWeek").addEventListener("click", () => {
 document.getElementById("saveStaffScheduleBtn").addEventListener("click", async () => {
 
 if(String(currentUserRole || "").toLowerCase() !== "owner"){
-  alert("Only the owner can edit the staff schedule.");
+  alert("Only the owner can edit attendance.");
+  return;
+}
+
+if(!auth.currentUser){
+  alert("Please log in again.");
   return;
 }
 
@@ -7492,8 +7561,329 @@ if(historySection){
   }
 }
 
+async function loadManualAttendanceEmployees(){
+
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
+    return;
+  }
+
+  const employeeSelect =
+    document.getElementById("manualAttendanceEmployee");
+
+  if(!employeeSelect) return;
+
+  employeeSelect.innerHTML =
+    '<option value="">Loading employees...</option>';
+
+  try{
+
+    const snapshot = await getDocs(
+      collection(db, "employees")
+    );
+
+    const employees = snapshot.docs
+      .map(employeeDoc => ({
+        id: employeeDoc.id,
+        ...employeeDoc.data()
+      }))
+      .filter(employee => employee.active === true)
+      .sort((a,b) =>
+        (a.name || "").localeCompare(b.name || "")
+      );
+
+    employeeSelect.innerHTML =
+      '<option value="">Select employee</option>' +
+      employees.map(employee => `
+        <option value="${escapeHTML(employee.id)}">
+          ${escapeHTML(employee.name || "Unnamed employee")}
+        </option>
+      `).join("");
+
+  }catch(error){
+
+    console.error("Manual attendance employee loading error:", error);
+
+    employeeSelect.innerHTML =
+      '<option value="">Unable to load employees</option>';
+
+  }
+}
+
+
+
+async function loadManualAttendanceRecord(){
+
+  const message = document.getElementById("manualAttendanceMessage");
+
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
+    return;
+  }
+
+  const employeeId =
+    document.getElementById("manualAttendanceEmployee").value;
+
+  const date =
+    document.getElementById("manualAttendanceDate").value;
+
+  if(!employeeId || !date){
+    message.textContent = "Please select an employee and attendance date.";
+    return;
+  }
+
+  try{
+
+    message.textContent = "Loading attendance...";
+
+    const attendanceRef = doc(
+      db,
+      "attendance",
+      `${employeeId}_${date}`
+    );
+
+    const attendanceSnap = await getDoc(attendanceRef);
+
+    document.getElementById("manualAttendanceTimeIn").value = "";
+    document.getElementById("manualAttendanceTimeOut").value = "";
+
+    if(attendanceSnap.exists()){
+
+      const attendance = attendanceSnap.data();
+
+      document.getElementById("manualAttendanceTimeIn").value =
+        attendance.timeIn || "";
+
+      document.getElementById("manualAttendanceTimeOut").value =
+        attendance.timeOut || "";
+
+      message.textContent = "Attendance record loaded.";
+
+    }else{
+
+      message.textContent =
+        "No attendance record found. You can enter the times manually.";
+
+    }
+
+  }catch(error){
+
+    console.error("Manual attendance loading error:", error);
+
+    message.textContent = "Unable to load attendance record.";
+
+  }
+}
+
+
+// CONNECT LOAD ATTENDANCE BUTTON
+document.getElementById("loadManualAttendanceBtn")
+  .addEventListener("click", loadManualAttendanceRecord);
+
+async function saveManualAttendance(){
+
+  const message =
+    document.getElementById("manualAttendanceMessage");
+
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
+    alert("Only the owner can edit attendance.");
+    return;
+  }
+
+  const employeeId =
+    document.getElementById("manualAttendanceEmployee").value;
+
+  const date =
+    document.getElementById("manualAttendanceDate").value;
+
+  const enteredTimeIn =
+    document.getElementById("manualAttendanceTimeIn").value;
+
+  const enteredTimeOut =
+    document.getElementById("manualAttendanceTimeOut").value;
+
+  if(!employeeId || !date){
+    message.textContent = "Please select an employee and date.";
+    return;
+  }
+
+  if(date > getManilaDateTime().date){
+    message.textContent = "Future attendance dates are not allowed.";
+    return;
+  }
+
+  const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+  if(enteredTimeIn && !timePattern.test(enteredTimeIn)){
+    message.textContent = "Invalid TIME IN.";
+    return;
+  }
+
+  if(enteredTimeOut && !timePattern.test(enteredTimeOut)){
+    message.textContent = "Invalid TIME OUT.";
+    return;
+  }
+
+  try{
+
+    message.textContent = "Checking employee schedule...";
+
+    // GET EMPLOYEE DETAILS
+    const employeeSnap = await getDoc(
+      doc(db, "employees", employeeId)
+    );
+
+    if(!employeeSnap.exists()){
+      throw new Error("EMPLOYEE_NOT_FOUND");
+    }
+
+    const employee = employeeSnap.data();
+
+    // GET MONDAY DATE FOR THE SELECTED WEEK
+    const selectedDate = new Date(date + "T12:00:00");
+    const day = selectedDate.getDay();
+    const daysSinceMonday = (day + 6) % 7;
+
+    selectedDate.setDate(
+      selectedDate.getDate() - daysSinceMonday
+    );
+
+    const weekStart = [
+      selectedDate.getFullYear(),
+      String(selectedDate.getMonth() + 1).padStart(2, "0"),
+      String(selectedDate.getDate()).padStart(2, "0")
+    ].join("-");
+
+    // CHECK SAVED STAFF SCHEDULE
+    const scheduleSnap = await getDoc(
+      doc(db, "schedules", weekStart)
+    );
+
+    if(!scheduleSnap.exists()){
+      throw new Error("SCHEDULE_NOT_FOUND");
+    }
+
+    const assignments =
+      scheduleSnap.data().assignments || {};
+
+    if(assignments[employeeId]?.[date] !== "WORK"){
+      throw new Error("NOT_SCHEDULED");
+    }
+
+    const attendanceRef = doc(
+      db,
+      "attendance",
+      `${employeeId}_${date}`
+    );
+
+    message.textContent = "Saving attendance...";
+
+    await runTransaction(db, async transaction => {
+
+      const attendanceSnap =
+        await transaction.get(attendanceRef);
+
+      const existing = attendanceSnap.exists()
+        ? attendanceSnap.data()
+        : {};
+
+      const finalTimeIn =
+        enteredTimeIn || existing.timeIn || "";
+
+      const finalTimeOut =
+        enteredTimeOut || existing.timeOut || null;
+
+      if(!finalTimeIn){
+        throw new Error("TIME_IN_REQUIRED");
+      }
+
+      if(finalTimeOut && finalTimeOut < finalTimeIn){
+        throw new Error("INVALID_TIME_ORDER");
+      }
+
+      const shiftStart =
+        employee.defaultShiftStart || "15:00";
+
+      const lateInfo = calculateLateAttendance(
+        finalTimeIn,
+        shiftStart,
+        employee.dailyRate,
+        date
+      );
+
+      const attendanceData = {
+        employeeId: employeeId,
+        employeeName: employee.name || "Unknown",
+        date: date,
+        timeIn: finalTimeIn,
+        timeOut: finalTimeOut,
+        scheduledStart: shiftStart,
+        lateMinutes: lateInfo.lateMinutes,
+        lateDeduction: lateInfo.lateDeduction,
+        status: "PRESENT",
+        manualEditedBy: auth.currentUser.uid,
+        manualEditedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      if(!attendanceSnap.exists()){
+        attendanceData.createdAt = serverTimestamp();
+      }
+
+      transaction.set(
+        attendanceRef,
+        attendanceData,
+        { merge: true }
+      );
+
+    });
+
+    message.textContent =
+      `Attendance saved successfully for ${employee.name || "employee"}.`;
+
+    // REFRESH TODAY'S ATTENDANCE IF APPLICABLE
+    if(date === getManilaDateTime().date){
+      await loadTodayAttendance();
+    }
+
+    // REFRESH ATTENDANCE HISTORY IF SAME DATE IS OPEN
+    const historyDate =
+      document.getElementById("attendanceHistoryDate");
+
+    if(historyDate && historyDate.value === date){
+      await loadAttendanceHistory();
+    }
+
+    // REFRESH PAYSLIPS
+    if(typeof loadDashboardPayslips === "function"){
+      await loadDashboardPayslips();
+    }
+
+  }catch(error){
+
+    console.error("Manual attendance save error:", error);
+
+    const messages = {
+      EMPLOYEE_NOT_FOUND: "Employee record not found.",
+      SCHEDULE_NOT_FOUND: "No saved schedule found for this week.",
+      NOT_SCHEDULED: "This employee is not scheduled to work on this date.",
+      TIME_IN_REQUIRED: "Please enter a TIME IN.",
+      INVALID_TIME_ORDER: "TIME OUT cannot be earlier than TIME IN."
+    };
+
+    message.textContent =
+      messages[error.message] ||
+      "Unable to save attendance. Please try again.";
+
+  }
+}
+
+
+// CONNECT SAVE ATTENDANCE BUTTON
+document.getElementById("saveManualAttendanceBtn")
+  .addEventListener("click", saveManualAttendance);
+
 
 // ATTENDANCE HISTORY WILL BE INSERTED HERE
+
 // LOAD ATTENDANCE HISTORY
 async function loadAttendanceHistory(){
 
@@ -9062,6 +9452,20 @@ items: cart.map(item=>({
   }
 
 currentUserRole = profile.role;
+    
+// MANUAL ATTENDANCE EDITOR - OWNER ONLY
+const manualAttendancePanel =
+  document.getElementById("manualAttendanceEditorPanel");
+
+if(manualAttendancePanel){
+  manualAttendancePanel.classList.toggle(
+    "hidden",
+    String(currentUserRole || "").toLowerCase() !== "owner"
+  );
+}
+if(String(currentUserRole || "").toLowerCase() === "owner"){
+  loadManualAttendanceEmployees();
+}
 // OWNER DASHBOARD ACCESS
 const dashboardBtn = document.getElementById("dashboardBtn");
 
