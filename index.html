@@ -2233,11 +2233,14 @@ header img {
     <h3>OWNER DASHBOARD</h3>
     <p class="small">D' WINGS CAFE BUSINESS PERFORMANCE</p>
   </div>
-  <!-- DAILY AND WEEKLY PAYROLL -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;">
+
+  <!-- LEFT COLUMN: PAYROLL -->
+  <div style="display:grid;gap:14px;">
 
     <div class="panel">
-      <h3>TODAY'S PAYROLL</h3>
+      <h3>TODAY'S TOTAL PAYROLL</h3>
       <div id="dashboardDailyPayroll">
         <p class="small">Loading today's payroll...</p>
       </div>
@@ -2252,7 +2255,27 @@ header img {
 
   </div>
 
-  <!-- OWNER-ONLY MANUAL ATTENDANCE EDITOR -->
+  <!-- RIGHT COLUMN: PROFIT -->
+  <div style="display:grid;gap:14px;">
+
+    <div class="panel">
+      <h3>DAILY PROFIT BREAKDOWN</h3>
+      <div id="dashboardDailyProfit">
+        <p class="small">Loading daily profit...</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>WEEKLY PROFIT BREAKDOWN</h3>
+      <div id="dashboardWeeklyProfit">
+        <p class="small">Loading weekly profit...</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- OWNER-ONLY MANUAL ATTENDANCE EDITOR -->
   <div class="panel hidden" id="manualAttendanceEditorPanel">
 
     <h3>MANUAL ATTENDANCE EDITOR</h3>
@@ -5802,15 +5825,20 @@ async function loadDashboardBusinessPerformance(){
   }
 }
 
+
 async function loadDashboardPayroll(){
 
   const dailyEl = document.getElementById("dashboardDailyPayroll");
   const weeklyEl = document.getElementById("dashboardWeeklyPayroll");
+  const dailyProfitEl = document.getElementById("dashboardDailyProfit");
+  const weeklyProfitEl = document.getElementById("dashboardWeeklyProfit");
 
-  if(!dailyEl || !weeklyEl) return;
+  if(!dailyEl || !weeklyEl || !dailyProfitEl || !weeklyProfitEl) return;
 
   dailyEl.innerHTML = "<p class='small'>Loading today's payroll...</p>";
   weeklyEl.innerHTML = "<p class='small'>Loading weekly payroll...</p>";
+  dailyProfitEl.innerHTML = "<p class='small'>Calculating daily profit...</p>";
+  weeklyProfitEl.innerHTML = "<p class='small'>Calculating weekly profit...</p>";
 
   try{
 
@@ -5834,12 +5862,14 @@ async function loadDashboardPayroll(){
     });
 
     const weekStart = weekDates[0];
+    const elapsedDates = weekDates.filter(date => date <= today);
 
-    // LOAD STAFF, ATTENDANCE AND WEEKLY SCHEDULE
+    // LOAD STAFF, ATTENDANCE, SCHEDULE AND SALES
     const [
       employeesSnapshot,
       attendanceSnapshot,
-      scheduleSnapshot
+      scheduleSnapshot,
+      ordersSnapshot
     ] = await Promise.all([
 
       getDocs(collection(db, "employees")),
@@ -5850,10 +5880,13 @@ async function loadDashboardPayroll(){
         where("date", "<=", today)
       )),
 
-      getDoc(doc(db, "schedules", weekStart))
+      getDoc(doc(db, "schedules", weekStart)),
+
+      getDocs(collection(db, "orders"))
 
     ]);
 
+    // ACTIVE STAFF ONLY
     const staff = employeesSnapshot.docs
       .map(docSnap => ({
         id:docSnap.id,
@@ -5861,34 +5894,68 @@ async function loadDashboardPayroll(){
       }))
       .filter(employee => employee.active === true);
 
+    // ATTENDANCE MAP
     const attendanceMap = {};
 
     attendanceSnapshot.forEach(docSnap => {
+
       const record = docSnap.data();
 
       attendanceMap[
         `${record.employeeId}_${record.date}`
       ] = record;
+
     });
 
+    // WEEKLY SCHEDULE
     const assignments = scheduleSnapshot.exists()
       ? scheduleSnapshot.data().assignments || {}
       : {};
 
-    // CALCULATE PAYROLL FOR EACH STAFF MEMBER
-    const payroll = staff.map(employee => {
+    // COMPLETED SALES ONLY - VOID EXCLUDED
+    const completedSalesByDate = {};
 
-      const dailyRate = Number(employee.dailyRate) || 500;
+    ordersSnapshot.forEach(docSnap => {
 
-      let daysWorked = 0;
+      const order = docSnap.data();
+
+      if(
+        order.status === "COMPLETED" &&
+        order.orderDate >= weekStart &&
+        order.orderDate <= today
+      ){
+
+        const date = order.orderDate;
+        const amount = Number(order.total) || 0;
+
+        completedSalesByDate[date] =
+          (completedSalesByDate[date] || 0) + amount;
+
+      }
+
+    });
+
+    // CALCULATE DAILY PAYROLL AND PROFIT
+    const dailyResults = {};
+
+    elapsedDates.forEach(date => {
+
+      const sales = Number(completedSalesByDate[date]) || 0;
+
+      const dateDay = new Date(date + "T12:00:00").getDay();
+
+      const isMondayToThursday =
+        dateDay >= 1 && dateDay <= 4;
+
+      let staffWorked = 0;
       let grossSalary = 0;
-      let lateDeduction = 0;
+      let incentives = 0;
+      let lateDeductions = 0;
+      let netPayroll = 0;
 
-      const dailyDetails = [];
+      const staffWorkedIds = [];
 
-      weekDates.forEach(date => {
-
-        if(date > today) return;
+      staff.forEach(employee => {
 
         const scheduled =
           assignments[employee.id]?.[date] === "WORK";
@@ -5904,198 +5971,324 @@ async function loadDashboardPayroll(){
           Boolean(attendance.timeIn) &&
           !absent;
 
-        if(worked){
+        if(!worked) return;
 
-          daysWorked++;
+        staffWorked++;
 
-          grossSalary += dailyRate;
+        staffWorkedIds.push(employee.id);
 
-          lateDeduction += Number(
-            attendance.lateDeduction || 0
-          );
+        const dailyRate = Number(employee.dailyRate) || 500;
 
+        const late = Number(attendance.lateDeduction) || 0;
+
+        // INCENTIVE PER EMPLOYEE WHO WORKED
+        let incentive = 0;
+
+        if(sales >= 25000){
+          incentive = 1000;
+        }else if(sales >= 20000){
+          incentive = 500;
+        }else if(sales >= 15000){
+          incentive = 300;
+        }else if(sales >= 10000){
+          incentive = isMondayToThursday ? 200 : 100;
         }
 
-        dailyDetails.push({
-          date,
-          scheduled,
-          absent,
-          worked,
-          timeIn:attendance.timeIn || "",
-          lateDeduction:Number(attendance.lateDeduction || 0)
-        });
+        const employeeNetPay = Math.max(
+          0,
+          dailyRate + incentive - late
+        );
+
+        grossSalary += dailyRate;
+        incentives += incentive;
+        lateDeductions += late;
+        netPayroll += employeeNetPay;
 
       });
 
-      return {
-        id:employee.id,
-        name:employee.name || "STAFF",
-        dailyRate,
-        daysWorked,
+      // BUSINESS EXPENSES
+      const foodPackaging = sales * 0.50;
+      const rent = 3000;
+
+      const totalExpenses =
+        foodPackaging + rent + netPayroll;
+
+      const profit = sales - totalExpenses;
+
+      dailyResults[date] = {
+        sales,
+        staffWorked,
+        staffWorkedIds,
         grossSalary,
-        lateDeduction,
-        netPay:Math.max(0, grossSalary - lateDeduction),
-        dailyDetails
+        incentives,
+        lateDeductions,
+        netPayroll,
+        foodPackaging,
+        rent,
+        totalExpenses,
+        profit
       };
 
     });
 
-    // TODAY'S PAYROLL
-    const todayPayroll = payroll.map(employee => {
+    // TODAY'S RESULTS
+    const todayResult = dailyResults[today] || {
+      sales:0,
+      staffWorked:0,
+      grossSalary:0,
+      incentives:0,
+      lateDeductions:0,
+      netPayroll:0,
+      foodPackaging:0,
+      rent:3000,
+      totalExpenses:3000,
+      profit:-3000
+    };
 
-      const todayDetail = employee.dailyDetails.find(
-        item => item.date === today
-      );
-
-      return {
-        ...employee,
-        workedToday:Boolean(todayDetail?.worked),
-        todayLateDeduction:todayDetail?.worked
-          ? todayDetail.lateDeduction
-          : 0
-      };
-
-    });
-
-    const todayStaff = todayPayroll.filter(
-      employee => employee.workedToday
-    );
-
-    const todayGross = todayStaff.reduce(
-      (sum, employee) => sum + employee.dailyRate,
-      0
-    );
-
-    const todayLate = todayStaff.reduce(
-      (sum, employee) => sum + employee.todayLateDeduction,
-      0
-    );
-
-    const todayNet = Math.max(0, todayGross - todayLate);
-
+    // TODAY'S PAYROLL SUMMARY ONLY
     dailyEl.innerHTML = `
 
-      <div class="panel" style="margin:0 0 10px">
+      <div class="panel" style="margin:0">
+
         <p class="small">TODAY'S TOTAL PAYROLL</p>
-        <h2 style="color:#e7ad3e">${peso(todayNet)}</h2>
+
+        <h2 style="color:#e7ad3e">
+          ${peso(todayResult.netPayroll)}
+        </h2>
+
         <p class="small">
-          ${todayStaff.length} staff worked today
+          ${todayResult.staffWorked} staff worked today
         </p>
-      </div>
 
-      ${todayPayroll.map(employee => `
-
-        <div class="row" style="padding:8px 0;border-bottom:1px solid #333">
-          <div>
-            <strong>${escapeHTML(employee.name)}</strong>
-            <div class="small">
-              ${employee.workedToday
-                ? "WORKED TODAY"
-                : "NO PAY TODAY"}
-            </div>
-          </div>
-
-          <div style="text-align:right">
-            <strong>
-              ${peso(employee.workedToday
-                ? employee.dailyRate - employee.todayLateDeduction
-                : 0)}
-            </strong>
-
-            ${employee.todayLateDeduction > 0
-              ? `<div class="small">Late: ${peso(employee.todayLateDeduction)}</div>`
-              : ""}
-          </div>
-        </div>
-
-      `).join("")}
-
-      <hr>
-
-      <div class="row">
-        <strong>GROSS SALARY</strong>
-        <strong>${peso(todayGross)}</strong>
-      </div>
-
-      <div class="row">
-        <span>Late deductions</span>
-        <strong>${peso(todayLate)}</strong>
-      </div>
-
-      <div class="row">
-        <strong>NET PAY</strong>
-        <strong style="color:#7de39a">${peso(todayNet)}</strong>
       </div>
 
     `;
 
-    // WEEKLY PAYROLL
-    const weeklyGross = payroll.reduce(
-      (sum, employee) => sum + employee.grossSalary,
-      0
-    );
+    // WEEKLY PAYROLL TOTALS
+    let weeklyGross = 0;
+    let weeklyIncentives = 0;
+    let weeklyLate = 0;
+    let weeklyNet = 0;
+    let weeklyStaffShifts = 0;
 
-    const weeklyLate = payroll.reduce(
-      (sum, employee) => sum + employee.lateDeduction,
-      0
-    );
+    const weeklyStaffIds = new Set();
 
-    const weeklyNet = payroll.reduce(
-      (sum, employee) => sum + employee.netPay,
-      0
-    );
+    elapsedDates.forEach(date => {
 
+      const result = dailyResults[date];
+
+      weeklyGross += result.grossSalary;
+      weeklyIncentives += result.incentives;
+      weeklyLate += result.lateDeductions;
+      weeklyNet += result.netPayroll;
+      weeklyStaffShifts += result.staffWorked;
+
+      result.staffWorkedIds.forEach(id => {
+        weeklyStaffIds.add(id);
+      });
+
+    });
+
+    // WEEKLY PAYROLL SUMMARY ONLY
     weeklyEl.innerHTML = `
 
-      <div class="panel" style="margin:0 0 10px">
+      <div class="panel" style="margin:0">
+
         <p class="small">WEEKLY TOTAL PAYROLL</p>
-        <h2 style="color:#e7ad3e">${peso(weeklyNet)}</h2>
+
+        <h2 style="color:#e7ad3e">
+          ${peso(weeklyNet)}
+        </h2>
+
         <p class="small">
-          ${weekStart} to ${weekDates[6]}
+          ${weeklyStaffIds.size} staff worked this week
         </p>
-      </div>
 
-      ${payroll.map(employee => `
+        <p class="small">
+          ${weeklyStaffShifts} total staff workdays
+        </p>
 
-        <div style="padding:10px 0;border-bottom:1px solid #333">
+        <hr>
 
-          <div class="row">
-            <strong>${escapeHTML(employee.name)}</strong>
-            <strong>${peso(employee.netPay)}</strong>
-          </div>
-
-          <p class="small">
-            ${employee.daysWorked} days worked
-            · Gross: ${peso(employee.grossSalary)}
-            · Late: ${peso(employee.lateDeduction)}
-          </p>
-
+        <div class="row">
+          <span>Basic salaries</span>
+          <strong>${peso(weeklyGross)}</strong>
         </div>
 
-      `).join("")}
+        <div class="row">
+          <span>Staff incentives</span>
+          <strong>${peso(weeklyIncentives)}</strong>
+        </div>
 
-      <hr>
+        <div class="row">
+          <span>Late deductions</span>
+          <strong>${peso(weeklyLate)}</strong>
+        </div>
 
-      <div class="row">
-        <strong>GROSS PAYROLL</strong>
-        <strong>${peso(weeklyGross)}</strong>
+        <hr>
+
+        <div class="row">
+          <strong>NET PAYROLL</strong>
+          <strong style="color:#7de39a">
+            ${peso(weeklyNet)}
+          </strong>
+        </div>
+
       </div>
 
-      <div class="row">
-        <span>Total late deductions</span>
-        <strong>${peso(weeklyLate)}</strong>
+    `;
+
+    // DAILY PROFIT BREAKDOWN
+    dailyProfitEl.innerHTML = `
+
+      <div class="panel" style="margin:0">
+
+        <div class="row">
+          <strong>COMPLETED SALES</strong>
+          <strong>${peso(todayResult.sales)}</strong>
+        </div>
+
+        <hr>
+
+        <p class="small">BUSINESS EXPENSES</p>
+
+        <div class="row">
+          <span>Food & packaging (50%)</span>
+          <strong>${peso(todayResult.foodPackaging)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Daily rent</span>
+          <strong>${peso(todayResult.rent)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Employee salaries</span>
+          <strong>${peso(todayResult.grossSalary)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Employee incentives</span>
+          <strong>${peso(todayResult.incentives)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Late deductions</span>
+          <strong style="color:#7de39a">
+            -${peso(todayResult.lateDeductions)}
+          </strong>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <strong>TOTAL EXPENSES</strong>
+          <strong>${peso(todayResult.totalExpenses)}</strong>
+        </div>
+
+        <div class="row">
+          <h3>DAILY PROFIT</h3>
+          <h2 style="color:${todayResult.profit >= 0 ? '#7de39a' : '#ff7070'}">
+            ${peso(todayResult.profit)}
+          </h2>
+        </div>
+
       </div>
 
-      <div class="row">
-        <strong>FINAL NET PAYABLE</strong>
-        <strong style="color:#7de39a">${peso(weeklyNet)}</strong>
+    `;
+
+    // WEEKLY PROFIT TOTALS
+    let weeklySales = 0;
+    let weeklyFoodPackaging = 0;
+    let weeklyRent = 0;
+    let weeklySalary = 0;
+    let weeklyProfitIncentives = 0;
+    let weeklyProfitLate = 0;
+    let weeklyNetPayroll = 0;
+
+    elapsedDates.forEach(date => {
+
+      const result = dailyResults[date];
+
+      weeklySales += result.sales;
+      weeklyFoodPackaging += result.foodPackaging;
+      weeklyRent += result.rent;
+      weeklySalary += result.grossSalary;
+      weeklyProfitIncentives += result.incentives;
+      weeklyProfitLate += result.lateDeductions;
+      weeklyNetPayroll += result.netPayroll;
+
+    });
+
+    const weeklyExpenses =
+      weeklyFoodPackaging +
+      weeklyRent +
+      weeklyNetPayroll;
+
+    const weeklyProfit = weeklySales - weeklyExpenses;
+
+    // WEEKLY PROFIT BREAKDOWN
+    weeklyProfitEl.innerHTML = `
+
+      <div class="panel" style="margin:0">
+
+        <div class="row">
+          <strong>COMPLETED SALES</strong>
+          <strong>${peso(weeklySales)}</strong>
+        </div>
+
+        <hr>
+
+        <p class="small">BUSINESS EXPENSES</p>
+
+        <div class="row">
+          <span>Food & packaging (50%)</span>
+          <strong>${peso(weeklyFoodPackaging)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Rent (${elapsedDates.length} days)</span>
+          <strong>${peso(weeklyRent)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Employee salaries</span>
+          <strong>${peso(weeklySalary)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Employee incentives</span>
+          <strong>${peso(weeklyProfitIncentives)}</strong>
+        </div>
+
+        <div class="row">
+          <span>Late deductions</span>
+          <strong style="color:#7de39a">
+            -${peso(weeklyProfitLate)}
+          </strong>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <strong>TOTAL EXPENSES</strong>
+          <strong>${peso(weeklyExpenses)}</strong>
+        </div>
+
+        <div class="row">
+          <h3>WEEKLY PROFIT</h3>
+          <h2 style="color:${weeklyProfit >= 0 ? '#7de39a' : '#ff7070'}">
+            ${peso(weeklyProfit)}
+          </h2>
+        </div>
+
       </div>
 
     `;
 
   }catch(error){
 
-    console.error("Dashboard payroll error:", error);
+    console.error("Dashboard payroll and profit error:", error);
 
     dailyEl.innerHTML =
       "<p class='small'>Unable to load today's payroll.</p>";
@@ -6103,8 +6296,16 @@ async function loadDashboardPayroll(){
     weeklyEl.innerHTML =
       "<p class='small'>Unable to load weekly payroll.</p>";
 
+    dailyProfitEl.innerHTML =
+      "<p class='small'>Unable to calculate daily profit.</p>";
+
+    weeklyProfitEl.innerHTML =
+      "<p class='small'>Unable to calculate weekly profit.</p>";
+
   }
+
 }
+
 
 // ======================================
 // OWNER DASHBOARD - INDIVIDUAL STAFF PAYSLIPS
