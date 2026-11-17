@@ -8072,10 +8072,22 @@ async function saveManualAttendance(){
         throw new Error("TIME_IN_REQUIRED");
       }
 
-      if(finalTimeOut && finalTimeOut < finalTimeIn){
-        throw new Error("INVALID_TIME_ORDER");
-      }
+// SUPPORT OVERNIGHT SHIFTS
+let finalTimeOutDate = date;
 
+if(finalTimeOut && finalTimeOut < finalTimeIn){
+
+  const nextDate = new Date(date + "T12:00:00");
+
+  nextDate.setDate(nextDate.getDate() + 1);
+
+  finalTimeOutDate = [
+    nextDate.getFullYear(),
+    String(nextDate.getMonth() + 1).padStart(2, "0"),
+    String(nextDate.getDate()).padStart(2, "0")
+  ].join("-");
+
+}
       const shiftStart =
         employee.defaultShiftStart || "15:00";
 
@@ -8090,8 +8102,9 @@ async function saveManualAttendance(){
         employeeId: employeeId,
         employeeName: employee.name || "Unknown",
         date: date,
-        timeIn: finalTimeIn,
-        timeOut: finalTimeOut,
+timeIn: finalTimeIn,
+timeOut: finalTimeOut,
+timeOutDate: finalTimeOut ? finalTimeOutDate : null,
         scheduledStart: "15:00",
         lateMinutes: lateInfo.lateMinutes,
         lateDeduction: lateInfo.lateDeduction,
