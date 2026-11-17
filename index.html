@@ -1670,8 +1670,41 @@ header img {
 
   
 <section id="salesPage" class="hidden">
-  <div class="row">
+  <div class="row" style="justify-content:space-between;flex-wrap:wrap">
     <h2>Sales Terminal</h2>
+    <button
+      type="button"
+      id="manualOrderModeBtn"
+      class="secondary hidden"
+      style="padding:10px 14px"
+    >
+      MANUAL ORDER ENTRY
+    </button>
+  </div>
+
+  <div id="manualOrderModePanel" class="panel hidden" style="border-color:#e7ad3e">
+    <strong style="color:#e7ad3e">OWNER MANUAL / BACKDATED ORDER ENTRY</strong>
+    <p class="small">
+      Select the original sale date, then use the normal product menu, cart,
+      flavor selections, discounts and payment checkout below.
+    </p>
+    <label for="manualOrderDate">ORIGINAL ORDER DATE</label>
+    <input
+      type="date"
+      id="manualOrderDate"
+      style="width:100%"
+    >
+    <p id="manualOrderModeMessage" class="small">
+      This order will be recorded under the selected date and marked as a manual entry.
+    </p>
+    <button
+      type="button"
+      id="cancelManualOrderMode"
+      class="secondary"
+      style="width:100%"
+    >
+      EXIT MANUAL ORDER ENTRY
+    </button>
   </div>
     <div class="sales-layout">
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -2624,6 +2657,10 @@ let isSavingSale = false;
 let saleSaved = false;
 let pendingSaleRef = null;
 let currentUserRole = null;
+
+// OWNER-ONLY MANUAL / BACKDATED ORDER ENTRY
+let manualOrderMode = false;
+let manualOrderDate = "";
   let scheduleWeekOffset = 0;
   let dashboardWeekOffset = 0;
 let staffScheduleDraft = {};
@@ -3722,6 +3759,92 @@ const peso = n => "₱" + n.toFixed(2);
     day: "2-digit"
   }).format(new Date());
 }
+
+function updateManualOrderModeUI(){
+  const button = document.getElementById("manualOrderModeBtn");
+  const panel = document.getElementById("manualOrderModePanel");
+  const dateInput = document.getElementById("manualOrderDate");
+
+  if(!button || !panel || !dateInput) return;
+
+  const isOwner =
+    String(currentUserRole || "").toLowerCase() === "owner";
+
+  button.classList.toggle("hidden", !isOwner);
+  panel.classList.toggle("hidden", !isOwner || !manualOrderMode);
+
+  button.textContent = manualOrderMode
+    ? "MANUAL ENTRY ACTIVE"
+    : "MANUAL ORDER ENTRY";
+
+  button.style.background = manualOrderMode ? "#a16207" : "#383838";
+  button.style.color = "#fff";
+
+  dateInput.max = getTodayDate();
+
+  if(manualOrderMode && manualOrderDate){
+    dateInput.value = manualOrderDate;
+  }
+}
+
+function startManualOrderEntry(){
+  if(String(currentUserRole || "").toLowerCase() !== "owner"){
+    alert("Only the owner can enter backdated orders.");
+    return;
+  }
+
+  if(cart.length > 0 || saleSaved || isSavingSale){
+    alert("Please finish or clear the current order before starting manual entry.");
+    return;
+  }
+
+  const yesterday = new Date(getTodayDate() + "T12:00:00");
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  manualOrderDate = [
+    yesterday.getFullYear(),
+    String(yesterday.getMonth() + 1).padStart(2, "0"),
+    String(yesterday.getDate()).padStart(2, "0")
+  ].join("-");
+
+  manualOrderMode = true;
+  updateManualOrderModeUI();
+}
+
+function stopManualOrderEntry(){
+  if(cart.length > 0 || saleSaved || isSavingSale){
+    alert("Please finish or clear the current order before exiting manual entry.");
+    return;
+  }
+
+  manualOrderMode = false;
+  manualOrderDate = "";
+  updateManualOrderModeUI();
+}
+
+document.getElementById("manualOrderModeBtn").onclick = () => {
+  if(manualOrderMode){
+    stopManualOrderEntry();
+  }else{
+    startManualOrderEntry();
+  }
+};
+
+document.getElementById("cancelManualOrderMode").onclick =
+  stopManualOrderEntry;
+
+document.getElementById("manualOrderDate").addEventListener("change", event => {
+  const selectedDate = event.target.value;
+
+  if(!selectedDate || selectedDate > getTodayDate()){
+    alert("Please select a valid date that is not in the future.");
+    event.target.value = manualOrderDate;
+    return;
+  }
+
+  manualOrderDate = selectedDate;
+});
+
 let dailyOrderSearchOrders = [];
 
 async function loadDailyOrderSearch(){
@@ -9634,11 +9757,21 @@ async function saveSale(){
       : 0;
     const change = Math.max(0, totalPaymentReceived - total);
 
+    if(manualOrderMode){
+      if(String(currentUserRole || "").toLowerCase() !== "owner"){
+        throw new Error("Only the owner can save a manual order.");
+      }
+
+      if(!manualOrderDate || manualOrderDate > getTodayDate()){
+        throw new Error("Please select a valid manual order date.");
+      }
+    }
+
     if(!pendingSaleRef){
       pendingSaleRef = doc(collection(db,"orders"));
     }
 
-    const today = getTodayDate();
+    const today = manualOrderMode ? manualOrderDate : getTodayDate();
     const counterRef = doc(db,"daily_counters",today);
 
 const sale = {
@@ -9646,13 +9779,16 @@ const sale = {
   status: "COMPLETED",
 
 // ORDER QUEUE TRACKING
-servingStatus: "PREPARING",
-preparingAt: serverTimestamp(),
-preparingBy: auth.currentUser?.email || "",
-preparingByUid: auth.currentUser?.uid || "",
+servingStatus: manualOrderMode ? "COMPLETED" : "PREPARING",
+preparingAt: manualOrderMode ? null : serverTimestamp(),
+preparingBy: manualOrderMode ? "" : (auth.currentUser?.email || ""),
+preparingByUid: manualOrderMode ? "" : (auth.currentUser?.uid || ""),
 orderTime: serverTimestamp(),
-completedAt: null,
-servingDuration: null,
+completedAt: manualOrderMode ? serverTimestamp() : null,
+completedBy: manualOrderMode ? (auth.currentUser?.email || "") : "",
+completedByUid: manualOrderMode ? (auth.currentUser?.uid || "") : "",
+servingDuration: manualOrderMode ? 0 : null,
+preparationDuration: manualOrderMode ? 0 : null,
 restoredAt: null,
 
   customerName:
@@ -9686,7 +9822,14 @@ items: cart.map(item=>({
       cashierEmail: auth.currentUser.email,
       cashierUid: auth.currentUser.uid,
 
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+
+      ...(manualOrderMode ? {
+        manualEntry: true,
+        manualEntryBy: auth.currentUser.email || "",
+        manualEntryByUid: auth.currentUser.uid,
+        manualEntryAt: serverTimestamp()
+      } : {})
     };
 
     const orderNumber = await runTransaction(db, async (transaction)=>{
@@ -9713,7 +9856,9 @@ items: cart.map(item=>({
     saleSaved = true;
 
     document.getElementById("checkoutMessage").textContent =
-      "SALE SUCCESSFULLY SAVED! ORDER #" + orderNumber;
+      (manualOrderMode
+        ? "MANUAL ORDER SAVED FOR " + today + "! ORDER #"
+        : "SALE SUCCESSFULLY SAVED! ORDER #") + orderNumber;
 
     document.getElementById("checkoutButtons").classList.add("hidden");
     document.getElementById("newOrderBtn").classList.remove("hidden");
@@ -9747,6 +9892,7 @@ items: cart.map(item=>({
   }
 
 currentUserRole = profile.role;
+updateManualOrderModeUI();
     
 // MANUAL ATTENDANCE EDITOR - OWNER ONLY
 const manualAttendancePanel =
@@ -10642,6 +10788,11 @@ document.querySelectorAll(".terminal-nav button").forEach(button => {
 
 onAuthStateChanged(auth, async user => {
   if (!user) {
+
+    currentUserRole = null;
+    manualOrderMode = false;
+    manualOrderDate = "";
+    updateManualOrderModeUI();
 
     document.querySelector(".terminal-nav").style.display = "none";
 
