@@ -7976,6 +7976,9 @@ async function saveManualAttendance(){
 
   const enteredTimeOut =
     document.getElementById("manualAttendanceTimeOut").value;
+  console.log("TIME IN VALUE:", JSON.stringify(enteredTimeIn));
+console.log("TIME IN TYPE:", typeof enteredTimeIn);
+console.log("TIME OUT VALUE:", JSON.stringify(enteredTimeOut));
 
   if(!employeeId || !date){
     message.textContent = "Please select an employee and date.";
