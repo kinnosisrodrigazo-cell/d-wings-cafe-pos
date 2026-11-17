@@ -2298,23 +2298,25 @@ header img {
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
 
-      <div>
-        <label for="manualAttendanceTimeIn">TIME IN</label>
-        <input
-          type="time"
-          id="manualAttendanceTimeIn"
-          style="width:100%"
-        >
-      </div>
+<div>
+  <label for="manualAttendanceTimeIn">TIME IN</label>
+  <input
+    type="time"
+    id="manualAttendanceTimeIn"
+    step="1"
+    style="width:100%"
+  >
+</div>
 
-      <div>
-        <label for="manualAttendanceTimeOut">TIME OUT</label>
-        <input
-          type="time"
-          id="manualAttendanceTimeOut"
-          style="width:100%"
-        >
-      </div>
+<div>
+  <label for="manualAttendanceTimeOut">TIME OUT</label>
+  <input
+    type="time"
+    id="manualAttendanceTimeOut"
+    step="1"
+    style="width:100%"
+  >
+</div>
 
     </div>
 
@@ -7990,7 +7992,7 @@ console.log("TIME OUT VALUE:", JSON.stringify(enteredTimeOut));
     return;
   }
 
-  const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+  const timePattern = /^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/;
 
   if(enteredTimeIn && !timePattern.test(enteredTimeIn)){
     message.textContent = "Invalid TIME IN.";
