@@ -4547,10 +4547,11 @@ const updatedItem = {
       ? cart.find(item => item.name === updatedItem.name)
       : null;
 
-    if(existingUnli){
-      existingUnli.qty++;
-      existingUnli.flavors = [...selectedFlavors];
-    } else {
+if(existingUnli){
+  existingUnli.qty++;
+  existingUnli.flavors = [...selectedFlavors];
+  existingUnli.customNotes = updatedItem.customNotes;
+} else {
       cart.push({
         ...updatedItem,
         qty:1
@@ -4923,6 +4924,7 @@ async function loadOrderHistory(){
       ${escapeHTML(item.name)} × ${Number(item.qty) || 0}
       ${item.flavors?.length ? `<br>Flavors: ${item.flavors.map(escapeHTML).join(", ")}` : ""}
       ${item.dip ? `<br>Dip: ${escapeHTML(item.dip)}` : ""}
+      ${item.customNotes ? `<br><strong style="color:#e7ad3e">CUSTOM NOTE: ${escapeHTML(item.customNotes)}</strong>` : ""}
     </p>
   `).join("")}
 </div>
