@@ -7286,6 +7286,41 @@ async function loadDashboardPayslips(){
   grid-column: auto !important;
 }
 
+/* FORCE ORDER HISTORY INTO FIVE HORIZONTAL COLUMNS */
+#orderHistory .order-list-card {
+  display: grid !important;
+  grid-template-columns: 110px 110px 130px minmax(300px, 1fr) 110px !important;
+  align-items: start !important;
+  column-gap: 8px !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+#orderHistory .order-list-card > div:nth-child(1) {
+  grid-column: 1 !important;
+}
+
+#orderHistory .order-list-card > div:nth-child(2) {
+  grid-column: 2 !important;
+}
+
+#orderHistory .order-list-card > div:nth-child(3) {
+  grid-column: 3 !important;
+}
+
+#orderHistory .order-list-card > div:nth-child(4) {
+  grid-column: 4 !important;
+}
+
+#orderHistory .order-list-card > div:nth-child(5) {
+  grid-column: 5 !important;
+}
+
+#orderHistory .order-list-card > div:last-child button {
+  width: 100% !important;
+  margin: 0 0 5px !important;
+}
+
             </style>
           </head>
 
