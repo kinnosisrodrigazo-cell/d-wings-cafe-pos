@@ -10766,11 +10766,12 @@ document.querySelectorAll("[data-upgrade-payment]").forEach(button => {
 
     document.querySelectorAll("[data-upgrade-payment]").forEach(item => {
       item.classList.remove("active", "selected");
+      item.textContent = item.dataset.upgradePayment;
     });
 
-    button.classList.add("active", "selected");button.classList.add("active", "selected");
-button.textContent = selectedUnliUpgradePayment + " SELECTED";
-    
+    button.classList.add("active", "selected");
+    button.textContent = selectedUnliUpgradePayment + " SELECTED";
+
     const cashFields = document.getElementById("upgradeCashFields");
 
     if(selectedUnliUpgradePayment === "CASH"){
