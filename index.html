@@ -1477,7 +1477,8 @@ header img {
 
 
 /* TEAM CHAT */
-#teamChatButton{display:none;position:fixed;bottom:255px;left:15px;z-index:900;width:52px;height:52px;border-radius:50%;font-size:23px;padding:0;background:#000;border:1px solid #444;color:#e7ad3e}
+#teamChatButton{display:none;position:fixed;bottom:255px;left:15px;z-index:900;width:52px;height:52px;border-radius:50%;font-size:23px;padding:0;background:#000;border:1px solid #444;color:#e7ad3e;position:fixed}
+#teamChatBadge{display:none;position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 4px;border-radius:20px;background:#e53935;color:#fff;font-size:11px;font-weight:bold;line-height:19px;text-align:center;border:2px solid #111}
 #teamChatPanel{display:none;position:fixed;left:15px;bottom:318px;z-index:1300;width:min(360px,calc(100vw - 30px));height:430px;max-height:calc(100vh - 340px);min-height:280px;background:#171717;border:1px solid #555;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.55);overflow:hidden;flex-direction:column}
 #teamChatPanel.open{display:flex}
 #teamChatMessages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
@@ -1672,7 +1673,7 @@ header img {
 
 
 <!-- TEAM CHAT BUTTON -->
-<button id="teamChatButton" type="button" title="Team Chat">💬</button>
+<button id="teamChatButton" type="button" title="Team Chat" style="position:fixed">💬<span id="teamChatBadge">0</span></button>
 
 <!-- TEAM CHAT PANEL -->
 <div id="teamChatPanel" aria-label="Team chat">
@@ -10344,6 +10345,7 @@ customNotes: item.customNotes || ""
 
 currentUserRole = String(profile.role || "").toLowerCase();
 document.getElementById("teamChatButton").style.display = "block";
+startTeamChat();
 currentUserName = profile.name || profile.fullName || profile.displayName ||
   (user.email ? user.email.split("@")[0] : "Team Member");
 updateManualOrderModeUI();
@@ -11466,6 +11468,38 @@ document.querySelectorAll(".terminal-nav button").forEach(button => {
 // D' WINGS CAFE - REAL-TIME TEAM CHAT
 // ===================================
 let teamChatSending = false;
+let teamChatUnreadCount = 0;
+let teamChatHasInitialSnapshot = false;
+
+function updateTeamChatBadge(){
+  const badge = document.getElementById("teamChatBadge");
+  if(!badge) return;
+  badge.textContent = teamChatUnreadCount > 99 ? "99+" : String(teamChatUnreadCount);
+  badge.style.display = teamChatUnreadCount > 0 ? "block" : "none";
+}
+
+function playTeamChatNotification(){
+  try{
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if(!AudioContextClass) return;
+    const audio = new AudioContextClass();
+    const oscillator = audio.createOscillator();
+    const gain = audio.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880,audio.currentTime);
+    oscillator.frequency.setValueAtTime(660,audio.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.0001,audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.16,audio.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001,audio.currentTime + 0.28);
+    oscillator.connect(gain);
+    gain.connect(audio.destination);
+    oscillator.start();
+    oscillator.stop(audio.currentTime + 0.3);
+    oscillator.onended = () => audio.close();
+  }catch(error){
+    console.warn("Chat notification sound unavailable:",error);
+  }
+}
 
 function renderTeamChat(snapshot){
   const container = document.getElementById("teamChatMessages");
@@ -11511,10 +11545,8 @@ function renderTeamChat(snapshot){
 }
 
 function startTeamChat(){
-  if(teamChatUnsubscribe){
-    teamChatUnsubscribe();
-    teamChatUnsubscribe = null;
-  }
+  if(teamChatUnsubscribe) return;
+  teamChatHasInitialSnapshot = false;
 
   const messagesQuery = query(
     collection(db,"teamChatMessages"),
@@ -11523,6 +11555,20 @@ function startTeamChat(){
   );
 
   teamChatUnsubscribe = onSnapshot(messagesQuery, snapshot => {
+    if(teamChatHasInitialSnapshot){
+      const panelOpen = document.getElementById("teamChatPanel")?.classList.contains("open");
+      const incomingMessages = snapshot.docChanges().filter(change =>
+        change.type === "added" &&
+        change.doc.data().senderUid !== auth.currentUser?.uid
+      );
+      if(incomingMessages.length && !panelOpen){
+        teamChatUnreadCount += incomingMessages.length;
+        updateTeamChatBadge();
+        playTeamChatNotification();
+      }
+    }else{
+      teamChatHasInitialSnapshot = true;
+    }
     renderTeamChat(snapshot);
   }, error => {
     console.error("Team chat listener error:",error);
@@ -11564,7 +11610,8 @@ document.getElementById("teamChatButton").addEventListener("click",() => {
   const panel = document.getElementById("teamChatPanel");
   panel.classList.toggle("open");
   if(panel.classList.contains("open")){
-    startTeamChat();
+    teamChatUnreadCount = 0;
+    updateTeamChatBadge();
     document.getElementById("teamChatInput").focus();
   }
 });
@@ -11590,6 +11637,9 @@ onAuthStateChanged(auth, async user => {
     }
     document.getElementById("teamChatPanel")?.classList.remove("open");
     document.getElementById("teamChatButton").style.display = "none";
+    teamChatUnreadCount = 0;
+    teamChatHasInitialSnapshot = false;
+    updateTeamChatBadge();
     document.getElementById("teamChatMessages").innerHTML = '<p class="small">Sign in to view team messages.</p>';
     currentUserName = "";
     currentUserRole = null;
