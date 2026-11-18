@@ -4549,6 +4549,8 @@ document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
     event.stopPropagation();
 
     const flavor = btn.dataset.flavor;
+    const flavorItem = btn.closest(".flavor-item");
+if(!flavorItem) return;
     const checkbox = document.querySelector(
       `input[name="wingFlavor"][value="${flavor}"]`
     );
