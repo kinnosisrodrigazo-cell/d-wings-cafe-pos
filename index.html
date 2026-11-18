@@ -4685,11 +4685,17 @@ if(adjustable){
   document.querySelectorAll('input[name="wingFlavor"]').forEach(box => {
     const qty = pendingFlavorQuantities[box.value] || 0;
 
-    box.checked = qty > 0;
+box.checked = qty > 0;
+
 const label = box.closest(".flavor-option");
 
 if(label){
-  label.classList.toggle("selected", qty > 0);
+  label.style.backgroundColor = qty > 0 ? "#3a3020" : "";
+  label.style.border = qty > 0 ? "2px solid #e7ad3e" : "";
+  label.style.color = qty > 0 ? "#f5bd4f" : "";
+  label.style.boxShadow = qty > 0
+    ? "0 0 10px rgba(231,173,62,0.5)"
+    : "";
 }
     box.disabled =
       total >= pendingRequiredFlavors ||
