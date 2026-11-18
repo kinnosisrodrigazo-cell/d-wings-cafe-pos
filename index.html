@@ -4726,9 +4726,8 @@ if(label){
     ? "0 0 10px rgba(231,173,62,0.5)"
     : "";
 }
-    box.disabled =
-      total >= pendingRequiredFlavors ||
-      (isWingFlavorUnavailable(box.value) && qty === 0);
+box.disabled =
+  isWingFlavorUnavailable(box.value) && qty === 0;
   });
 
   const dipValid = !pendingRequiresDip ||
