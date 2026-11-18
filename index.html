@@ -7592,8 +7592,6 @@ function calculateLateAttendance(timeIn, shiftStart, dailyRate, attendanceDate){
   };
 }
 
-
-
 async function recordAttendance(type){
 
   const employee = await findAttendanceEmployee();
@@ -7608,7 +7606,7 @@ async function recordAttendance(type){
   const attendanceId = `${employee.id}_${date}`;
   const attendanceRef = doc(db, "attendance", attendanceId);
 
-  let photoSaved = false;
+  let attendanceDateUsed = date;
 
   try{
 
@@ -7640,68 +7638,123 @@ async function recordAttendance(type){
         date,
         photoBlob
       );
-
-      photoSaved = true;
     }
 
     const { time } = getManilaDateTime();
 
+    // GET PREVIOUS CALENDAR DATE
+    const [year, month, day] =
+      date.split("-").map(Number);
+
+    const previousDate =
+      new Date(Date.UTC(year, month - 1, day - 1))
+        .toISOString()
+        .slice(0, 10);
+
     await runTransaction(db, async transaction => {
 
-      const attendanceDoc =
-        await transaction.get(attendanceRef);
-
-      const attendance = attendanceDoc.exists()
-        ? attendanceDoc.data()
-        : {};
-
       if(type === "TIME IN"){
+
+        const attendanceDoc =
+          await transaction.get(attendanceRef);
+
+        const attendance = attendanceDoc.exists()
+          ? attendanceDoc.data()
+          : {};
 
         if(attendance.timeIn){
           throw new Error("ALREADY_IN");
         }
 
-const shiftStart = "15:00";
+        const shiftStart = "15:00";
 
-const lateInfo = calculateLateAttendance(
-  time,
-  shiftStart,
-  employee.dailyRate,
-  date
-);
+        const lateInfo = calculateLateAttendance(
+          time,
+          shiftStart,
+          employee.dailyRate,
+          date
+        );
 
-transaction.set(attendanceRef, {
-  employeeId: employee.id,
-  employeeName: employee.name,
-  date: date,
-  timeIn: time,
-  timeOut: null,
-  scheduledStart: "15:00",
-  lateMinutes: lateInfo.lateMinutes,
-  lateDeduction: lateInfo.lateDeduction,
+        transaction.set(attendanceRef, {
+          employeeId: employee.id,
+          employeeName: employee.name,
+          date: date,
+          timeIn: time,
+          timeOut: null,
+          scheduledStart: "15:00",
+          lateMinutes: lateInfo.lateMinutes,
+          lateDeduction: lateInfo.lateDeduction,
 
-  gpsLatitude: gpsInfo.latitude,
-  gpsLongitude: gpsInfo.longitude,
-  gpsAccuracy: gpsInfo.accuracy,
-  distanceFromCafe: gpsInfo.distanceFromCafe,
+          gpsLatitude: gpsInfo.latitude,
+          gpsLongitude: gpsInfo.longitude,
+          gpsAccuracy: gpsInfo.accuracy,
+          distanceFromCafe: gpsInfo.distanceFromCafe,
 
-  photoStored: true,
-  photoStorage: "SUPABASE",
+          photoStored: true,
+          photoStorage: "SUPABASE",
 
-  createdAt: serverTimestamp()
-});
+          createdAt: serverTimestamp()
+        });
 
       }else if(type === "TIME OUT"){
 
-        if(!attendance.timeIn){
-          throw new Error("NO_TIME_IN");
-        }
+        // CHECK TODAY'S ATTENDANCE
+        const todayDoc =
+          await transaction.get(attendanceRef);
 
-        if(attendance.timeOut){
+        // CHECK YESTERDAY'S ATTENDANCE
+        const previousAttendanceRef = doc(
+          db,
+          "attendance",
+          `${employee.id}_${previousDate}`
+        );
+
+        const previousDoc =
+          await transaction.get(previousAttendanceRef);
+
+        const todayAttendance = todayDoc.exists()
+          ? todayDoc.data()
+          : {};
+
+        const previousAttendance = previousDoc.exists()
+          ? previousDoc.data()
+          : {};
+
+        let targetRef = null;
+
+        // PRIORITY 1: TODAY'S UNFINISHED ATTENDANCE
+        if(
+          todayAttendance.timeIn &&
+          !todayAttendance.timeOut
+        ){
+
+          targetRef = attendanceRef;
+          attendanceDateUsed = date;
+
+        // PRIORITY 2: YESTERDAY'S UNFINISHED ATTENDANCE
+        }else if(
+          previousAttendance.timeIn &&
+          !previousAttendance.timeOut
+        ){
+
+          targetRef = previousAttendanceRef;
+          attendanceDateUsed = previousDate;
+
+        }else if(
+          todayAttendance.timeIn ||
+          previousAttendance.timeIn
+        ){
+
           throw new Error("ALREADY_OUT");
+
+        }else{
+
+          throw new Error("NO_TIME_IN");
+
         }
 
-        transaction.update(attendanceRef, {
+        // SAVE TIME OUT TO THE CORRECT ATTENDANCE DOCUMENT
+        transaction.update(targetRef, {
           timeOut: time,
           updatedAt: serverTimestamp()
         });
@@ -7711,7 +7764,11 @@ transaction.set(attendanceRef, {
     });
 
     message.textContent =
-      `${employee.name}: ${type} recorded at ${time}`;
+      `${employee.name}: ${type} recorded at ${time}` +
+      (type === "TIME OUT" &&
+       attendanceDateUsed !== date
+        ? ` (previous shift: ${attendanceDateUsed})`
+        : "");
 
     await loadTodayAttendance();
 
@@ -7720,49 +7777,61 @@ transaction.set(attendanceRef, {
 
   }catch(error){
 
-
-
     if(error.message === "ALREADY_IN"){
+
       message.textContent =
         `${employee.name} already has a TIME IN today.`;
 
     }else if(error.message === "NO_TIME_IN"){
+
       message.textContent =
-        `${employee.name} has no TIME IN record today.`;
+        `${employee.name} has no unfinished TIME IN record today or yesterday.`;
 
     }else if(error.message === "ALREADY_OUT"){
+
       message.textContent =
-        `${employee.name} already has a TIME OUT today.`;
+        `${employee.name} already has a TIME OUT for the available attendance record.`;
 
     }else if(error.message === "OUTSIDE_CAFE_RADIUS"){
+
       message.textContent =
-        "ERROR IN LOCATION: You are outside the authorized attendance area."
+        "ERROR IN LOCATION: You are outside the authorized attendance area.";
 
     }else if(error.message === "PHOTO_CANCELLED"){
+
       message.textContent =
         "TIME IN cancelled. A photo is required.";
 
-    }else if(error.message === "CAMERA_UNAVAILABLE" ||
-             error.name === "NotAllowedError" ||
-             error.name === "NotFoundError"){
+    }else if(
+      error.message === "CAMERA_UNAVAILABLE" ||
+      error.name === "NotAllowedError" ||
+      error.name === "NotFoundError"
+    ){
+
       message.textContent =
         "Camera unavailable or permission denied. TIME IN not recorded.";
 
-    }else if(error.message === "GPS_UNAVAILABLE" ||
-             error.message === "GPS_FAILED" ||
-             error.name === "GeolocationPositionError"){
+    }else if(
+      error.message === "GPS_UNAVAILABLE" ||
+      error.message === "GPS_FAILED" ||
+      error.name === "GeolocationPositionError"
+    ){
+
       message.textContent =
         "GPS unavailable or permission denied. TIME IN not recorded.";
 
     }else{
+
       console.error("Attendance recording error:", error);
+
       message.textContent =
         "Unable to record attendance. Please try again.";
+
     }
   }
 }
 
-  // OWNER CONFIRMS STAFF ABSENT
+// OWNER CONFIRMS STAFF ABSENT
 async function markStaffAbsent(employeeId, employeeName, date){
 
   if(String(currentUserRole || "").toLowerCase() !== "owner"){
