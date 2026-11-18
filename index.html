@@ -4645,8 +4645,14 @@ document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
 function updateFlavorSelection(){
 document.querySelectorAll('#flavorOptions input[name="wingFlavor"]').forEach(box => {
   const label = box.closest(".flavor-option");
-  if(label) {
-    label.classList.toggle("selected", box.checked);
+
+  if(label){
+    label.style.backgroundColor = box.checked ? "#3a3020" : "";
+    label.style.border = box.checked ? "2px solid #e7ad3e" : "";
+    label.style.color = box.checked ? "#f5bd4f" : "";
+    label.style.boxShadow = box.checked
+      ? "0 0 10px rgba(231,173,62,0.5)"
+      : "";
   }
 });
   // STANDALONE DIP SELECTION
