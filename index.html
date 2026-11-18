@@ -4678,7 +4678,12 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
 
 
 function updateFlavorSelection(){
-
+document.querySelectorAll('#flavorOptions input[name="wingFlavor"]').forEach(box => {
+  const label = box.closest(".flavor-option");
+  if(label) {
+    label.classList.toggle("selected", box.checked);
+  }
+});
   // STANDALONE DIP SELECTION
   if(pendingProduct && pendingProduct.name === "DIP"){
     const selected = document.querySelectorAll(
@@ -7765,7 +7770,7 @@ async function loadDashboardPayslips(){
   pointer-events: none;
 }
 
-#flavorOptions .flavor-option:has(input:checked) {
+#flavorOptions .flavor-option.selected {
   border: 1px solid #e7ad3e !important;
   background: #3a3020 !important;
   color: #f5bd4f !important;
