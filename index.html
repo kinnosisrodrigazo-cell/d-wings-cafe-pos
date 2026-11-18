@@ -4620,23 +4620,16 @@ document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
 const total = Object.values(pendingFlavorQuantities)
   .reduce((sum, qty) => sum + qty, 0);
 
-if(total >= pendingRequiredFlavors){
-  const label = this.closest("label");
+const currentQty = pendingFlavorQuantities[this.value] || 0;
 
-  if(label){
-    label.style.backgroundColor = "";
-    label.style.border = "";
-    label.style.color = "";
-    label.style.boxShadow = "";
-  }
+if(total >= pendingRequiredFlavors && currentQty > 0){
+  delete pendingFlavorQuantities[this.value];
+} else {
+  if(total >= pendingRequiredFlavors) return;
+  if(isWingFlavorUnavailable(this.value)) return;
 
-  return;
+  pendingFlavorQuantities[this.value] = currentQty + 1;
 }
-
-if(isWingFlavorUnavailable(this.value)) return;
-
-pendingFlavorQuantities[this.value] =
-  (pendingFlavorQuantities[this.value] || 0) + 1;
 
     updateFlavorSelection();
   });
