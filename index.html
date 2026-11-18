@@ -2535,7 +2535,6 @@ header img {
   inset:0;
   z-index:1200;
   background:rgba(0,0,0,.85);
-  display:flex;
   align-items:center;
   justify-content:center;
   padding:15px;
@@ -7144,7 +7143,13 @@ async function loadDashboardPayslips(){
                 }
               }
 
-              
+              #unliUpgradeModal.hidden {
+  display: none !important;
+}
+
+#unliUpgradeModal:not(.hidden) {
+  display: flex !important;
+}
             </style>
           </head>
 
