@@ -4574,7 +4574,6 @@ document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
 
     checkbox.checked = quantity > 0;
 
- const flavorItem = checkbox.closest(".flavor-item");
 flavorItem.querySelector(".flavor-quantity").textContent = quantity;
 
     updateFlavorSelection();
@@ -5092,12 +5091,16 @@ document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
     event.preventDefault();
     event.stopPropagation();
 
-    const flavor = btn.dataset.flavor;
-    const checkbox = document.querySelector(
-      `input[name="wingFlavor"][value="${flavor}"]`
-    );
+const flavor = btn.dataset.flavor;
+const flavorItem = btn.closest(".flavor-item");
 
-    if(!checkbox) return;
+if(!flavorItem) return;
+
+const checkbox = flavorItem.querySelector(
+  'input[name="wingFlavor"]'
+);
+
+if(!checkbox) return;
 
     const current = pendingFlavorQuantities[flavor] || 0;
     const total = Object.values(pendingFlavorQuantities)
