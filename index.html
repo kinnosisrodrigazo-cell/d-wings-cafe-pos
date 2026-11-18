@@ -2528,7 +2528,63 @@ header img {
     <p id="checkoutMessage" class="small"></p>
   </div>
 </div>
+  
+<!-- UNLI UPGRADE PAYMENT MODAL -->
+<div id="unliUpgradeModal" class="hidden" style="
+  position:fixed;
+  inset:0;
+  z-index:1200;
+  background:rgba(0,0,0,.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+">
+  <div class="panel" style="
+    width:100%;
+    max-width:450px;
+    padding:25px;
+  ">
+    <h2>UPGRADE UNLI PACKAGE</h2>
 
+    <p>UNLI 269 → UNLI 299</p>
+
+    <h2 style="color:#d4af37">₱30.00</h2>
+
+    <p class="small">SELECT PAYMENT METHOD</p>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" data-upgrade-payment="CASH">CASH</button>
+      <button type="button" data-upgrade-payment="GCASH">GCASH</button>
+      <button type="button" data-upgrade-payment="PAYMAYA">PAYMAYA</button>
+    </div>
+
+    <div id="upgradeCashFields" class="hidden" style="margin-top:15px">
+      <label> CASH RECEIVED </label>
+      <input
+        id="upgradeCashReceived"
+        type="number"
+        min="30"
+        step="0.01"
+        placeholder="Enter amount received"
+      >
+
+      <p id="upgradeChange" class="small">Change: ₱0.00</p>
+    </div>
+
+    <p id="unliUpgradeMessage" class="small"></p>
+
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button type="button" id="confirmUnliUpgrade">
+        CONFIRM UPGRADE
+      </button>
+
+      <button type="button" id="cancelUnliUpgrade">
+        CANCEL
+      </button>
+    </div>
+  </div>
+</div>
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -2658,6 +2714,11 @@ let saleSaved = false;
 let pendingSaleRef = null;
 let currentUserRole = null;
 
+  // UNLI UPGRADE STATE
+let selectedUnliUpgradeOrderId = null;
+let selectedUnliUpgradePayment = "";
+let isSavingUnliUpgrade = false;
+  
 // OWNER-ONLY MANUAL / BACKDATED ORDER ENTRY
 let manualOrderMode = false;
 let manualOrderDate = "";
@@ -10384,7 +10445,21 @@ const peopleIcons = Array.from(
     </div>
   </div>
 
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
   <span class="unli-package">${packageText}</span>
+
+  ${
+    order.unliPackage === "UNLI 269 WINGS" &&
+    !order.upgradeAmount
+      ? `<button
+          type="button"
+          data-upgrade-unli="${escapeHTML(order.id)}"
+          style="padding:8px 12px;background:#d4af37;color:#171717;border:0;border-radius:8px;font-size:10px;font-weight:800;cursor:pointer">
+          UPGRADE TO 299 +₱30
+        </button>`
+      : ""
+  }
+</div>
 
 </div>
 
@@ -10439,6 +10514,13 @@ unliContainer.querySelectorAll("[data-restore-unli]").forEach(button => {
     restoreUnliToQueue(button.dataset.restoreUnli);
   });
 });
+  // OPEN UNLI UPGRADE PAYMENT MODAL
+unliContainer.querySelectorAll("[data-upgrade-unli]").forEach(button => {
+  button.addEventListener("click", () => {
+    openUnliUpgradeModal(button.dataset.upgradeUnli);
+  });
+});
+  
   // PREPARING BUTTON
   container.querySelectorAll("[data-prepare-order]").forEach(button => {
     button.addEventListener("click", () => {
@@ -10639,8 +10721,196 @@ async function restoreUnliToQueue(orderId){
     alert("Unable to restore UNLI order. Please try again.");
 
   }
+  // OPEN UNLI UPGRADE MODAL
+function openUnliUpgradeModal(orderId){
+
+  const order = activeQueueOrders.find(item => item.id === orderId);
+
+  if(
+    !order ||
+    order.servingStatus !== "UNLI_ACTIVE" ||
+    order.unliPackage !== "UNLI 269 WINGS" ||
+    order.upgradeAmount
+  ) return;
+
+  selectedUnliUpgradeOrderId = orderId;
+  selectedUnliUpgradePayment = "";
+
+  document.getElementById("upgradeCashReceived").value = "";
+  document.getElementById("upgradeCashFields").classList.add("hidden");
+  document.getElementById("upgradeChange").textContent = "Change: ₱0.00";
+  document.getElementById("unliUpgradeMessage").textContent = "";
+
+  document.querySelectorAll("[data-upgrade-payment]").forEach(button => {
+    button.classList.remove("active", "selected");
+  });
+
+  document.getElementById("unliUpgradeModal").classList.remove("hidden");
 }
 
+// SELECT UPGRADE PAYMENT METHOD
+document.querySelectorAll("[data-upgrade-payment]").forEach(button => {
+
+  button.addEventListener("click", () => {
+
+    selectedUnliUpgradePayment = button.dataset.upgradePayment;
+
+    document.querySelectorAll("[data-upgrade-payment]").forEach(item => {
+      item.classList.remove("active", "selected");
+    });
+
+    button.classList.add("active", "selected");
+
+    const cashFields = document.getElementById("upgradeCashFields");
+
+    if(selectedUnliUpgradePayment === "CASH"){
+      cashFields.classList.remove("hidden");
+    }else{
+      cashFields.classList.add("hidden");
+    }
+
+  });
+
+});
+
+// UPDATE CASH CHANGE
+document.getElementById("upgradeCashReceived").addEventListener("input", () => {
+
+  const received = Number(
+    document.getElementById("upgradeCashReceived").value
+  ) || 0;
+
+  const change = Math.max(0, received - 30);
+
+  document.getElementById("upgradeChange").textContent =
+    "Change: ₱" + change.toFixed(2);
+
+});
+
+// CANCEL UNLI UPGRADE
+document.getElementById("cancelUnliUpgrade").addEventListener("click", () => {
+
+  if(isSavingUnliUpgrade) return;
+
+  document.getElementById("unliUpgradeModal").classList.add("hidden");
+
+  selectedUnliUpgradeOrderId = null;
+  selectedUnliUpgradePayment = "";
+
+});
+}
+// PROCESS UNLI UPGRADE PAYMENT
+async function processUnliUpgrade(){
+
+  if(isSavingUnliUpgrade) return;
+
+  const message = document.getElementById("unliUpgradeMessage");
+  const confirmButton = document.getElementById("confirmUnliUpgrade");
+  const user = auth.currentUser;
+
+  if(!selectedUnliUpgradeOrderId){
+    message.textContent = "No UNLI order selected.";
+    return;
+  }
+
+  if(!user){
+    message.textContent = "Please log in again.";
+    return;
+  }
+
+  if(!["CASH", "GCASH", "PAYMAYA"].includes(selectedUnliUpgradePayment)){
+    message.textContent = "Please select a payment method.";
+    return;
+  }
+
+  let cashReceived = 0;
+  let change = 0;
+
+  if(selectedUnliUpgradePayment === "CASH"){
+
+    cashReceived = Number(
+      document.getElementById("upgradeCashReceived").value
+    );
+
+    if(!Number.isFinite(cashReceived) || cashReceived < 30){
+      message.textContent = "Cash received must be at least ₱30.";
+      return;
+    }
+
+    change = cashReceived - 30;
+  }
+
+  isSavingUnliUpgrade = true;
+  confirmButton.disabled = true;
+  message.textContent = "Processing upgrade payment...";
+
+  try{
+
+    const orderRef = doc(db, "orders", selectedUnliUpgradeOrderId);
+
+    await runTransaction(db, async transaction => {
+
+      const orderSnap = await transaction.get(orderRef);
+
+      if(!orderSnap.exists()){
+        throw new Error("ORDER_NOT_FOUND");
+      }
+
+      const order = orderSnap.data();
+
+      if(
+        order.status === "VOID" ||
+        order.servingStatus !== "UNLI_ACTIVE" ||
+        order.unliPackage !== "UNLI 269 WINGS" ||
+        order.upgradeAmount
+      ){
+        throw new Error("UPGRADE_NOT_ALLOWED");
+      }
+
+      transaction.update(orderRef, {
+        unliPackage: "UNLI 299 WINGS",
+        upgradeAmount: 30,
+        upgradePaymentMethod: selectedUnliUpgradePayment,
+        upgradeCashReceived: cashReceived,
+        upgradeChange: change,
+        upgradeAt: serverTimestamp(),
+        upgradedByEmail: user.email || "",
+        upgradedByUid: user.uid
+      });
+
+    });
+
+    message.textContent = "Upgrade successful!";
+
+    document.getElementById("unliUpgradeModal").classList.add("hidden");
+
+    selectedUnliUpgradeOrderId = null;
+    selectedUnliUpgradePayment = "";
+
+  }catch(error){
+
+    console.error("UNLI upgrade payment error:", error);
+
+    if(error.message === "UPGRADE_NOT_ALLOWED"){
+      message.textContent = "This order is no longer eligible for upgrade.";
+    }else if(error.message === "ORDER_NOT_FOUND"){
+      message.textContent = "Order not found.";
+    }else{
+      message.textContent = "Unable to process upgrade. Please try again.";
+    }
+
+  }finally{
+
+    isSavingUnliUpgrade = false;
+    confirmButton.disabled = false;
+
+  }
+}
+
+// CONFIRM UNLI UPGRADE
+document.getElementById("confirmUnliUpgrade").addEventListener("click", () => {
+  processUnliUpgrade();
+});
 
   async function startPreparingOrder(orderId){
 
