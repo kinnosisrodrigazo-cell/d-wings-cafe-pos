@@ -4645,9 +4645,22 @@ document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
 
 
 
-    document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
-      box.addEventListener("change", updateFlavorSelection);
-    });
+document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
+  box.addEventListener("change", function(){
+    const label = this.closest(".flavor-option");
+
+    if(label){
+      label.style.backgroundColor = this.checked ? "#3a3020" : "";
+      label.style.border = this.checked ? "2px solid #e7ad3e" : "";
+      label.style.color = this.checked ? "#f5bd4f" : "";
+      label.style.boxShadow = this.checked
+        ? "0 0 10px rgba(231,173,62,0.5)"
+        : "";
+    }
+
+    updateFlavorSelection();
+  });
+});
 
     document.getElementById("dipChoice").onchange =
       updateFlavorSelection;
@@ -5198,7 +5211,20 @@ checkbox.closest(".flavor-item")
   };
 });
 document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
-  box.addEventListener("change", updateFlavorSelection);
+  box.addEventListener("change", function(){
+    const label = this.closest(".flavor-option");
+
+    if(label){
+      label.style.backgroundColor = this.checked ? "#3a3020" : "";
+      label.style.border = this.checked ? "2px solid #e7ad3e" : "";
+      label.style.color = this.checked ? "#f5bd4f" : "";
+      label.style.boxShadow = this.checked
+        ? "0 0 10px rgba(231,173,62,0.5)"
+        : "";
+    }
+
+    updateFlavorSelection();
+  });
 });
 
         document.getElementById("dipChoice").onchange =
