@@ -531,25 +531,43 @@ header h2 {
 
 
 
+
 #flavorOptions .flavor-quantity-controls button {
-  width: 38px !important;
-  height: 38px !important;
-  min-width: 38px !important;
-  min-height: 38px !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
   padding: 0 !important;
   margin: 0 !important;
   border: 1px solid #d6a43b !important;
-  border-radius: 11px !important;
+  border-radius: 8px !important;
   background: #252525 !important;
   color: #e7ad3e !important;
-  font-size: 23px !important;
+  font-size: 19px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s ease;
 }
+
+#flavorOptions .flavor-quantity-controls .flavor-plus {
+  background: #e7ad3e !important;
+  color: #171717 !important;
+}
+
+#flavorOptions .flavor-quantity-controls button:active {
+  transform: scale(0.92);
+}
+
+#flavorOptions .flavor-quantity {
+  min-width: 20px;
+  color: white;
+  font-size: 15px;
+  font-weight: 900;
+  text-align: center;
+}
+
 
 #flavorOptions .flavor-quantity-controls .flavor-plus {
   background: #e7ad3e !important;
