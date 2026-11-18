@@ -12449,11 +12449,22 @@ ${document.querySelector('input[name="orderType"]:checked').value}</p>
         ${item.price} × ${item.qty} =
         ${peso(item.price * item.qty)}
 
-        ${item.flavors ? `
-          <div class="small">
-            Flavors: ${item.flavors.join(", ")}
-          </div>
-        ` : ""}
+${item.flavors?.length ? `
+  <div class="small">
+    Flavors:
+    ${item.flavors.map(flavor => {
+      const portions = item.flavorQuantities?.[flavor];
+
+      return flavor + (
+        item.name.startsWith("UNLI")
+          ? ""
+          : item.flavorQuantities
+            ? ` (${portions * 3} pcs)`
+            : " (3 pcs)"
+      );
+    }).join(", ")}
+  </div>
+` : ""}
 
         ${item.includedItems?.length ? `
           <div class="small">
