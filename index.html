@@ -4615,12 +4615,10 @@ document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
 
     event.preventDefault();
 
-    const currentQty = pendingFlavorQuantities[this.value] || 0;
+const currentQty = pendingFlavorQuantities[this.value] || 0;
 
 const total = Object.values(pendingFlavorQuantities)
   .reduce((sum, qty) => sum + qty, 0);
-
-const currentQty = pendingFlavorQuantities[this.value] || 0;
 
 if(total >= pendingRequiredFlavors && currentQty > 0){
   delete pendingFlavorQuantities[this.value];
