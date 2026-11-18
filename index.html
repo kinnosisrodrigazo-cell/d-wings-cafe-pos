@@ -668,6 +668,22 @@ header h2 {
     margin-top:10px;
   }
 
+#flavorOptions .flavor-item{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  min-width:0;
+  gap:5px;
+}
+
+#flavorOptions .flavor-quantity-controls{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  margin-top:0;
+}
+
   #flavorOptions .flavor-option{
     justify-content:center;
     padding:9px 3px;
@@ -4558,8 +4574,8 @@ document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
 
     checkbox.checked = quantity > 0;
 
-    const option = checkbox.closest(".flavor-option");
-    option.querySelector(".flavor-quantity").textContent = quantity;
+ const flavorItem = checkbox.closest(".flavor-item");
+flavorItem.querySelector(".flavor-quantity").textContent = quantity;
 
     updateFlavorSelection();
   };
@@ -5020,6 +5036,7 @@ document.getElementById("flavorInstruction").textContent =
 
 
 
+
 document.getElementById("flavorOptions").innerHTML =
 `<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${item.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +
 pendingFlavorList.map(flavor => {
@@ -5031,21 +5048,25 @@ pendingFlavorList.map(flavor => {
     item.category !== "Chicken Rings" &&
     /^(6|9|18|24)PCS/.test(item.name);
 
+ 
   return `
-    <label class="flavor-option">
-      <input
-        type="checkbox"
-        name="wingFlavor"
-        value="${flavor}"
-        ${unavailable ? "disabled" : ""}
-      >
+    <div class="flavor-item">
+      <label class="flavor-option">
+        <input
+          type="checkbox"
+          name="wingFlavor"
+          value="${flavor}"
+          ${(pendingFlavorQuantities[flavor] > 0 || (!adjustable && (product.flavors || []).includes(flavor))) ? "checked" : ""}
+          ${unavailable && !pendingFlavorQuantities[flavor] ? "disabled" : ""}
+        >
 
-      <span>${flavor}</span>
+        <span>${flavor}</span>
 
-      ${unavailable
-        ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
-        : ''
-      }
+        ${unavailable
+          ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
+          : ''
+        }
+      </label>
 
       ${adjustable ? `
         <div class="flavor-quantity-controls">
@@ -5054,9 +5075,11 @@ pendingFlavorList.map(flavor => {
           <button type="button" class="secondary flavor-plus" data-flavor="${flavor}">+</button>
         </div>
       ` : ''}
-    </label>
+    </div>
   `;
+
 }).join("");
+
 
 
 
@@ -5092,8 +5115,8 @@ document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
     const quantity = pendingFlavorQuantities[flavor] || 0;
     checkbox.checked = quantity > 0;
 
-    checkbox.closest(".flavor-option")
-      .querySelector(".flavor-quantity").textContent = quantity;
+checkbox.closest(".flavor-item")
+  .querySelector(".flavor-quantity").textContent = quantity;
 
     updateFlavorSelection();
   };
