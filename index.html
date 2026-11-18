@@ -7790,8 +7790,24 @@ async function loadDashboardPayslips(){
   margin: 0 !important;
   padding: 0 !important;
 }
+#flavorOptions input[type="checkbox"][name="wingFlavor"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
-            </style>
+/* GOLD HIGHLIGHT FOR SELECTED FLAVORS */
+#flavorOptions .flavor-option.selected {
+  background: #3a3020 !important;
+  border: 2px solid #e7ad3e !important;
+  color: #f5bd4f !important;
+  box-shadow: 0 0 10px rgba(231, 173, 62, 0.5) !important;
+}
+
+</style>
           </head>
 
           <body>
