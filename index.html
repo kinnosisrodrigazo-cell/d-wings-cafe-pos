@@ -4507,7 +4507,8 @@ pendingFlavorList.map(flavor => {
     product.category !== "Chicken Rings" &&
     /^(6|9|18|24)PCS/.test(product.name);
 
-  return `
+return `
+  <div class="flavor-item">
     <label class="flavor-option">
       <input
         type="checkbox"
@@ -4523,15 +4524,16 @@ pendingFlavorList.map(flavor => {
         ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
         : ''
       }
-
-      ${adjustable ? `
-        <div class="flavor-quantity-controls">
-          <button type="button" class="secondary flavor-minus" data-flavor="${flavor}">−</button>
-          <strong class="flavor-quantity">${pendingFlavorQuantities[flavor] || 0}</strong>
-          <button type="button" class="secondary flavor-plus" data-flavor="${flavor}">+</button>
-        </div>
-      ` : ''}
     </label>
+
+    ${adjustable ? `
+      <div class="flavor-quantity-controls">
+        <button type="button" class="secondary flavor-minus" data-flavor="${flavor}">−</button>
+        <strong class="flavor-quantity">${pendingFlavorQuantities[flavor] || 0}</strong>
+        <button type="button" class="secondary flavor-plus" data-flavor="${flavor}">+</button>
+      </div>
+    ` : ''}
+  </div>
   `;
 }).join("");
 
