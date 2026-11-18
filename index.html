@@ -7745,6 +7745,35 @@ async function loadDashboardPayslips(){
   font-weight: 900;
 }
 
+/* CLEAN FLAVOR SELECTION - NO CHECKBOX TICKS */
+#flavorOptions .flavor-option {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#flavorOptions .flavor-option input[type="checkbox"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none;
+}
+
+#flavorOptions .flavor-option:has(input:checked) {
+  border: 1px solid #e7ad3e !important;
+  background: #3a3020 !important;
+  color: #f5bd4f !important;
+  box-shadow: 0 0 8px rgba(231, 173, 62, 0.18);
+}
+
+#flavorOptions .flavor-option:has(input:checked) span {
+  color: #f5bd4f;
+  font-weight: 900;
+}
+
             </style>
           </head>
 
