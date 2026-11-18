@@ -7772,9 +7772,13 @@ async function loadDashboardPayslips(){
   font-weight: 900;
 }
 
-/* FORCE HIDE FLAVOR CHECKBOXES */
 #flavorOptions input[type="checkbox"][name="wingFlavor"] {
-  display: none !important;
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 </style>
