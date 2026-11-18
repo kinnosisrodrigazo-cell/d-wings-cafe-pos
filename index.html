@@ -5102,6 +5102,7 @@ document.getElementById("confirmFlavor").textContent =
 document.getElementById("flavorModal").classList.remove("hidden");
 document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
   btn.onclick = event => {
+    alert("BUTTON CLICK DETECTED");
     event.preventDefault();
     event.stopPropagation();
 
