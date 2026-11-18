@@ -10749,9 +10749,10 @@ function openUnliUpgradeModal(orderId){
   document.getElementById("upgradeChange").textContent = "Change: ₱0.00";
   document.getElementById("unliUpgradeMessage").textContent = "";
 
-  document.querySelectorAll("[data-upgrade-payment]").forEach(button => {
-    button.classList.remove("active", "selected");
-  });
+document.querySelectorAll("[data-upgrade-payment]").forEach(button => {
+  button.classList.remove("active", "selected");
+  button.textContent = button.dataset.upgradePayment;
+});
 
   document.getElementById("unliUpgradeModal").classList.remove("hidden");
 }
@@ -10767,8 +10768,9 @@ document.querySelectorAll("[data-upgrade-payment]").forEach(button => {
       item.classList.remove("active", "selected");
     });
 
-    button.classList.add("active", "selected");
-
+    button.classList.add("active", "selected");button.classList.add("active", "selected");
+button.textContent = selectedUnliUpgradePayment + " SELECTED";
+    
     const cashFields = document.getElementById("upgradeCashFields");
 
     if(selectedUnliUpgradePayment === "CASH"){
