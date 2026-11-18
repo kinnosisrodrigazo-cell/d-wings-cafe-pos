@@ -515,6 +515,30 @@ header h2 {
   height:20px;
   margin:0;
 }
+  .flavor-quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.flavor-quantity-controls button {
+  width: 28px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.flavor-quantity {
+  min-width: 20px;
+  text-align: center;
+  color: #e7ad3e;
+  font-size: 14px;
+}
   .password-wrap{
   display:flex;
   align-items:center;
@@ -3733,6 +3757,7 @@ const chickenRingFlavors = [
 let pendingFlavorList = wingFlavors;
 let pendingProduct = null;
 let pendingRequiredFlavors = null;
+  let pendingFlavorQuantities = {};
 let pendingIncludedItems = [];
 let pendingRequiresDip = false;
 let editingCartIndex = null;
@@ -4443,39 +4468,104 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
   btn.classList.remove("active");
 });
 
+
+
+pendingFlavorQuantities = {};
+
 document.getElementById("flavorOptions").innerHTML =
-`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${product.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +  pendingFlavorList.map(flavor => {
-const unavailable = product.name === "DIP"
-  ? false
-  : isWingFlavorUnavailable(flavor);
+`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${item.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +
+pendingFlavorList.map(flavor => {
+  const unavailable = item.name === "DIP"
+    ? false
+    : isWingFlavorUnavailable(flavor);
 
-    return `
-      <label class="flavor-option">
-        <input
-          type="checkbox"
-          name="wingFlavor"
-          value="${flavor}"
-          ${unavailable ? "disabled" : ""}
-        >
-        <span>
-          ${flavor}
-          ${unavailable
-            ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
-            : ''
-          }
-        </span>
-      </label>
-    `;
-  }).join("");
+  const adjustable =
+    item.category !== "Chicken Rings" &&
+    /^(6|9|18|24)PCS/.test(item.name);
 
-    document.getElementById("flavorMessage").textContent =
-      pendingRequiredFlavors
-        ? `Select ${pendingRequiredFlavors} flavor(s).`
-        : "Select at least one flavor.";
+  return `
+    <label class="flavor-option">
+      <input
+        type="checkbox"
+        name="wingFlavor"
+        value="${flavor}"
+        ${(pendingFlavorQuantities[flavor] > 0 || (!adjustable && (item.flavors || []).includes(flavor))) ? "checked" : ""}
+        ${unavailable && !pendingFlavorQuantities[flavor] ? "disabled" : ""}
+      >
 
-    document.getElementById("confirmFlavor").disabled = true;
+      <span>${flavor}</span>
 
-    document.getElementById("flavorModal").classList.remove("hidden");
+      ${unavailable
+        ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
+        : ''
+      }
+
+      ${adjustable ? `
+        <div class="flavor-quantity-controls">
+          <button type="button" class="secondary flavor-minus" data-flavor="${flavor}">−</button>
+          <strong class="flavor-quantity">${pendingFlavorQuantities[flavor] || 0}</strong>
+          <button type="button" class="secondary flavor-plus" data-flavor="${flavor}">+</button>
+        </div>
+      ` : ''}
+    </label>
+  `;
+}).join("");
+
+
+document.getElementById("confirmFlavor").textContent =
+  "SAVE CHANGES";
+
+document.getElementById("flavorModal").classList.remove("hidden");
+
+document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
+  btn.onclick = event => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const flavor = btn.dataset.flavor;
+    const checkbox = document.querySelector(
+      `input[name="wingFlavor"][value="${flavor}"]`
+    );
+
+    if(!checkbox) return;
+
+    const isPlus = btn.classList.contains("flavor-plus");
+    const current = pendingFlavorQuantities[flavor] || 0;
+
+    const total = Object.values(pendingFlavorQuantities)
+      .reduce((sum, qty) => sum + qty, 0);
+
+    if(isPlus && !isWingFlavorUnavailable(flavor) &&
+       total < pendingRequiredFlavors){
+      pendingFlavorQuantities[flavor] = current + 1;
+    }
+
+    if(!isPlus && current > 0){
+      pendingFlavorQuantities[flavor] = current - 1;
+    }
+
+    const quantity = pendingFlavorQuantities[flavor] || 0;
+
+    checkbox.checked = quantity > 0;
+
+    const option = checkbox.closest(".flavor-option");
+    option.querySelector(".flavor-quantity").textContent = quantity;
+
+    updateFlavorSelection();
+  };
+});
+
+document.querySelectorAll('input[name="wingFlavor"]').forEach(box => {
+  box.addEventListener("change", updateFlavorSelection);
+});
+
+document.getElementById("dipChoice").onchange =
+  updateFlavorSelection;
+
+updateFlavorSelection();
+
+  };
+});
 
     document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
       box.addEventListener("change", updateFlavorSelection);
@@ -4484,7 +4574,9 @@ const unavailable = product.name === "DIP"
     document.getElementById("dipChoice").onchange =
       updateFlavorSelection;
 document.querySelectorAll(".dip-btn").forEach(btn => {
-  btn.onclick = () => {
+  btn.onclick = event => {
+  event.preventDefault();
+  event.stopPropagation();
     document.getElementById("dipChoice").value = btn.dataset.dip;
 
     document.querySelectorAll(".dip-btn").forEach(b => {
@@ -4506,11 +4598,11 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
 }
 ;
 
+
 function updateFlavorSelection(){
 
   // STANDALONE DIP SELECTION
   if(pendingProduct && pendingProduct.name === "DIP"){
-
     const selected = document.querySelectorAll(
       'input[name="wingFlavor"]:checked'
     ).length;
@@ -4525,6 +4617,43 @@ function updateFlavorSelection(){
 
     return;
   }
+
+  const adjustable =
+    pendingProduct &&
+    pendingProduct.category !== "Chicken Rings" &&
+    /^(6|9|18|24)PCS/.test(pendingProduct.name);
+
+  if(adjustable){
+
+    const total = Object.values(pendingFlavorQuantities)
+      .reduce((sum, qty) => sum + qty, 0);
+
+    document.querySelectorAll('input[name="wingFlavor"]').forEach(box => {
+      const qty = pendingFlavorQuantities[box.value] || 0;
+
+      box.checked = qty > 0;
+      box.disabled = isWingFlavorUnavailable(box.value) && qty === 0;
+    });
+
+    const dipValid = !pendingRequiresDip ||
+      document.getElementById("dipChoice").value !== "";
+
+    document.getElementById("confirmFlavor").disabled =
+      total !== pendingRequiredFlavors || !dipValid;
+
+    let message =
+      `${total} of ${pendingRequiredFlavors} portions assigned (${total * 3} of ${pendingRequiredFlavors * 3} PCS).`;
+
+    if(pendingRequiresDip && !dipValid){
+      message += " Please select one dip.";
+    }
+
+    document.getElementById("flavorMessage").textContent = message;
+
+    return;
+  }
+
+  // EXISTING SELECTION RULES FOR OTHER PRODUCTS
   const selected = document.querySelectorAll(
     'input[name="wingFlavor"]:checked'
   ).length;
@@ -4562,66 +4691,64 @@ function updateFlavorSelection(){
   document.getElementById("flavorMessage").textContent = message;
 }
 
+ document.getElementById("confirmFlavor").onclick = ()=>{ 
 
-document.getElementById("confirmFlavor").onclick = ()=>{
-    // ADD STANDALONE DIPS TO CART
-  if(pendingProduct && pendingProduct.name === "DIP"){
+const adjustableFlavorOrder =
+  pendingProduct &&
+  pendingProduct.category !== "Chicken Rings" &&
+  /^(6|9|18|24)PCS/.test(pendingProduct.name);
 
-    const selectedDips = [
-      ...document.querySelectorAll('input[name="wingFlavor"]:checked')
-    ].map(box => box.value);
+const selectedFlavors = [
+  ...document.querySelectorAll('input[name="wingFlavor"]:checked')
+].map(box => box.value);
 
-    if(selectedDips.length === 0) return;
+const selectedFlavorQuantities = adjustableFlavorOrder
+  ? Object.fromEntries(
+      Object.entries(pendingFlavorQuantities).filter(([, qty]) => qty > 0)
+    )
+  : null;
 
-    selectedDips.forEach(dip => {
-      const itemName = "DIP - " + dip.toUpperCase();
-
-      const found = cart.find(item =>
-        item.name === itemName && !item.flavors
-      );
-
-      if(found){
-        found.qty++;
-      } else {
-        cart.push({
-          ...pendingProduct,
-          name: itemName,
-          price: 25,
-          qty: 1
-        });
-      }
-    });
-
-    document.getElementById("flavorModal").classList.add("hidden");
-
-    editingCartIndex = null;
-    pendingProduct = null;
-    pendingRequiredFlavors = null;
-    pendingIncludedItems = [];
-    pendingRequiresDip = false;
-
-    document.getElementById("confirmFlavor").textContent =
-      "CONFIRM FLAVORS";
-
-    renderCart();
-    return;
-  }
-  
-  const selectedFlavors = [
-    ...document.querySelectorAll('input[name="wingFlavor"]:checked')
-  ].map(box=>box.value);
-
-  const valid = pendingRequiredFlavors === null
+const valid = adjustableFlavorOrder
+  ? Object.values(pendingFlavorQuantities)
+      .reduce((sum, qty) => sum + qty, 0) === pendingRequiredFlavors
+  : pendingRequiredFlavors === null
     ? selectedFlavors.length >= 1
     : selectedFlavors.length === pendingRequiredFlavors;
+
 
   const selectedDip = document.getElementById("dipChoice").value;
 
   if(!valid) return;
   if(pendingRequiresDip && !selectedDip) return;
+if(pendingProduct.name === "DIP"){
+  if(editingCartIndex !== null) return;
 
+  selectedFlavors.forEach(dipName => {
+    cart.push({
+      name: dipName,
+      category: "Extras",
+      price: 25,
+      qty: 1,
+      flavors: [],
+      dip: null,
+      includedItems: [],
+      customNotes: ""
+    });
+  });
+
+  document.getElementById("flavorModal").classList.add("hidden");
+
+  pendingProduct = null;
+  pendingRequiredFlavors = null;
+  pendingIncludedItems = [];
+  pendingRequiresDip = false;
+
+  renderCart();
+  return;
+}
 const updatedItem = {
   ...pendingProduct,
+  ...(adjustableFlavorOrder ? {flavorQuantities:selectedFlavorQuantities} : {}),
   flavors:selectedFlavors,
   includedItems:[...pendingIncludedItems],
   dip:selectedDip || null,
@@ -4742,9 +4869,17 @@ function renderCart(){
           ${item.name}<br>
            ${item.flavors ? `
             <span class="small">
-              ${item.flavors.map(flavor =>
-                flavor + (item.name.startsWith("UNLI") ? "" : " (3 pcs)")
-              ).join("<br>")}
+${item.flavors.map(flavor => {
+  const portions = item.flavorQuantities?.[flavor];
+
+  return flavor + (
+    item.name.startsWith("UNLI")
+      ? ""
+      : item.flavorQuantities
+        ? ` (${portions * 3} pcs)`
+        : " (3 pcs)"
+  );
+}).join("<br>")}
             </span><br>
           ` : ""}
 
@@ -4817,7 +4952,16 @@ el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
 
         editingCartIndex = index;
 pendingProduct = {...item};
+const adjustableFlavorOrder =
+  item.category !== "Chicken Rings" &&
+  /^(6|9|18|24)PCS/.test(item.name);
 
+pendingFlavorQuantities = adjustableFlavorOrder
+  ? {
+      ...(item.flavorQuantities ||
+        Object.fromEntries((item.flavors || []).map(flavor => [flavor, 1])))
+    }
+  : {};
 pendingFlavorList = item.category === "Chicken Rings"
   ? chickenRingFlavors
   : wingFlavors;
@@ -4875,36 +5019,84 @@ document.getElementById("flavorInstruction").textContent =
   );
 });
 
-document.getElementById("flavorOptions").innerHTML =
-  pendingFlavorList.map(flavor => {
-    const unavailable = isWingFlavorUnavailable(flavor);
-    const selected = item.flavors.includes(flavor);
 
-    return `
-      <label class="flavor-option">
-        <input
-          type="checkbox"
-          name="wingFlavor"
-          value="${flavor}"
-          ${selected ? "checked" : ""}
-          ${unavailable && !selected ? "disabled" : ""}
-        >
-        <span>
-          ${flavor}
-          ${unavailable
-            ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
-            : ''
-          }
-        </span>
-      </label>
-    `;
-  }).join("");
+document.getElementById("flavorOptions").innerHTML =
+`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${item.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +
+pendingFlavorList.map(flavor => {
+  const unavailable = product.name === "DIP"
+    ? false
+    : isWingFlavorUnavailable(flavor);
+
+  const adjustable =
+    product.category !== "Chicken Rings" &&
+    /^(6|9|18|24)PCS/.test(product.name);
+
+  return `
+    <label class="flavor-option">
+      <input
+        type="checkbox"
+        name="wingFlavor"
+        value="${flavor}"
+        ${unavailable ? "disabled" : ""}
+      >
+
+      <span>${flavor}</span>
+
+      ${unavailable
+        ? '<strong style="color:#ff7777">NOT AVAILABLE</strong>'
+        : ''
+      }
+
+      ${adjustable ? `
+        <div class="flavor-quantity-controls">
+          <button type="button" class="secondary flavor-minus" data-flavor="${flavor}">−</button>
+          <strong class="flavor-quantity">${pendingFlavorQuantities[flavor] || 0}</strong>
+          <button type="button" class="secondary flavor-plus" data-flavor="${flavor}">+</button>
+        </div>
+      ` : ''}
+    </label>
+  `;
+}).join("");
+
 
 document.getElementById("confirmFlavor").textContent =
   "SAVE CHANGES";
 
 document.getElementById("flavorModal").classList.remove("hidden");
+document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
+  btn.onclick = event => {
+    event.preventDefault();
+    event.stopPropagation();
 
+    const flavor = btn.dataset.flavor;
+    const checkbox = document.querySelector(
+      `input[name="wingFlavor"][value="${flavor}"]`
+    );
+
+    if(!checkbox) return;
+
+    const current = pendingFlavorQuantities[flavor] || 0;
+    const total = Object.values(pendingFlavorQuantities)
+      .reduce((sum, qty) => sum + qty, 0);
+
+    if(btn.classList.contains("flavor-plus")){
+      if(total >= pendingRequiredFlavors) return;
+      if(isWingFlavorUnavailable(flavor)) return;
+      pendingFlavorQuantities[flavor] = current + 1;
+    } else {
+      if(current <= 0) return;
+      pendingFlavorQuantities[flavor] = current - 1;
+    }
+
+    const quantity = pendingFlavorQuantities[flavor] || 0;
+    checkbox.checked = quantity > 0;
+
+    checkbox.closest(".flavor-option")
+      .querySelector(".flavor-quantity").textContent = quantity;
+
+    updateFlavorSelection();
+  };
+});
 document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
   box.addEventListener("change", updateFlavorSelection);
 });
