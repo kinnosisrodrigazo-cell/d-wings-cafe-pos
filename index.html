@@ -4898,69 +4898,123 @@ async function loadOrderHistory(){
       return;
     }
 
-    historyEl.innerHTML = historyDocs.map(orderDoc=>{
-      const order = orderDoc.data();
-      const status = order.status || "COMPLETED";
 
-      return `
-<div
-  class="order-list-card"
-  data-history-status="${escapeHTML(status)}"
-  data-history-date="${escapeHTML(order.orderDate || "")}"
-  data-history-search="${escapeHTML(`${order.orderNumber || "LEGACY"} ${order.customerName || "Walk-in"}`.toLowerCase())}">
-          <div class="row">
-            <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
-<strong>${escapeHTML(status)}</strong>
+historyEl.innerHTML = `
+  <div style="
+    display:grid;
+    grid-template-columns: 12% 12% 14% 42% 20%;
+    gap:4px;
+    padding:8px 5px;
+    font-size:11px;
+    font-weight:bold;
+    color:#aaa;
+    border-bottom:1px solid #444;
+  ">
+    <div>DATE</div>
+    <div>ORDER NO.</div>
+    <div>NAME</div>
+    <div>PRODUCT / FLAVORS</div>
+    <div>ACTIONS</div>
+  </div>
+` + historyDocs.map(orderDoc=>{
+  const order = orderDoc.data();
+  const status = order.status || "COMPLETED";
+
+  return `
+    <div
+      class="order-list-card"
+      data-history-status="${escapeHTML(status)}"
+      data-history-date="${escapeHTML(order.orderDate || "")}"
+      data-history-search="${escapeHTML(`${order.orderNumber || "LEGACY"} ${order.customerName || "Walk-in"} ${(order.items || []).map(item => item.name).join(" ")}`.toLowerCase())}"
+      style="
+        display:grid;
+        grid-template-columns:12% 12% 14% 42% 20%;
+        gap:4px;
+        align-items:center;
+        padding:10px 5px;
+        border-bottom:1px solid #333;
+        font-size:11px;
+      "
+    >
+      <div style="overflow-wrap:anywhere">
+        ${escapeHTML(order.orderDate || "")}
+      </div>
+
+      <div style="overflow-wrap:anywhere;font-weight:bold">
+        #${escapeHTML(order.orderNumber || "LEGACY")}
+        <div style="color:${status === "VOID" ? "#ff7777" : "#8bd18b"}">
+          ${escapeHTML(status)}
+        </div>
+      </div>
+
+      <div style="overflow-wrap:anywhere">
+        ${escapeHTML(order.customerName || "Walk-in")}
+      </div>
+
+      <div style="min-width:0;overflow-wrap:anywhere">
+        ${(order.items || []).map(item => `
+          <div style="margin-bottom:5px">
+            <strong>
+              ${escapeHTML(item.name)} × ${Number(item.qty) || 0}
+            </strong>
+
+            ${item.flavors?.length ? `
+              <div>Flavors: ${item.flavors.map(escapeHTML).join(", ")}</div>
+            ` : ""}
+
+            ${item.dip ? `
+              <div>Dip: ${escapeHTML(item.dip)}</div>
+            ` : ""}
+
+            ${item.customNotes ? `
+              <div style="color:#e7ad3e;font-weight:bold">
+                NOTE: ${escapeHTML(item.customNotes)}
+              </div>
+            ` : ""}
           </div>
+        `).join("")}
 
-         <p class="small">
-  ${escapeHTML(order.customerName || "Walk-in")}<br>
-  ${escapeHTML(order.orderDate || "")}
-</p>
+        <strong>TOTAL: ${peso(Number(order.total) || 0)}</strong>
 
-<div class="small">
-  ${(order.items || []).map(item => `
-    <p>
-      ${escapeHTML(item.name)} × ${Number(item.qty) || 0}
-      ${item.flavors?.length ? `<br>Flavors: ${item.flavors.map(escapeHTML).join(", ")}` : ""}
-      ${item.dip ? `<br>Dip: ${escapeHTML(item.dip)}` : ""}
-      ${item.customNotes ? `<br><strong style="color:#e7ad3e">CUSTOM NOTE: ${escapeHTML(item.customNotes)}</strong>` : ""}
-    </p>
-  `).join("")}
-</div>
-
-          <div class="row">
-            <strong>TOTAL</strong>
-           <strong>${peso(Number(order.total) || 0)}</strong>
-</div>
-
-${status !== "VOID" ? `
-  <button
-    class="secondary"
-    data-void="${orderDoc.id}"
-    style="width:100%">
-    VOID ORDER
-  </button>
-
-${order.servingStatus === "COMPLETED" &&
-  !["UNLI 269 WINGS", "UNLI 299 WINGS"].some(unliName =>
-    (order.items || []).some(item => item.name === unliName)
-  ) ? `
-    <button
-      class="secondary"
-      data-restore="${orderDoc.id}"
-      style="width:100%; margin-top:8px">
-      RESTORE TO QUEUE
-    </button>
-  ` : ""}
-` : `
-
-  <p class="small">This order has been voided.</p>
-  <p class="small">VOID REASON: ${escapeHTML(order.voidReason || "Not provided")}</p>
-`}
+        ${status === "VOID" ? `
+          <div style="color:#ff7777;margin-top:4px">
+            VOID REASON: ${escapeHTML(order.voidReason || "Not provided")}
           </div>
-         `;
-    }).join("");
+        ` : ""}
+      </div>
+
+      <div style="
+        display:flex;
+        flex-direction:column;
+        gap:5px;
+        min-width:0;
+      ">
+        ${status !== "VOID" ? `
+          <button
+            class="secondary"
+            data-void="${orderDoc.id}"
+            style="width:100%;padding:5px 2px;font-size:10px">
+            VOID
+          </button>
+        ` : ""}
+
+        ${status !== "VOID" &&
+          order.servingStatus === "COMPLETED" &&
+          !["UNLI 269 WINGS", "UNLI 299 WINGS"].some(unliName =>
+            (order.items || []).some(item => item.name === unliName)
+          ) ? `
+            <button
+              class="secondary"
+              data-restore="${orderDoc.id}"
+              style="width:100%;padding:5px 2px;font-size:10px">
+              RESTORE
+            </button>
+        ` : ""}
+      </div>
+    </div>
+  `;
+}).join("");
+
 
     applyOrderHistoryFilters();
 
