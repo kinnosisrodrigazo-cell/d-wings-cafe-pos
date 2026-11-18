@@ -5099,7 +5099,9 @@ pendingFlavorList.map(flavor => {
 document.getElementById("confirmFlavor").textContent =
   "SAVE CHANGES";
 
+
 document.getElementById("flavorModal").classList.remove("hidden");
+        alert("EDIT BUTTONS FOUND: " + document.querySelectorAll(".flavor-plus, .flavor-minus").length);
 document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
   btn.onclick = event => {
     alert("BUTTON CLICK DETECTED");
