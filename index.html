@@ -13,6 +13,18 @@ body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif}
 header{background:#1d1d1d;padding:18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333}
 header h2{margin:0;color:#f5bd4f}
 main{max-width:1100px;margin:auto;padding:20px}
+  /* LEFT SIDEBAR VERTICAL DIVIDER */
+body::before{
+  content:"";
+  position:fixed;
+  top:0;
+  bottom:0;
+  left:78px;
+  width:1px;
+  background:#343943;
+  z-index:899;
+  pointer-events:none;
+}
 .panel{background:#1d1d1d;border:1px solid #333;border-radius:12px;padding:18px;margin-bottom:18px}
 input,button{padding:13px;border-radius:8px;border:1px solid #444;font-size:15px}
 input{background:#292929;color:white;width:100%;margin:6px 0 12px}
@@ -1574,7 +1586,7 @@ header img {
 
 
 /* TEAM CHAT */
-#teamChatButton{display:none;position:fixed;bottom:255px;left:15px;z-index:900;width:52px;height:52px;border-radius:50%;font-size:23px;padding:0;background:#000;border:1px solid #444;color:#e7ad3e;position:fixed}
+#teamChatButton{display:none;position:fixed;bottom:75px;left:15px;z-index:900;width:52px;height:52px;border-radius:50%;font-size:23px;padding:0;background:#000;border:1px solid #444;color:#e7ad3e;position:fixed}
 #teamChatBadge{display:none;position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 4px;border-radius:20px;background:#e53935;color:#fff;font-size:11px;font-weight:bold;line-height:19px;text-align:center;border:2px solid #111}
 #teamChatPanel{display:none;position:fixed;left:15px;bottom:318px;z-index:1300;width:min(360px,calc(100vw - 30px));height:430px;max-height:calc(100vh - 340px);min-height:280px;background:#171717;border:1px solid #555;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.55);overflow:hidden;flex-direction:column}
 #teamChatPanel.open{display:flex}
@@ -1693,14 +1705,11 @@ header img {
     <p class="small">Enter a name, order number, or product to search today's orders.</p>
   </div>
 
-</div>
-
-
 <!-- DASHBOARD BUTTON -->
 <button id="dashboardBtn" type="button" title="Owner Dashboard" style="
   position:fixed;
-  bottom:135px;
-  left:15px;
+  top:18px;
+  left:14px;
   z-index:900;
   width:52px;
   height:52px;
@@ -1717,8 +1726,8 @@ header img {
 <!-- EMPLOYEE ATTENDANCE BUTTON -->
 <button id="employeeAttendanceBtn" type="button" title="Employee Attendance" style="
   position:fixed;
-  bottom:195px;
-  left:15px;
+top:83px;
+left:14px;
   z-index:900;
   width:52px;
   height:52px;
@@ -1735,8 +1744,8 @@ header img {
 <!-- SETTINGS BUTTON -->
 <button id="settingsBtn" type="button" style="
   position:fixed;
-  bottom:75px;
-  left:15px;
+top:148px;
+left:14px;
   z-index:900;
   width:52px;
   height:52px;
@@ -1753,8 +1762,8 @@ header img {
 <!-- LOGOUT BUTTON -->
 <button id="logoutBtn" type="button" title="Log out" style="
   position:fixed;
-  bottom:15px;
-  left:15px;
+bottom:18px;
+left:14px;
   z-index:900;
   width:52px;
   height:52px;
