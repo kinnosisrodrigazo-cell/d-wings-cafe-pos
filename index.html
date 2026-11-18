@@ -1475,6 +1475,21 @@ header img {
   .payment-icon{font-size:20px}
 }
 
+
+/* TEAM CHAT */
+#teamChatButton{display:none;position:fixed;bottom:255px;left:15px;z-index:900;width:52px;height:52px;border-radius:50%;font-size:23px;padding:0;background:#000;border:1px solid #444;color:#e7ad3e}
+#teamChatPanel{display:none;position:fixed;left:15px;bottom:318px;z-index:1300;width:min(360px,calc(100vw - 30px));height:430px;max-height:calc(100vh - 340px);min-height:280px;background:#171717;border:1px solid #555;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.55);overflow:hidden;flex-direction:column}
+#teamChatPanel.open{display:flex}
+#teamChatMessages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
+.team-chat-message{max-width:88%;padding:9px 11px;border-radius:11px;background:#303030;overflow-wrap:anywhere;align-self:flex-start}
+.team-chat-message.mine{background:#57421e;align-self:flex-end}
+.team-chat-meta{font-size:10px;color:#c5c5c5;margin-bottom:4px}
+.team-chat-text{font-size:13px;white-space:pre-wrap;line-height:1.35}
+#teamChatInputRow{display:flex;gap:7px;padding:10px;border-top:1px solid #444;align-items:center}
+#teamChatInput{margin:0;min-width:0;flex:1;padding:11px;font-size:13px}
+#teamChatSend{padding:10px 13px;white-space:nowrap}
+@media(max-width:600px){#teamChatPanel{bottom:318px;max-height:calc(100vh - 330px)}}
+
 </style>
 </head>
 <body>
@@ -1655,6 +1670,25 @@ header img {
   ↪
 </button>
 
+
+<!-- TEAM CHAT BUTTON -->
+<button id="teamChatButton" type="button" title="Team Chat">💬</button>
+
+<!-- TEAM CHAT PANEL -->
+<div id="teamChatPanel" aria-label="Team chat">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#222;border-bottom:1px solid #444">
+    <div>
+      <strong style="color:#e7ad3e">D’ WINGS TEAM CHAT</strong>
+      <div class="small" style="font-size:10px">Owner and Cashiers</div>
+    </div>
+    <button id="teamChatClose" type="button" class="secondary" style="padding:5px 10px;font-size:18px">×</button>
+  </div>
+  <div id="teamChatMessages"><p class="small">Loading messages...</p></div>
+  <div id="teamChatInputRow">
+    <input id="teamChatInput" type="text" maxlength="500" placeholder="Type a message..." autocomplete="off">
+    <button id="teamChatSend" type="button">SEND</button>
+  </div>
+</div>
 
 <!-- SETTINGS WINDOW -->
 <div id="settingsModal" class="hidden" style="
@@ -2691,6 +2725,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebas
 import {
   getFirestore,
   collection,
+  addDoc,
   doc,
   setDoc,
   getDoc,
@@ -2808,6 +2843,8 @@ let isSavingSale = false;
 let saleSaved = false;
 let pendingSaleRef = null;
 let currentUserRole = null;
+let currentUserName = "";
+let teamChatUnsubscribe = null;
 let todayAttendanceUnsubscribe = null;
 
   // UNLI UPGRADE STATE
@@ -10305,7 +10342,10 @@ customNotes: item.customNotes || ""
     return;
   }
 
-currentUserRole = profile.role;
+currentUserRole = String(profile.role || "").toLowerCase();
+document.getElementById("teamChatButton").style.display = "block";
+currentUserName = profile.name || profile.fullName || profile.displayName ||
+  (user.email ? user.email.split("@")[0] : "Team Member");
 updateManualOrderModeUI();
     
 // MANUAL ATTENDANCE EDITOR - OWNER ONLY
@@ -11422,9 +11462,136 @@ document.querySelectorAll(".terminal-nav button").forEach(button => {
 };
 
 
+// ===================================
+// D' WINGS CAFE - REAL-TIME TEAM CHAT
+// ===================================
+let teamChatSending = false;
+
+function renderTeamChat(snapshot){
+  const container = document.getElementById("teamChatMessages");
+  if(!container) return;
+
+  const wasNearBottom =
+    container.scrollHeight - container.scrollTop - container.clientHeight < 70;
+
+  container.innerHTML = "";
+
+  if(snapshot.empty){
+    container.innerHTML = '<p class="small" style="text-align:center">No messages yet. Say hello to the team!</p>';
+    return;
+  }
+
+  snapshot.docs.slice().reverse().forEach(messageDoc => {
+    const message = messageDoc.data();
+    const isMine = message.senderUid === auth.currentUser?.uid;
+
+    const bubble = document.createElement("div");
+    bubble.className = "team-chat-message" + (isMine ? " mine" : "");
+
+    const meta = document.createElement("div");
+    meta.className = "team-chat-meta";
+    const sentAt = message.createdAt?.toDate
+      ? message.createdAt.toDate().toLocaleTimeString("en-PH",{
+          timeZone:"Asia/Manila",hour:"2-digit",minute:"2-digit"
+        })
+      : "Sending...";
+    meta.textContent = `${message.senderName || "Team Member"} · ${message.senderRole || "STAFF"} · ${sentAt}`;
+
+    const body = document.createElement("div");
+    body.className = "team-chat-text";
+    body.textContent = message.text || "";
+
+    bubble.append(meta,body);
+    container.appendChild(bubble);
+  });
+
+  if(wasNearBottom || snapshot.docs.length <= 1){
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+function startTeamChat(){
+  if(teamChatUnsubscribe){
+    teamChatUnsubscribe();
+    teamChatUnsubscribe = null;
+  }
+
+  const messagesQuery = query(
+    collection(db,"teamChatMessages"),
+    orderBy("createdAt","desc"),
+    limit(100)
+  );
+
+  teamChatUnsubscribe = onSnapshot(messagesQuery, snapshot => {
+    renderTeamChat(snapshot);
+  }, error => {
+    console.error("Team chat listener error:",error);
+    document.getElementById("teamChatMessages").innerHTML =
+      '<p class="small">Unable to load chat. Please check Firestore permissions.</p>';
+  });
+}
+
+async function sendTeamChatMessage(){
+  const input = document.getElementById("teamChatInput");
+  const sendButton = document.getElementById("teamChatSend");
+  const text = input.value.trim();
+
+  if(!text || teamChatSending || !auth.currentUser) return;
+
+  teamChatSending = true;
+  sendButton.disabled = true;
+
+  try{
+    await addDoc(collection(db,"teamChatMessages"),{
+      text,
+      senderUid:auth.currentUser.uid,
+      senderName:currentUserName || auth.currentUser.email || "Team Member",
+      senderRole:String(currentUserRole || "staff").toUpperCase(),
+      createdAt:serverTimestamp()
+    });
+    input.value = "";
+    input.focus();
+  }catch(error){
+    console.error("Send chat message error:",error);
+    alert("Unable to send message. Please check your internet connection and Firestore rules.");
+  }finally{
+    teamChatSending = false;
+    sendButton.disabled = false;
+  }
+}
+
+document.getElementById("teamChatButton").addEventListener("click",() => {
+  const panel = document.getElementById("teamChatPanel");
+  panel.classList.toggle("open");
+  if(panel.classList.contains("open")){
+    startTeamChat();
+    document.getElementById("teamChatInput").focus();
+  }
+});
+
+document.getElementById("teamChatClose").addEventListener("click",() => {
+  document.getElementById("teamChatPanel").classList.remove("open");
+});
+
+document.getElementById("teamChatSend").addEventListener("click",sendTeamChatMessage);
+document.getElementById("teamChatInput").addEventListener("keydown",event => {
+  if(event.key === "Enter"){
+    event.preventDefault();
+    sendTeamChatMessage();
+  }
+});
+
 onAuthStateChanged(auth, async user => {
   if (!user) {
 
+    if(teamChatUnsubscribe){
+      teamChatUnsubscribe();
+      teamChatUnsubscribe = null;
+    }
+    document.getElementById("teamChatPanel")?.classList.remove("open");
+    document.getElementById("teamChatButton").style.display = "none";
+    document.getElementById("teamChatMessages").innerHTML = '<p class="small">Sign in to view team messages.</p>';
+    currentUserName = "";
     currentUserRole = null;
     manualOrderMode = false;
     manualOrderDate = "";
