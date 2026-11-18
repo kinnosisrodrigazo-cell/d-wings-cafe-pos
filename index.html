@@ -10726,7 +10726,10 @@ async function restoreUnliToQueue(orderId){
     alert("Unable to restore UNLI order. Please try again.");
 
   }
-  // OPEN UNLI UPGRADE MODAL
+
+}
+
+// OPEN UNLI UPGRADE MODAL
 function openUnliUpgradeModal(orderId){
 
   const order = activeQueueOrders.find(item => item.id === orderId);
@@ -10803,7 +10806,7 @@ document.getElementById("cancelUnliUpgrade").addEventListener("click", () => {
   selectedUnliUpgradePayment = "";
 
 });
-}
+
 // PROCESS UNLI UPGRADE PAYMENT
 async function processUnliUpgrade(){
 
