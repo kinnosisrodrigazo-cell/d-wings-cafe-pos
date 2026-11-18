@@ -1346,16 +1346,19 @@ header img {
   display: none !important;
 }
 
-  /* UNLI UPGRADE PAYMENT SELECTED */
-[data-upgrade-payment].selected {
+/* UNLI UPGRADE PAYMENT SELECTED */
+#unliUpgradeModal [data-upgrade-payment] {
   position: relative;
+}
+
+#unliUpgradeModal [data-upgrade-payment].selected {
   background: #14532d !important;
   border: 2px solid #22c55e !important;
   color: #ffffff !important;
   box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
 }
 
-[data-upgrade-payment].selected::before {
+#unliUpgradeModal [data-upgrade-payment].selected::before {
   content: "SELECTED";
   position: absolute;
   bottom: 100%;
@@ -2574,11 +2577,11 @@ header img {
 
     <p class="small">SELECT PAYMENT METHOD</p>
 
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button type="button" data-upgrade-payment="CASH">CASH</button>
-      <button type="button" data-upgrade-payment="GCASH">GCASH</button>
-      <button type="button" data-upgrade-payment="PAYMAYA">PAYMAYA</button>
-    </div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+  <button type="button" data-upgrade-payment="CASH">CASH</button>
+  <button type="button" data-upgrade-payment="GCASH">GCASH</button>
+  <button type="button" data-upgrade-payment="PAYMAYA">PAYMAYA</button>
+</div>
 
     <div id="upgradeCashFields" class="hidden" style="margin-top:15px">
       <label> CASH RECEIVED </label>
@@ -10780,30 +10783,29 @@ document.querySelectorAll("[data-upgrade-payment]").forEach(button => {
 }
 
 // SELECT UPGRADE PAYMENT METHOD
-document.querySelectorAll("[data-upgrade-payment]").forEach(button => {
+document.querySelectorAll("#unliUpgradeModal [data-upgrade-payment]").forEach(button => {
 
   button.addEventListener("click", () => {
 
     selectedUnliUpgradePayment = button.dataset.upgradePayment;
 
-    document.querySelectorAll("[data-upgrade-payment]").forEach(item => {
-      item.classList.remove("active", "selected");
+    document.querySelectorAll("#unliUpgradeModal [data-upgrade-payment]").forEach(item => {
+      item.classList.remove("selected");
     });
 
-    button.classList.add("active", "selected");
+    button.classList.add("selected");
 
     const cashFields = document.getElementById("upgradeCashFields");
 
     if(selectedUnliUpgradePayment === "CASH"){
       cashFields.classList.remove("hidden");
-    }else{
+    } else {
       cashFields.classList.add("hidden");
     }
 
   });
 
 });
-
 // UPDATE CASH CHANGE
 document.getElementById("upgradeCashReceived").addEventListener("input", () => {
 
