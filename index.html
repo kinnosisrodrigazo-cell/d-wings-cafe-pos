@@ -4472,16 +4472,17 @@ document.querySelectorAll(".dip-btn").forEach(btn => {
 
 pendingFlavorQuantities = {};
 
+
 document.getElementById("flavorOptions").innerHTML =
-`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${item.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +
+`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${product.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +
 pendingFlavorList.map(flavor => {
-  const unavailable = item.name === "DIP"
+  const unavailable = product.name === "DIP"
     ? false
     : isWingFlavorUnavailable(flavor);
 
   const adjustable =
-    item.category !== "Chicken Rings" &&
-    /^(6|9|18|24)PCS/.test(item.name);
+    product.category !== "Chicken Rings" &&
+    /^(6|9|18|24)PCS/.test(product.name);
 
   return `
     <label class="flavor-option">
@@ -4489,7 +4490,7 @@ pendingFlavorList.map(flavor => {
         type="checkbox"
         name="wingFlavor"
         value="${flavor}"
-        ${(pendingFlavorQuantities[flavor] > 0 || (!adjustable && (item.flavors || []).includes(flavor))) ? "checked" : ""}
+        ${(pendingFlavorQuantities[flavor] > 0 || (!adjustable && (product.flavors || []).includes(flavor))) ? "checked" : ""}
         ${unavailable && !pendingFlavorQuantities[flavor] ? "disabled" : ""}
       >
 
@@ -4512,10 +4513,12 @@ pendingFlavorList.map(flavor => {
 }).join("");
 
 
+
 document.getElementById("confirmFlavor").textContent =
   "SAVE CHANGES";
 
 document.getElementById("flavorModal").classList.remove("hidden");
+
 
 document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
   btn.onclick = event => {
@@ -4552,18 +4555,9 @@ document.querySelectorAll(".flavor-plus, .flavor-minus").forEach(btn => {
     option.querySelector(".flavor-quantity").textContent = quantity;
 
     updateFlavorSelection();
-
-document.querySelectorAll('input[name="wingFlavor"]').forEach(box => {
-  box.addEventListener("change", updateFlavorSelection);
-});
-
-document.getElementById("dipChoice").onchange =
-  updateFlavorSelection;
-
-updateFlavorSelection();
-
   };
 });
+
 
     document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
       box.addEventListener("change", updateFlavorSelection);
