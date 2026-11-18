@@ -11685,6 +11685,11 @@ ${document.querySelector('input[name="orderType"]:checked').value}</p>
         ${item.dip ? `
           <div class="small">Dip: ${item.dip}</div>
         ` : ""}
+        ${item.customNotes ? `
+  <div class="small" style="color:#e7ad3e;font-weight:bold">
+    CUSTOM NOTE: ${escapeHTML(item.customNotes)}
+  </div>
+` : ""}
       </div>
     `).join("")}
 
