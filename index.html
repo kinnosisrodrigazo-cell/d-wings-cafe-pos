@@ -4680,7 +4680,11 @@ if(adjustable){
     const qty = pendingFlavorQuantities[box.value] || 0;
 
     box.checked = qty > 0;
+const label = box.closest(".flavor-option");
 
+if(label){
+  label.classList.toggle("selected", qty > 0);
+}
     box.disabled =
       total >= pendingRequiredFlavors ||
       (isWingFlavorUnavailable(box.value) && qty === 0);
