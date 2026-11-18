@@ -5180,7 +5180,20 @@ document.querySelectorAll('input[name="wingFlavor"]').forEach(box=>{
 
         document.getElementById("dipChoice").onchange =
           updateFlavorSelection;
+document.querySelectorAll(".dip-btn").forEach(btn => {
+  btn.onclick = event => {
+    event.preventDefault();
+    event.stopPropagation();
 
+    document.getElementById("dipChoice").value = btn.dataset.dip;
+
+    document.querySelectorAll(".dip-btn").forEach(button => {
+      button.classList.toggle("active", button === btn);
+    });
+
+    updateFlavorSelection();
+  };
+});
         updateFlavorSelection();
       };
     });
