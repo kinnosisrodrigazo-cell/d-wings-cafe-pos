@@ -1382,6 +1382,99 @@ header img {
   border-radius: 4px !important;
 }
   
+
+
+/* CART LAYOUT */
+.cart-heading{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:12px;
+  margin-bottom:16px;
+}
+.cart-heading-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:18px;
+  color:#f5bd4f;
+}
+.cart-heading #clearCartBtn{
+  width:auto !important;
+  margin:0 !important;
+  padding:9px 12px;
+  font-size:11px;
+}
+#cartPanel > label,
+.cart-section-label,
+.cart-name-field label{
+  display:block;
+  margin:12px 0 7px;
+  font-weight:800;
+  letter-spacing:.3px;
+}
+#cartPanel #cart{
+  margin:8px 0 12px;
+}
+#cartPanel .cart-field-row{
+  margin:12px 0;
+}
+#cartPanel .cart-field-row select{
+  max-width:62%;
+}
+#cartPanel .cart-total-row{
+  padding:10px 0;
+  border-top:1px solid #444;
+  border-bottom:1px solid #444;
+}
+.cart-payment-choices{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin:9px 0 12px;
+}
+.cart-payment-choices .order-type-btn{
+  min-width:0;
+  min-height:76px;
+  flex-direction:column;
+  gap:5px;
+  padding:8px 4px;
+  font-size:10px;
+  line-height:1.2;
+  text-align:center;
+}
+.payment-icon{
+  font-size:23px;
+  line-height:1.2;
+}
+#cartPanel .cart-name-field{
+  margin-top:14px;
+}
+#cartPanel .cart-name-field input{
+  width:100%;
+  border:1px solid #555;
+  border-radius:8px;
+  padding:12px;
+  background:#292929;
+  color:#fff;
+}
+#cartPanel .cart-change-row{
+  margin-top:12px;
+}
+#cartPanel .cart-checkout-btn{
+  width:100%;
+  margin-top:10px;
+  background:#16a34a;
+  color:#fff;
+  border:1px solid #15803d;
+  font-weight:bold;
+}
+@media(max-width:420px){
+  .cart-payment-choices{gap:5px}
+  .cart-payment-choices .order-type-btn{font-size:9px;padding:7px 2px}
+  .payment-icon{font-size:20px}
+}
+
 </style>
 </head>
 <body>
@@ -1803,180 +1896,130 @@ header img {
     <div class="grid" id="products"></div>
   </div>
   <div class="panel hidden" id="cartPanel">
-   <h3 style="margin:0 0 15px 0;display:flex;align-items:center;">
-  <svg
-    width="28"
-    height="28"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#999999"
-    stroke-width="1.8"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <circle cx="9" cy="21" r="1"/>
-    <circle cx="20" cy="21" r="1"/>
-    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-  </svg>
-</h3>
+    <div class="cart-heading">
+      <div class="cart-heading-title">
+        <svg width="27" height="27" viewBox="0 0 24 24" fill="none"
+             stroke="#e7ad3e" stroke-width="1.8" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <strong>CART</strong>
+      </div>
+      <button type="button" class="secondary" id="clearCartBtn">CLEAR CART</button>
+    </div>
 
+    <label>ORDER TYPE</label>
+    <div class="order-type-options">
+      <label class="order-type-btn">
+        <input type="radio" name="orderType" value="DINE IN" checked>
+        <span>DINE IN</span>
+        <span class="order-check">✓</span>
+      </label>
+      <label class="order-type-btn">
+        <input type="radio" name="orderType" value="TAKE OUT" id="takeOutOption">
+        <span>TAKE OUT</span>
+        <span class="order-check">✓</span>
+      </label>
+    </div>
 
-<label>ORDER TYPE</label>
-<div class="order-type-options">
-  <label class="order-type-btn">
-    <input type="radio" name="orderType" value="DINE IN" checked>
-    <span>DINE IN</span>
-    <span class="order-check">✓</span>
-  </label>
+    <label>PRODUCT</label>
+    <div id="cart">No items added.</div>
 
-  <label class="order-type-btn">
-    <input type="radio" name="orderType" value="TAKE OUT" id="takeOutOption">
-    <span>TAKE OUT</span>
-    <span class="order-check">✓</span>
-  </label>
-</div>
+    <div class="row cart-field-row">
+      <strong>DISCOUNT</strong>
+      <select id="discount">
+        <option value="none">No Discount</option>
+        <option value="PWD">PWD - ₱10</option>
+        <option value="MERCHANT">MERCHANT - ₱10</option>
+      </select>
+    </div>
 
-<div id="cart">No items added.</div>
-<button
-  type="button"
-  class="secondary"
-  id="clearCartBtn"
-  style="width:100%;margin:10px 0">
-  CLEAR CART
-</button>
+    <div class="row cart-total-row">
+      <strong>TOTAL</strong>
+      <span class="total" id="total">₱0.00</span>
+    </div>
 
-<div class="row">
-  <strong>Payment Method</strong>
-</div>
+    <div class="cart-payment-section">
+      <strong class="cart-section-label">PAYMENT METHOD</strong>
+      <div class="cart-payment-choices">
+        <button type="button" class="order-type-btn" id="singlePaymentBtn">
+          <span class="payment-icon" aria-hidden="true">💵</span>
+          <span>CASH</span>
+        </button>
+        <button type="button" class="order-type-btn" id="onlineBankingBtn">
+          <span class="payment-icon" aria-hidden="true">🏦</span>
+          <span>ONLINE BANKING</span>
+        </button>
+        <button type="button" class="order-type-btn" id="splitPaymentBtn">
+          <span class="payment-icon" aria-hidden="true">⇄</span>
+          <span>SPLIT PAYMENT</span>
+        </button>
+      </div>
+    </div>
 
-<div class="order-type-options">
-  <button type="button" class="order-type-btn" id="singlePaymentBtn">
-    SINGLE PAYMENT
-  </button>
+    <div id="singlePaymentOptions" class="order-type-options hidden">
+      <button type="button" class="order-type-btn" data-payment="GCASH">GCASH</button>
+      <button type="button" class="order-type-btn" data-payment="PAYMAYA">PAYMAYA</button>
+    </div>
 
-  <button type="button" class="order-type-btn" id="splitPaymentBtn">
-    SPLIT PAYMENT
-  </button>
-</div>
+    <div id="splitPaymentOptions" class="order-type-options hidden">
+      <button type="button" class="order-type-btn" data-split-payment="CASH">CASH</button>
+      <button type="button" class="order-type-btn" data-split-payment="GCASH">GCASH</button>
+      <button type="button" class="order-type-btn" data-split-payment="PAYMAYA">PAYMAYA</button>
+    </div>
 
-<div id="singlePaymentOptions" class="order-type-options hidden">
-  <button type="button" class="order-type-btn" data-payment="CASH">CASH</button>
-  <button type="button" class="order-type-btn" data-payment="GCASH">GCASH</button>
-  <button type="button" class="order-type-btn" data-payment="PAYMAYA">PAYMAYA</button>
-</div>
+    <select id="paymentMethod" class="hidden">
+      <option value="">Select Payment</option>
+      <option value="CASH">CASH</option>
+      <option value="GCASH">GCASH</option>
+      <option value="PAYMAYA">PAYMAYA</option>
+      <option value="GCASH + CASH">GCASH + CASH</option>
+      <option value="CASH + GCASH">CASH + GCASH</option>
+      <option value="CASH + PAYMAYA">CASH + PAYMAYA</option>
+      <option value="PAYMAYA + CASH">PAYMAYA + CASH</option>
+      <option value="PAYMAYA + GCASH">PAYMAYA + GCASH</option>
+      <option value="GCASH + PAYMAYA">GCASH + PAYMAYA</option>
+    </select>
 
-<div id="splitPaymentOptions" class="order-type-options hidden">
+    <div class="row" id="cashReceivedRow">
+      <strong>Cash Received</strong>
+      <input type="number" id="cashReceived" placeholder="Enter amount" min="0">
+    </div>
 
-  <button type="button" class="order-type-btn" data-split-payment="CASH">
-    CASH
-  </button>
+    <div id="splitPaymentFields" class="hidden">
+      <div class="row">
+        <strong id="firstPaymentLabel">First Payment</strong>
+        <input type="number" id="firstPaymentAmount" placeholder="Enter amount" min="0">
+      </div>
+      <div class="row">
+        <strong id="secondPaymentLabel">Second Payment</strong>
+        <input type="number" id="secondPaymentAmount" placeholder="Enter amount" min="0">
+      </div>
+      <div class="row">
+        <strong>TOTAL PAYMENT RECEIVED</strong>
+        <span class="total" id="totalPaymentReceived">₱0.00</span>
+      </div>
+      <div class="row">
+        <strong>REMAINING BALANCE</strong>
+        <span class="total" id="remainingBalance">₱0.00</span>
+      </div>
+    </div>
 
-  <button type="button" class="order-type-btn" data-split-payment="GCASH">
-    GCASH
-  </button>
+    <div class="cart-name-field">
+      <label for="customerName">NAME</label>
+      <input id="customerName" type="text" placeholder="Enter customer name">
+    </div>
 
-  <button type="button" class="order-type-btn" data-split-payment="PAYMAYA">
-    PAYMAYA
-  </button>
+    <div class="row cart-change-row">
+      <strong>CHANGE</strong>
+      <span class="total" id="change">₱0.00</span>
+    </div>
 
-</div>
-
-<select id="paymentMethod" class="hidden">
-  <option value="">Select Payment</option>
-  <option value="CASH">CASH</option>
-  <option value="GCASH">GCASH</option>
-  <option value="PAYMAYA">PAYMAYA</option>
-  <option value="GCASH + CASH">GCASH + CASH</option>
-  <option value="CASH + GCASH">CASH + GCASH</option>
-  <option value="CASH + PAYMAYA">CASH + PAYMAYA</option>
-  <option value="PAYMAYA + CASH">PAYMAYA + CASH</option>
-  <option value="PAYMAYA + GCASH">PAYMAYA + GCASH</option>
-  <option value="GCASH + PAYMAYA">GCASH + PAYMAYA</option>
-</select>
-
-<div class="row" id="cashReceivedRow">
-  <strong>Cash Received</strong>
-  <input type="number" id="cashReceived" placeholder="Enter amount" min="0">
-</div>
-<!-- CUSTOMER NAME -->
-<div style="margin-top:12px">
-  <label for="customerName" style="color:#1565C0;font-weight:bold">
-    Customer Name
-  </label>
-  <input
-    id="customerName"
-    type="text"
-    placeholder="Enter customer name"
-    style="
-      width:100%;
-      box-sizing:border-box;
-      border:2px solid #2196F3;
-      border-radius:8px;
-      padding:12px;
-      background:#E3F2FD;
-      color:#111;
-    "
-  >
-</div>
-
-<!-- DISCOUNT -->
-<div class="row">
-  <strong>Discount</strong>
-  <select id="discount">
-    <option value="none">No Discount</option>
-    <option value="PWD">PWD - ₱10</option>
-    <option value="MERCHANT">MERCHANT - ₱10</option>
-  </select>
-</div>
-
-<div id="splitPaymentFields" class="hidden">
-
-  <div class="row">
-    <strong id="firstPaymentLabel">First Payment</strong>
-    <input type="number" id="firstPaymentAmount"
-      placeholder="Enter amount" min="0">
+    <button id="checkoutBtn" class="cart-checkout-btn">CHECK OUT</button>
+    <p id="orderMessage"></p>
   </div>
-
-  <div class="row">
-    <strong id="secondPaymentLabel">Second Payment</strong>
-    <input type="number" id="secondPaymentAmount"
-      placeholder="Enter amount" min="0">
-  </div>
-
-  <div class="row">
-    <strong>TOTAL PAYMENT RECEIVED</strong>
-    <span class="total" id="totalPaymentReceived">₱0.00</span>
-  </div>
-
-  <div class="row">
-    <strong>REMAINING BALANCE</strong>
-    <span class="total" id="remainingBalance">₱0.00</span>
-  </div>
-
-</div>
-
-
-<div class="row">
-  <strong>Total</strong>
-  <span class="total" id="total">₱0.00</span>
-</div>
-
-<div class="row">
-  <strong>Change</strong>
-  <span class="total" id="change">₱0.00</span>
-</div>
-
-<button id="checkoutBtn" style="
-  width:100%;
-  background:#16a34a;
-  color:#ffffff;
-  border:1px solid #15803d;
-  font-weight:bold;
-">
-  CHECKOUT
-</button>
-<p id="orderMessage"></p>
-</div>
 </div>
 </section>
 
@@ -10332,6 +10375,7 @@ document.getElementById("checkoutModal").classList.add("hidden");
   document.getElementById("splitPaymentBtn").classList.remove("active");
     document.getElementById("singlePaymentBtn").classList.remove("selected");
 document.getElementById("splitPaymentBtn").classList.remove("selected");
+document.getElementById("onlineBankingBtn").classList.remove("active", "selected");
 
 document.querySelectorAll("[data-split-payment]").forEach(button => {
   button.classList.remove("active", "selected");
@@ -11604,30 +11648,39 @@ document.querySelectorAll(".terminal-nav button").forEach(button => {
 });
 document.getElementById("discount").addEventListener("change", renderCart);
 document.getElementById("singlePaymentBtn").onclick = () => {
-  document.getElementById("singlePaymentOptions").classList.remove("hidden");
+  document.getElementById("singlePaymentOptions").classList.add("hidden");
   document.getElementById("splitPaymentOptions").classList.add("hidden");
-
-  document.getElementById("singlePaymentBtn").classList.add("active");
-  document.getElementById("splitPaymentBtn").classList.remove("active");
-document.getElementById("singlePaymentBtn").classList.add("selected");
-document.getElementById("splitPaymentBtn").classList.remove("selected");
+  document.getElementById("singlePaymentBtn").classList.add("active", "selected");
+  document.getElementById("onlineBankingBtn").classList.remove("active", "selected");
+  document.getElementById("splitPaymentBtn").classList.remove("active", "selected");
+  document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button =>
+    button.classList.remove("active", "selected")
+  );
   splitPaymentMethods = [];
-
-  document.querySelectorAll("[data-split-payment]").forEach(button => {
-    button.classList.remove("active");
-  });
-
- document.querySelectorAll("[data-payment]").forEach(button => {
-  button.classList.remove("active", "selected");
-});
-
-  document.getElementById("paymentMethod").value = "";
+  document.getElementById("paymentMethod").value = "CASH";
+  document.getElementById("cashReceivedRow").classList.remove("hidden");
+  document.getElementById("splitPaymentFields").classList.add("hidden");
   document.getElementById("firstPaymentAmount").value = "";
   document.getElementById("secondPaymentAmount").value = "";
-  document.getElementById("splitPaymentFields").classList.add("hidden");
-  document.getElementById("cashReceived").value = "";
-  document.getElementById("cashReceivedRow").classList.add("hidden");
+  renderCart();
+};
 
+document.getElementById("onlineBankingBtn").onclick = () => {
+  document.getElementById("singlePaymentOptions").classList.remove("hidden");
+  document.getElementById("splitPaymentOptions").classList.add("hidden");
+  document.getElementById("singlePaymentBtn").classList.remove("active", "selected");
+  document.getElementById("onlineBankingBtn").classList.add("active", "selected");
+  document.getElementById("splitPaymentBtn").classList.remove("active", "selected");
+  document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button =>
+    button.classList.remove("active", "selected")
+  );
+  splitPaymentMethods = [];
+  document.getElementById("paymentMethod").value = "";
+  document.getElementById("cashReceivedRow").classList.add("hidden");
+  document.getElementById("cashReceived").value = "";
+  document.getElementById("splitPaymentFields").classList.add("hidden");
+  document.getElementById("firstPaymentAmount").value = "";
+  document.getElementById("secondPaymentAmount").value = "";
   renderCart();
 };
 
@@ -11638,7 +11691,8 @@ document.getElementById("splitPaymentBtn").onclick = () => {
   document.getElementById("splitPaymentBtn").classList.add("active");
   document.getElementById("singlePaymentBtn").classList.remove("active");
   document.getElementById("splitPaymentBtn").classList.add("selected");
-document.getElementById("singlePaymentBtn").classList.remove("selected");
+  document.getElementById("singlePaymentBtn").classList.remove("selected");
+  document.getElementById("onlineBankingBtn").classList.remove("active", "selected");
 
   splitPaymentMethods = [];
 
@@ -11672,6 +11726,9 @@ document.querySelectorAll("[data-payment]").forEach(option => {
 });
 
 button.classList.add("active", "selected");
+    document.getElementById("onlineBankingBtn").classList.add("active", "selected");
+    document.getElementById("singlePaymentBtn").classList.remove("active", "selected");
+    document.getElementById("splitPaymentBtn").classList.remove("active", "selected");
 
 
     document.getElementById("cashReceivedRow").classList.toggle(
@@ -11947,6 +12004,7 @@ document.getElementById("newOrderBtn").onclick=()=>{
 
 document.getElementById("singlePaymentBtn").classList.remove("active", "selected");
 document.getElementById("splitPaymentBtn").classList.remove("active", "selected");
+document.getElementById("onlineBankingBtn").classList.remove("active", "selected");
 
  document.querySelectorAll("[data-payment], [data-split-payment]").forEach(button => {
     button.classList.remove("active", "selected");
