@@ -10414,6 +10414,13 @@ const itemsHTML = (order.items || []).map(item => `
           </div>`
         : ""
     }
+        ${
+      item.customNotes
+        ? `<div class="small" style="margin-left:12px;color:#e7ad3e;font-weight:bold">
+            CUSTOM NOTE: ${escapeHTML(item.customNotes)}
+          </div>`
+        : ""
+    }
   </div>
 `).join("");
 
