@@ -2524,6 +2524,23 @@ header img {
   </select>
 </div>
     <div id="flavorOptions" class="grid"></div>
+    <div style="margin-top:15px;text-align:left">
+  <label for="flavorCustomNotes"
+         style="display:block;font-weight:bold;margin-bottom:8px">
+    CUSTOM NOTES (OPTIONAL)
+  </label>
+
+  <textarea
+    id="flavorCustomNotes"
+    placeholder="Enter special customer instructions..."
+    rows="3"
+    style="width:100%;box-sizing:border-box;resize:vertical">
+  </textarea>
+
+  <p class="small">
+    Special instructions for the entire order.
+  </p>
+</div>
     <p id="flavorMessage" class="small"></p>
     <div class="row">
  <button class="secondary" id="cancelFlavor">CANCEL</button>
@@ -4329,7 +4346,8 @@ document.getElementById("flavorInstruction").textContent =
     );
 
     document.getElementById("dipChoice").value = "";
-
+document.getElementById("flavorCustomNotes").value = "";
+  
 document.querySelectorAll(".dip-btn").forEach(btn => {
   btn.classList.remove("active");
 });
@@ -4511,12 +4529,13 @@ document.getElementById("confirmFlavor").onclick = ()=>{
   if(!valid) return;
   if(pendingRequiresDip && !selectedDip) return;
 
-    const updatedItem = {
-    ...pendingProduct,
-    flavors:selectedFlavors,
-    includedItems:[...pendingIncludedItems],
-    dip:selectedDip || null
-  };
+const updatedItem = {
+  ...pendingProduct,
+  flavors:selectedFlavors,
+  includedItems:[...pendingIncludedItems],
+  dip:selectedDip || null,
+  customNotes:document.getElementById("flavorCustomNotes").value.trim()
+};
 
   if(editingCartIndex !== null){
     cart[editingCartIndex] = {
@@ -4643,6 +4662,12 @@ function renderCart(){
               Dip: ${item.dip}
             </span><br>
           ` : ""}
+          ${item.customNotes ? `
+  <span class="small" style="color:#e7ad3e">
+    CUSTOM NOTE: ${escapeHTML(item.customNotes)}
+  </span><br>
+` : ""}
+
           <span class="small">${peso(item.price)} × ${item.qty}</span>
         </span>
               <div class="cart-actions">
@@ -4748,6 +4773,8 @@ document.getElementById("flavorInstruction").textContent =
         );
 
         document.getElementById("dipChoice").value = item.dip || "";
+        document.getElementById("flavorCustomNotes").value =
+  item.customNotes || "";
 
         document.querySelectorAll(".dip-btn").forEach(btn => {
   btn.classList.toggle(
