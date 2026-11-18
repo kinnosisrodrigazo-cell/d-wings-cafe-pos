@@ -5012,16 +5012,17 @@ document.getElementById("flavorInstruction").textContent =
 });
 
 
+
 document.getElementById("flavorOptions").innerHTML =
-`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${product.name === "DIP" ? "DIP" : "FLAVOR"}}</div>` +
+`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${item.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +
 pendingFlavorList.map(flavor => {
-  const unavailable = product.name === "DIP"
+  const unavailable = item.name === "DIP"
     ? false
     : isWingFlavorUnavailable(flavor);
 
   const adjustable =
-    product.category !== "Chicken Rings" &&
-    /^(6|9|18|24)PCS/.test(product.name);
+    item.category !== "Chicken Rings" &&
+    /^(6|9|18|24)PCS/.test(item.name);
 
   return `
     <label class="flavor-option">
@@ -5049,6 +5050,7 @@ pendingFlavorList.map(flavor => {
     </label>
   `;
 }).join("");
+
 
 
 document.getElementById("confirmFlavor").textContent =
