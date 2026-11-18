@@ -1335,11 +1335,14 @@ header img {
     text-align:center;
   }
 
-#flavorOptions .flavor-option input {
-  flex-shrink:0;
-  width:16px;
-  height:16px;
-}
+  #flavorOptions .flavor-option input {
+    flex-shrink:0;
+    width:16px;
+    height:16px;
+  }
+
+} /* CLOSE TABLET LANDSCAPE MEDIA QUERY */
+
 
 /* HIDE ELEMENTS WITH HIDDEN CLASS */
 .hidden {
@@ -1359,12 +1362,11 @@ header img {
 }
 
 #unliUpgradeModal [data-upgrade-payment].selected::before {
-  content: "SELECTED";
+  content: attr(data-selected-label);
   position: absolute;
-  bottom: 100%;
+  bottom: calc(100% + 5px);
   left: 0;
   width: 100%;
-  padding-bottom: 5px;
   color: #22c55e;
   font-size: 11px;
   font-weight: bold;
@@ -7175,6 +7177,14 @@ async function loadDashboardPayslips(){
 #unliUpgradeModal:not(.hidden) {
   display: flex !important;
 }
+#unliUpgradeModal [data-upgrade-payment] {
+  margin-top: 22px;
+}
+
+#unliUpgradeModal > div {
+  overflow: visible;
+}
+
             </style>
           </head>
 
@@ -10791,9 +10801,11 @@ document.querySelectorAll("#unliUpgradeModal [data-upgrade-payment]").forEach(bu
 
     document.querySelectorAll("#unliUpgradeModal [data-upgrade-payment]").forEach(item => {
       item.classList.remove("selected");
+      item.removeAttribute("data-selected-label");
     });
 
     button.classList.add("selected");
+    button.setAttribute("data-selected-label", "SELECTED");
 
     const cashFields = document.getElementById("upgradeCashFields");
 
