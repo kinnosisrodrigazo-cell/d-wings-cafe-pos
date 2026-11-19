@@ -24,6 +24,7 @@ main{
 #app{
   display:grid;
   grid-template-columns:76px minmax(0,1fr);
+  grid-template-areas:"nav content";
   gap:16px;
   width:100%;
   margin:0;
@@ -33,14 +34,11 @@ main{
 }
 
 #app > .terminal-nav{
-  grid-column:1;
-  grid-row:1 / span 20;
+  grid-area:nav;
 }
 
-#app > section,
-#app > div:not(.terminal-nav){
-  grid-column:2;
-  grid-row:1;
+#app > section{
+  grid-area:content;
   min-width:0;
 }
   
