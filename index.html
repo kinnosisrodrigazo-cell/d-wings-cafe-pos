@@ -1,4 +1,3 @@
-`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,26 +19,36 @@ main{
   box-sizing:border-box;
 }
 
-/* POS LAYOUT WITH LEFT SIDEBAR */
+/* POS LAYOUT — FIXED LEFT SIDEBAR AND RIGHT CONTENT */
 #app{
-  display:grid;
-  grid-template-columns:76px minmax(0,1fr);
-  grid-template-areas:"nav content";
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:flex-start !important;
   gap:16px;
   width:100%;
+  min-width:0;
   margin:0;
   box-sizing:border-box;
-  min-width:0;
-  align-items:start;
 }
 
 #app > .terminal-nav{
-  grid-area:nav;
+  display:grid;
+  grid-template-columns:1fr;
+  align-content:start;
+  flex:0 0 76px;
+  width:76px;
+  min-width:76px;
+  margin:0;
 }
 
 #app > section{
-  grid-area:content;
+  display:block;
+  flex:1 1 0;
+  width:auto !important;
+  max-width:none !important;
   min-width:0;
+  margin:0 !important;
+  box-sizing:border-box;
 }
   
 #login{
@@ -1642,36 +1651,10 @@ header img {
 #teamChatInput{margin:0;min-width:0;flex:1;padding:11px;font-size:13px}
 #teamChatSend{padding:10px 13px;white-space:nowrap}
 @media(max-width:600px){#teamChatPanel{bottom:318px;max-height:calc(100vh - 330px)}}
-/* POS LAYOUT — FIXED LEFT SIDEBAR */
-#app {
-  display: grid !important;
-  grid-template-columns: 76px minmax(0, 1fr) !important;
-  grid-template-areas: "nav content" !important;
-  gap: 16px;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  box-sizing: border-box;
-  align-items: start;
-}
-
-#app > .terminal-nav {
-  grid-area: nav !important;
-  width: 76px;
-  min-width: 76px;
-}
-
-#app > section {
-  grid-area: content !important;
-  min-width: 0;
-  width: 100%;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-/* HIDDEN PAGES MUST STAY HIDDEN */
-.hidden {
-  display: none !important;
+/* DASHBOARD WIDTH */
+#dashboardPage{
+  min-width:0 !important;
+  width:auto !important;
 }
 </style>
 </head>
@@ -8029,9 +8012,18 @@ async function loadDashboardPayslips(){
   overflow: hidden;
 }
 
-#dashboardPage > .panel {
-  width: 100%;
-  box-sizing: border-box;
+/* DASHBOARD USES THE SAME RIGHT CONTENT COLUMN AS EVERY OTHER PAGE */
+#dashboardPage{
+  position:static !important;
+  width:auto !important;
+  max-width:none !important;
+  min-width:0 !important;
+  margin:0 !important;
+}
+
+#dashboardPage > .panel{
+  width:100%;
+  box-sizing:border-box;
 }
 </style>
 
@@ -13032,6 +13024,20 @@ if(!attendancePage || attendancePage.classList.contains("hidden")) return;
     recordAttendance("TIME OUT");
   }
 
+});
+</script>
+<!-- FIX: Keep every POS page inside the app content layout -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const app = document.getElementById("app");
+  if (!app) return;
+
+  ["employeeAttendancePage", "historyPage", "reportPage", "dashboardPage"].forEach(function (id) {
+    const page = document.getElementById(id);
+    if (page && page.parentElement !== app) {
+      app.appendChild(page);
+    }
+  });
 });
 </script>
 </body>
