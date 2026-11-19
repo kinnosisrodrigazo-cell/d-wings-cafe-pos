@@ -1644,28 +1644,27 @@ header img {
 @media(max-width:600px){#teamChatPanel{bottom:318px;max-height:calc(100vh - 330px)}}
 /* POS LAYOUT — FIXED LEFT SIDEBAR */
 #app {
-  display: flex !important;
-  flex-direction: row;
-  align-items: flex-start;
+  display: grid !important;
+  grid-template-columns: 76px minmax(0, 1fr) !important;
+  grid-template-areas: "nav content" !important;
   gap: 16px;
   width: 100%;
   min-width: 0;
   margin: 0;
   box-sizing: border-box;
+  align-items: start;
 }
 
 #app > .terminal-nav {
-  order: -1;
-  flex: 0 0 76px;
+  grid-area: nav !important;
   width: 76px;
   min-width: 76px;
 }
 
 #app > section {
-  order: 0;
-  flex: 1 1 0;
-  width: auto;
+  grid-area: content !important;
   min-width: 0;
+  width: 100%;
   margin: 0;
   box-sizing: border-box;
 }
