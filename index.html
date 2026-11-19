@@ -1790,6 +1790,41 @@ td{border-color:#2c394b!important}
 #salesPage>.sales-terminal-heading h2{flex:0 0 auto}
 #salesPage>#manualOrderModePanel{margin:0 0 14px}
 @media(max-width:600px){#salesPage>.sales-terminal-heading{align-items:center;flex-wrap:wrap}#salesPage>.sales-terminal-heading h2{flex:1 0 100%}#salesPage>.sales-terminal-heading #manualOrderModeBtn{order:2}#salesPage>.sales-terminal-heading .product-tools-row{order:3;margin-left:0}}
+
+
+/* OWNER DASHBOARD - CLEAN BUSINESS OVERVIEW */
+#dashboardPage{display:block;min-width:0}
+#dashboardPage .dashboard-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 24px;background:linear-gradient(135deg,#171b25,#10131a);border:1px solid rgba(212,175,55,.25)}
+#dashboardPage .dashboard-hero h2{margin:2px 0 4px;font-size:clamp(22px,3vw,30px);letter-spacing:.6px}
+#dashboardPage .dashboard-hero p{margin:0}
+#dashboardPage .dashboard-eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:#d4af37}
+#dashboardPage .dashboard-live-indicator{display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid rgba(125,227,154,.25);border-radius:999px;color:#9ce5b1;font-size:10px;font-weight:800;letter-spacing:.8px;white-space:nowrap}
+#dashboardPage .dashboard-live-indicator span{width:7px;height:7px;border-radius:50%;background:#53d889;box-shadow:0 0 10px rgba(83,216,137,.65)}
+#dashboardPage .dashboard-snapshot-panel{padding:18px}
+#dashboardPage .dashboard-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+#dashboardPage .dashboard-section-heading h3{margin:0 0 4px}
+#dashboardPage .dashboard-section-heading p{margin:0}
+#dashboardPage .dashboard-date-label{font-size:10px;font-weight:800;letter-spacing:.8px;color:#d4af37;border:1px solid rgba(212,175,55,.3);padding:7px 10px;border-radius:8px;white-space:nowrap}
+#dashboardPage .dashboard-kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#dashboardPage .dashboard-kpi-card{min-width:0;padding:16px;border-radius:12px;background:#151922;border:1px solid #2a303c;display:flex;flex-direction:column;gap:7px}
+#dashboardPage .dashboard-kpi-card.sales{border-top:3px solid #d4af37}
+#dashboardPage .dashboard-kpi-card.expenses{border-top:3px solid #e58b83}
+#dashboardPage .dashboard-kpi-card.profit{border-top:3px solid #70d99a}
+#dashboardPage .dashboard-kpi-label{font-size:10px;font-weight:800;letter-spacing:.8px;color:#aeb6c4}
+#dashboardPage .dashboard-kpi-card strong{font-size:clamp(20px,2.5vw,27px);line-height:1.15;overflow-wrap:anywhere;color:#f5f6f8}
+#dashboardPage .dashboard-kpi-card small{font-size:11px;color:#9ba4b2;line-height:1.4}
+#dashboardPage .dashboard-expense-breakdown{margin-top:14px;padding:14px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid #292f3a}
+#dashboardPage .dashboard-breakdown-heading,#dashboardPage .dashboard-expense-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#dashboardPage .dashboard-breakdown-heading{font-size:12px;margin-bottom:8px;color:#e7ad3e}
+#dashboardPage .dashboard-breakdown-heading span{font-size:11px;color:#aeb6c4;font-weight:500}
+#dashboardPage .dashboard-expense-row{padding:8px 0;border-top:1px solid rgba(255,255,255,.07);font-size:12px}
+#dashboardPage .dashboard-expense-row span{color:#c5cbd5}
+#dashboardPage .dashboard-expense-row strong{font-variant-numeric:tabular-nums;color:#f1f3f6}
+#dashboardPage .dashboard-estimate-note{margin:10px 0 0;font-size:10px;color:#929baa}
+#dashboardPage .dashboard-payroll-profit-grid>.panel,#dashboardPage .dashboard-ranking-grid>.panel{min-width:0}
+#dashboardPage .dashboard-ranking-grid>.panel{padding:16px}
+@media(max-width:900px){#dashboardPage .dashboard-payroll-profit-grid{grid-template-columns:1fr!important}#dashboardPage .dashboard-ranking-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:600px){#dashboardPage .dashboard-hero{align-items:flex-start;padding:17px;flex-direction:column}#dashboardPage .dashboard-kpi-grid{grid-template-columns:1fr}#dashboardPage .dashboard-kpi-card{padding:14px}#dashboardPage .dashboard-section-heading{align-items:flex-start}#dashboardPage .dashboard-ranking-grid{grid-template-columns:1fr!important}}
 </style>
 </head>
 <body>
@@ -2704,12 +2739,30 @@ td{border-color:#2c394b!important}
   <!-- OWNER DASHBOARD -->
 <section id="dashboardPage" class="hidden">
 
-  <div class="panel">
-    <h3>OWNER DASHBOARD</h3>
-    <p class="small">D' WINGS CAFE BUSINESS PERFORMANCE</p>
+  <div class="panel dashboard-hero">
+    <div>
+      <p class="dashboard-eyebrow">D' WINGS CAFE</p>
+      <h2>OWNER DASHBOARD</h2>
+      <p class="small">Business performance at a glance</p>
+    </div>
+    <div class="dashboard-live-indicator"><span></span> LIVE OVERVIEW</div>
   </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;">
+  <!-- TODAY'S BUSINESS SNAPSHOT -->
+  <section class="panel dashboard-snapshot-panel">
+    <div class="dashboard-section-heading">
+      <div>
+        <h3>TODAY'S BUSINESS SNAPSHOT</h3>
+        <p class="small">Completed sales only · Voided orders excluded</p>
+      </div>
+      <span class="dashboard-date-label" id="dashboardSnapshotDate">TODAY</span>
+    </div>
+    <div id="dashboardBusinessSummary">
+      <p class="small">Loading today's business performance...</p>
+    </div>
+  </section>
+
+<div class="dashboard-payroll-profit-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;">
 
   <!-- LEFT COLUMN: PAYROLL -->
   <div style="display:grid;gap:14px;">
@@ -2855,7 +2908,7 @@ td{border-color:#2c394b!important}
   </div>
 
   <!-- BUSINESS RANKINGS -->
-  <div style="
+  <div class="dashboard-ranking-grid" style="
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
     gap:12px;
@@ -6698,64 +6751,42 @@ async function loadDashboardBusinessPerformance(){
 
     const totalProfit = totalSales - totalExpenses;
 
+    const snapshotDate = document.getElementById("dashboardSnapshotDate");
+    if(snapshotDate){
+      snapshotDate.textContent = new Date(today + "T12:00:00").toLocaleDateString("en-PH", {
+        weekday:"short", month:"short", day:"numeric", timeZone:"Asia/Manila"
+      }).toUpperCase();
+    }
+
     summaryEl.innerHTML = `
-
-      <div style="
-        display:grid;
-        grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-        gap:10px;
-      ">
-
-        <div class="panel" style="margin:0">
-          <p class="small">TOTAL SALES</p>
-          <h2 style="color:#e7ad3e">${peso(totalSales)}</h2>
+      <div class="dashboard-kpi-grid">
+        <div class="dashboard-kpi-card sales">
+          <span class="dashboard-kpi-label">COMPLETED SALES</span>
+          <strong>${peso(totalSales)}</strong>
+          <small>${completedOrders.length} completed orders</small>
         </div>
-
-        <div class="panel" style="margin:0">
-          <p class="small">TOTAL EXPENSES</p>
-          <h2 style="color:#ff7777">${peso(totalExpenses)}</h2>
+        <div class="dashboard-kpi-card expenses">
+          <span class="dashboard-kpi-label">ESTIMATED EXPENSES</span>
+          <strong>${peso(totalExpenses)}</strong>
+          <small>Payroll, rent, packaging & incentives</small>
         </div>
-
-        <div class="panel" style="margin:0">
-          <p class="small">TOTAL PROFIT</p>
-          <h2 style="color:${totalProfit >= 0 ? "#7de39a" : "#ff7777"}">
-            ${peso(totalProfit)}
-          </h2>
-        </div>
-
-      </div>
-
-      <div class="panel" style="margin-top:12px">
-        <h4>EXPENSE BREAKDOWN</h4>
-
-        <div class="row">
-          <span>Staff salaries (${workingStaff.length} working)</span>
-          <strong>${peso(staffSalary)}</strong>
-        </div>
-
-        <div class="row">
-          <span>Daily rent</span>
-          <strong>${peso(rentExpense)}</strong>
-        </div>
-
-        <div class="row">
-          <span>Food packaging (50% of sales)</span>
-          <strong>${peso(packagingExpense)}</strong>
-        </div>
-
-        <div class="row">
-          <span>Staff incentives</span>
-          <strong>${peso(incentiveExpense)}</strong>
-        </div>
-
-        <hr>
-
-        <div class="row">
-          <strong>COMPLETED ORDERS</strong>
-          <strong>${completedOrders.length}</strong>
+        <div class="dashboard-kpi-card profit">
+          <span class="dashboard-kpi-label">ESTIMATED PROFIT</span>
+          <strong>${peso(totalProfit)}</strong>
+          <small>${totalProfit >= 0 ? "Positive for today" : "Below break-even"}</small>
         </div>
       </div>
-
+      <div class="dashboard-expense-breakdown">
+        <div class="dashboard-breakdown-heading">
+          <strong>EXPENSE BREAKDOWN</strong>
+          <span>${workingStaff.length} staff working</span>
+        </div>
+        <div class="dashboard-expense-row"><span>Staff salaries</span><strong>${peso(staffSalary)}</strong></div>
+        <div class="dashboard-expense-row"><span>Daily rent</span><strong>${peso(rentExpense)}</strong></div>
+        <div class="dashboard-expense-row"><span>Food packaging <small>(50% of sales)</small></span><strong>${peso(packagingExpense)}</strong></div>
+        <div class="dashboard-expense-row"><span>Staff incentives</span><strong>${peso(incentiveExpense)}</strong></div>
+      </div>
+      <p class="dashboard-estimate-note">Profit is an estimate using the POS expense assumptions shown above.</p>
     `;
 
   }catch(error){
