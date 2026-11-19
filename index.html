@@ -7999,7 +7999,19 @@ async function loadDashboardPayslips(){
   overflow: hidden;
 }
 
+/* FIX DASHBOARD POSITION */
+#dashboardPage {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
 
+#dashboardPage > .panel {
+  width: 100%;
+  box-sizing: border-box;
+}
 </style>
 
           </head>
