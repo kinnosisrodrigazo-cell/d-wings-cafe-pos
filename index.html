@@ -1840,6 +1840,39 @@ td{border-color:#2c394b!important}
 @media(max-width:800px){#dashboardPage .dashboard-monthly-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){#dashboardPage .dashboard-monthly-panel{padding:14px}#dashboardPage .dashboard-monthly-chart-wrap{height:270px}}
 @media(max-width:600px){#dashboardPage .dashboard-hero{align-items:flex-start;padding:17px;flex-direction:column}#dashboardPage .dashboard-kpi-grid{grid-template-columns:1fr}#dashboardPage .dashboard-kpi-card{padding:14px}#dashboardPage .dashboard-section-heading{align-items:flex-start}#dashboardPage .dashboard-ranking-grid{grid-template-columns:1fr!important}}
+
+/* MOBILE PORTRAIT — RESPONSIVE LAYOUT REFINEMENT */
+@media (max-width:600px) and (orientation:portrait){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  main{width:100%;padding:8px!important;margin:0!important}
+  #app{width:100%;min-width:0;gap:9px!important}
+  #app>.terminal-nav{box-sizing:border-box;width:100%;max-width:100%;gap:4px;padding:6px;scrollbar-width:thin}
+  #app>.terminal-nav button{flex:0 0 44px;width:44px;min-width:44px;height:46px;min-height:46px;padding:5px;display:flex;align-items:center;justify-content:center}
+  #app>.terminal-nav button svg{display:block;width:21px;height:21px;flex:0 0 21px}
+  #app>section{min-width:0;max-width:100%;overflow-x:hidden}
+  #salesPage>.sales-terminal-heading{gap:8px;margin-bottom:10px}
+  #salesPage>.sales-terminal-heading h2{font-size:21px;line-height:1.15;margin:0}
+  #salesPage>.sales-terminal-heading .product-tools-row{width:100%;min-width:0;gap:6px}
+  .product-search-trigger{max-width:100%;min-width:0}
+  .product-search-panel{width:100%;min-width:0}
+  #categoryTabs{width:100%;max-width:100%;gap:6px}
+  #products.grid{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  #products .product{min-width:0;overflow-wrap:anywhere;padding:9px;min-height:90px}
+  #products .product strong{padding-bottom:12px}
+  #cartPanel,.panel{min-width:0;max-width:100%}
+  .cart-heading{flex-wrap:wrap;gap:8px}
+  .cart-line,.cart-item,.cart-row{min-width:0;max-width:100%;overflow-wrap:anywhere}
+  table{width:100%;max-width:100%;display:block;overflow-x:auto;white-space:nowrap}
+  #dashboardPage .dashboard-monthly-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #dashboardPage .dashboard-monthly-stat{padding:10px}
+  #dashboardPage .dashboard-monthly-stat strong{font-size:17px}
+  #dashboardPage .dashboard-monthly-chart-wrap{width:100%;min-width:0}
+  #dashboardPage .dashboard-ranking-grid,#dashboardPage .dashboard-payroll-profit-grid{grid-template-columns:1fr!important}
+  #dashboardPage .dashboard-hero,#dashboardPage .dashboard-section-heading{min-width:0;flex-wrap:wrap}
+  #employeeAttendancePage,#historyPage,#reportPage,#queuePage{min-width:0;max-width:100%}
+  input,select,textarea{max-width:100%}
+}
+
 </style>
 </head>
 <body>
@@ -2182,8 +2215,10 @@ td{border-color:#2c394b!important}
   </button>
 
   <!-- EMPLOYEE ATTENDANCE -->
-  <button id="employeeAttendanceBtn" type="button" title="Employee Attendance">
-    🕒
+  <button id="employeeAttendanceBtn" type="button" title="Employee Attendance" aria-label="Employee Attendance">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+    </svg>
     ATTENDANCE
   </button>
 
