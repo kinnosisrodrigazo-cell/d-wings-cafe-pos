@@ -1637,134 +1637,23 @@ header img {
 }
 
 
-
-/* TEAM CHAT - MOVABLE */
-#teamChatButton{
-  display:none;
-  position:fixed;
-  top:50%;
-  left:15px;
-  z-index:900;
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  font-size:23px;
-  padding:0;
-  background:#000;
-  border:1px solid #444;
-  color:#e7ad3e;
-  cursor:move;
-  touch-action:none;
-}
-
-#teamChatBadge{
-  display:none;
-  position:absolute;
-  top:-5px;
-  right:-5px;
-  min-width:19px;
-  height:19px;
-  padding:0 4px;
-  border-radius:20px;
-  background:#e53935;
-  color:#fff;
-  font-size:11px;
-  font-weight:bold;
-  line-height:19px;
-  text-align:center;
-  border:2px solid #111;
-}
-
-#teamChatPanel{
-  display:none;
-  position:fixed;
-  top:50%;
-  left:80px;
-  z-index:1300;
-  width:min(360px,calc(100vw - 30px));
-  height:430px;
-  max-height:calc(100vh - 30px);
-  min-height:280px;
-  background:#171717;
-  border:1px solid #555;
-  border-radius:14px;
-  box-shadow:0 8px 30px rgba(0,0,0,.55);
-  overflow:hidden;
-  flex-direction:column;
-  transform:translateY(-50%);
-}
-
+/* TEAM CHAT - DRAGGABLE BUTTON AND WINDOW */
+#teamChatButton{display:none;position:fixed;top:50%;left:15px;bottom:auto;right:auto;z-index:900;width:52px;height:52px;border-radius:50%;font-size:23px;padding:0;background:#000;border:1px solid #444;color:#e7ad3e;cursor:grab;touch-action:none;user-select:none}
+#teamChatButton:active{cursor:grabbing}
+#teamChatBadge{display:none;position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 4px;border-radius:20px;background:#e53935;color:#fff;font-size:11px;font-weight:bold;line-height:19px;text-align:center;border:2px solid #111}
+#teamChatPanel{display:none;position:fixed;top:50%;left:80px;right:auto;bottom:auto;z-index:1300;width:min(360px,calc(100vw - 30px));height:430px;max-height:calc(100vh - 30px);min-height:280px;background:#171717;border:1px solid #555;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.55);overflow:hidden;flex-direction:column;transform:translateY(-50%)}
 #teamChatPanel.open{display:flex}
-
-#teamChatPanel > div:first-child{
-  cursor:move;
-  touch-action:none;
-  user-select:none;
-}
-
-#teamChatMessages{
-  flex:1;
-  overflow-y:auto;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-}
-
-.team-chat-message{
-  max-width:88%;
-  padding:9px 11px;
-  border-radius:11px;
-  background:#303030;
-  overflow-wrap:anywhere;
-  align-self:flex-start;
-}
-
-.team-chat-message.mine{
-  background:#57421e;
-  align-self:flex-end;
-}
-
-.team-chat-meta{
-  font-size:10px;
-  color:#c5c5c5;
-  margin-bottom:4px;
-}
-
-.team-chat-text{
-  font-size:13px;
-  white-space:pre-wrap;
-  line-height:1.35;
-}
-
-#teamChatInputRow{
-  display:flex;
-  gap:7px;
-  padding:10px;
-  border-top:1px solid #444;
-  align-items:center;
-}
-
-#teamChatInput{
-  margin:0;
-  min-width:0;
-  flex:1;
-  padding:11px;
-  font-size:13px;
-}
-
-#teamChatSend{
-  padding:10px 13px;
-  white-space:nowrap;
-}
-
-@media(max-width:600px){
-  #teamChatPanel{
-    width:calc(100vw - 20px);
-    max-height:calc(100vh - 20px);
-  }
-}
-
+#teamChatPanel > div:first-child{cursor:grab;touch-action:none;user-select:none}
+#teamChatPanel > div:first-child:active{cursor:grabbing}
+#teamChatMessages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
+.team-chat-message{max-width:88%;padding:9px 11px;border-radius:11px;background:#303030;overflow-wrap:anywhere;align-self:flex-start}
+.team-chat-message.mine{background:#57421e;align-self:flex-end}
+.team-chat-meta{font-size:10px;color:#c5c5c5;margin-bottom:4px}
+.team-chat-text{font-size:13px;white-space:pre-wrap;line-height:1.35}
+#teamChatInputRow{display:flex;gap:7px;padding:10px;border-top:1px solid #444;align-items:center}
+#teamChatInput{margin:0;min-width:0;flex:1;padding:11px;font-size:13px}
+#teamChatSend{padding:10px 13px;white-space:nowrap}
+@media(max-width:600px){#teamChatPanel{width:calc(100vw - 20px);max-height:calc(100vh - 20px)}}
 /* DASHBOARD WIDTH */
 #dashboardPage{
   min-width:0 !important;
@@ -2157,38 +2046,39 @@ td{border-color:#2c394b!important}
   </button>
 
   <button type="button" class="avatar-option" data-avatar="avatar2">
-    <img src="avatars/avatar2.png.png" alt="Avatar 2">
+    <img src="avatars/avatar2.png" alt="Avatar 2">
   </button>
 
   <button type="button" class="avatar-option" data-avatar="avatar3">
-    <img src="avatars/avatar3.png.png" alt="Avatar 3">
+    <img src="avatars/avatar3.png" alt="Avatar 3">
   </button>
 
   <button type="button" class="avatar-option" data-avatar="avatar4">
-    <img src="avatars/avatar4.png.png" alt="Avatar 4">
+    <img src="avatars/avatar4.png" alt="Avatar 4">
   </button>
 
   <button type="button" class="avatar-option" data-avatar="avatar5">
-    <img src="avatars/avatar5.png.png" alt="Avatar 5">
+    <img src="avatars/avatar5.png" alt="Avatar 5">
   </button>
 
   <button type="button" class="avatar-option" data-avatar="avatar6">
-    <img src="avatars/avatar6.png.png" alt="Avatar 6">
+    <img src="avatars/avatar6.png" alt="Avatar 6">
   </button>
 
   <button type="button" class="avatar-option" data-avatar="avatar7">
-    <img src="avatars/avatar7.png.png" alt="Avatar 7">
+    <img src="avatars/avatar7.png" alt="Avatar 7">
   </button>
 
   <button type="button" class="avatar-option" data-avatar="avatar8">
-    <img src="avatars/avatar8.png.png" alt="Avatar 8">
+    <img src="avatars/avatar8.png" alt="Avatar 8">
   </button>
 
 </div>
 
-<button id="continueAvatarBtn" disabled style="width:100%">
-  CONTINUE TO POS
-</button>
+
+  <button id="continueAvatarBtn" disabled style="width:100%">
+    CONTINUE TO POS
+  </button>
 </section>
 
 
@@ -8371,194 +8261,6 @@ async function loadDashboardPayslips(){
 
           
 
-/* D' WINGS TEAM CHAT - DRAG ANYWHERE */
-(function(){
-
-  const button = document.getElementById("teamChatButton");
-  const panel = document.getElementById("teamChatPanel");
-  const header = panel?.firstElementChild;
-
-  if(!button || !panel || !header) return;
-
-  function makeDraggable(element, handle, storageKey, isButton){
-
-    let startX, startY, startLeft, startTop;
-    let dragging = false;
-    let moved = false;
-
-    const saved = localStorage.getItem(storageKey);
-
-    if(saved){
-      try{
-        const pos = JSON.parse(saved);
-        element.style.left = pos.left + "px";
-        element.style.top = pos.top + "px";
-        element.style.right = "auto";
-        element.style.bottom = "auto";
-        if(!isButton) element.style.transform = "none";
-      }catch(e){}
-    }
-
-    handle.addEventListener("pointerdown", function(e){
-
-      if(e.target.closest("button") && !isButton) return;
-      if(e.target.closest("input")) return;
-
-      dragging = true;
-      moved = false;
-
-      const rect = element.getBoundingClientRect();
-
-      startX = e.clientX;
-      startY = e.clientY;
-      startLeft = rect.left;
-      startTop = rect.top;
-
-      handle.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    });
-
-    handle.addEventListener("pointermove", function(e){
-
-      if(!dragging) return;
-
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-
-      if(Math.abs(dx) > 3 || Math.abs(dy) > 3){
-        moved = true;
-      }
-
-      if(!moved) return;
-
-      const maxLeft = window.innerWidth - element.offsetWidth;
-      const maxTop = window.innerHeight - element.offsetHeight;
-
-      const left = Math.max(0,Math.min(maxLeft,startLeft + dx));
-      const top = Math.max(0,Math.min(maxTop,startTop + dy));
-
-      element.style.left = left + "px";
-      element.style.top = top + "px";
-      element.style.right = "auto";
-      element.style.bottom = "auto";
-
-      if(!isButton) element.style.transform = "none";
-    });
-
-    handle.addEventListener("pointerup", function(){
-
-      if(!dragging) return;
-
-      dragging = false;
-
-      if(moved){
-        const rect = element.getBoundingClientRect();
-
-        localStorage.setItem(storageKey,JSON.stringify({
-          left:rect.left,
-          top:rect.top
-        }));
-
-        if(isButton){
-
-/* TEAM CHAT - DRAG FIX */
-(function () {
-  const button = document.getElementById("teamChatButton");
-  const panel = document.getElementById("teamChatPanel");
-
-  if (!button || !panel) return;
-
-  function enableDrag(element, handle, key) {
-    let active = false;
-    let moved = false;
-    let startX, startY, originalX, originalY;
-
-    try {
-      const saved = JSON.parse(localStorage.getItem(key));
-      if (saved) {
-        element.style.left = saved.x + "px";
-        element.style.top = saved.y + "px";
-        element.style.right = "auto";
-        element.style.bottom = "auto";
-        element.style.transform = "none";
-      }
-    } catch (e) {}
-
-    handle.addEventListener("pointerdown", function (e) {
-      if (e.button !== 0 && e.pointerType === "mouse") return;
-      if (e.target.closest("#teamChatClose")) return;
-
-      const rect = element.getBoundingClientRect();
-
-      active = true;
-      moved = false;
-      startX = e.clientX;
-      startY = e.clientY;
-      originalX = rect.left;
-      originalY = rect.top;
-
-      e.preventDefault();
-    });
-
-    document.addEventListener("pointermove", function (e) {
-      if (!active) return;
-
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-
-      if (Math.abs(dx) + Math.abs(dy) > 5) moved = true;
-      if (!moved) return;
-
-      element.style.left = Math.max(0, Math.min(
-        window.innerWidth - element.offsetWidth,
-        originalX + dx
-      )) + "px";
-
-      element.style.top = Math.max(0, Math.min(
-        window.innerHeight - element.offsetHeight,
-        originalY + dy
-      )) + "px";
-
-      element.style.right = "auto";
-      element.style.bottom = "auto";
-      element.style.transform = "none";
-    });
-
-    document.addEventListener("pointerup", function () {
-      if (!active) return;
-      active = false;
-
-      if (moved) {
-        const rect = element.getBoundingClientRect();
-        localStorage.setItem(key, JSON.stringify({
-          x: rect.left,
-          y: rect.top
-        }));
-
-        if (element === button) {
-          button.dataset.dragged = "yes";
-        }
-      }
-    });
-  }
-
-  enableDrag(button, button, "dwingsChatButtonPosition");
-  enableDrag(
-    panel,
-    panel.firstElementChild,
-    "dwingsChatPanelPosition"
-  );
-
-  button.addEventListener("click", function (e) {
-    if (button.dataset.dragged === "yes") {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      button.dataset.dragged = "";
-    }
-  }, true);
-})();
-
-
 </body>
           </html>
 
@@ -12622,7 +12324,87 @@ async function sendTeamChatMessage(){
   }
 }
 
-document.getElementById("teamChatButton").addEventListener("click",() => {
+// Drag support: the button and chat window can be moved independently.
+const teamChatButton = document.getElementById("teamChatButton");
+const teamChatPanel = document.getElementById("teamChatPanel");
+let teamChatButtonWasDragged = false;
+
+function enableTeamChatDragging(element, dragHandle, storageKey, isButton = false){
+  if(!element || !dragHandle) return;
+
+  try{
+    const savedPosition = JSON.parse(localStorage.getItem(storageKey) || "null");
+    if(savedPosition && Number.isFinite(savedPosition.left) && Number.isFinite(savedPosition.top)){
+      element.style.left = savedPosition.left + "px";
+      element.style.top = savedPosition.top + "px";
+      element.style.right = "auto";
+      element.style.bottom = "auto";
+      if(!isButton) element.style.transform = "none";
+    }
+  }catch(error){ console.warn("Unable to restore Team Chat position:",error); }
+
+  let dragging = false;
+  let moved = false;
+  let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+  let activePointerId = null;
+
+  dragHandle.addEventListener("pointerdown", event => {
+    if(event.pointerType === "mouse" && event.button !== 0) return;
+    if(!isButton && event.target.closest("button,input")) return;
+    const rect = element.getBoundingClientRect();
+    dragging = true;
+    moved = false;
+    activePointerId = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    initialLeft = rect.left;
+    initialTop = rect.top;
+    try{ dragHandle.setPointerCapture(event.pointerId); }catch(error){}
+    event.preventDefault();
+  });
+
+  dragHandle.addEventListener("pointermove", event => {
+    if(!dragging || event.pointerId !== activePointerId) return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    if(Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+    if(!moved) return;
+
+    const maxLeft = Math.max(0, window.innerWidth - element.offsetWidth);
+    const maxTop = Math.max(0, window.innerHeight - element.offsetHeight);
+    element.style.left = Math.max(0, Math.min(maxLeft, initialLeft + dx)) + "px";
+    element.style.top = Math.max(0, Math.min(maxTop, initialTop + dy)) + "px";
+    element.style.right = "auto";
+    element.style.bottom = "auto";
+    if(!isButton) element.style.transform = "none";
+  });
+
+  function finishDrag(event){
+    if(!dragging || (event && event.pointerId !== activePointerId)) return;
+    dragging = false;
+    activePointerId = null;
+    if(!moved) return;
+    const rect = element.getBoundingClientRect();
+    try{
+      localStorage.setItem(storageKey, JSON.stringify({left:rect.left, top:rect.top}));
+    }catch(error){ console.warn("Unable to save Team Chat position:",error); }
+    if(isButton) teamChatButtonWasDragged = true;
+  }
+
+  dragHandle.addEventListener("pointerup", finishDrag);
+  dragHandle.addEventListener("pointercancel", finishDrag);
+}
+
+enableTeamChatDragging(teamChatButton, teamChatButton, "dwingsChatButtonPosition", true);
+enableTeamChatDragging(teamChatPanel, teamChatPanel.firstElementChild, "dwingsChatPanelPosition");
+
+teamChatButton.addEventListener("click", event => {
+  if(teamChatButtonWasDragged){
+    teamChatButtonWasDragged = false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
+  }
   const panel = document.getElementById("teamChatPanel");
   panel.classList.toggle("open");
   if(panel.classList.contains("open")){
