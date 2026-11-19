@@ -885,11 +885,13 @@ header h2 {
   transition: .2s ease;
 }
 
-.avatar-option img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.avatar-option span {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
+  font-size:clamp(34px, 6vw, 52px);
 }
 
 .avatar-option:hover {
@@ -1694,7 +1696,7 @@ main{padding:24px 26px 34px;max-width:none}
 #app>section{order:1;min-width:0;flex:1 1 0;width:auto!important;max-width:none!important;margin:0!important;}
 #salesPage> .row:first-child{min-height:62px;margin:0 0 18px;padding:0 2px 14px;border-bottom:1px solid var(--dw-line)}
 #salesPage> .row:first-child h2{font-size:clamp(24px,2.2vw,32px);font-weight:850;letter-spacing:-.8px;margin:0;color:#fff}
-.sales-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.85fr);align-items:start;gap:18px}
+.sales-layout{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:12px}
 .sales-layout>#products,.sales-layout>#categoryTabs{min-width:0}
 .sales-layout>.panel#cartPanel{grid-column:2;grid-row:1 / span 4;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto}
 #categoryTabs{gap:8px;margin:0 0 14px}
@@ -1757,6 +1759,28 @@ td{border-color:#2c394b!important}
   #categoryTabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:5px}
   .category-btn{flex:0 0 auto;white-space:nowrap}
 }
+
+
+/* SALES TERMINAL - CLEAN PRODUCT SEARCH AND CATEGORY NAV */
+.product-tools-row{display:flex;align-items:center;gap:10px;min-width:0;margin:0}
+.sales-terminal-heading{align-items:center;margin-bottom:14px}
+.sales-terminal-heading h2{margin:0}
+.sales-terminal-heading .product-tools-row{margin-left:auto}
+@media(max-width:600px){.sales-terminal-heading{align-items:flex-start}.sales-terminal-heading .product-tools-row{margin-left:0;max-width:100%;flex-wrap:wrap}}
+.product-search-trigger,.product-search-panel{height:44px;box-sizing:border-box;border:1px solid #303d4f;border-radius:12px;background:#141d29;color:#cbd5e1}
+.product-search-trigger{display:inline-flex;align-items:center;justify-content:flex-start;gap:10px;padding:0 15px;font-size:11px;font-weight:800;letter-spacing:1px;white-space:nowrap;cursor:pointer;transition:border-color .18s,background .18s,color .18s}
+.product-search-trigger svg,.product-search-panel svg{color:#9aa9bc;flex:0 0 auto}
+.product-search-trigger:hover{border-color:#60718a;background:#192536;color:#fff}
+.product-search-panel{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:0 10px 0 13px}
+.product-search-panel input{flex:1;min-width:0;height:100%;padding:0!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;font-size:13px!important}
+.product-search-panel input:focus{outline:0!important;box-shadow:none!important}
+#closeProductSearch{width:30px;height:30px;flex:0 0 30px;padding:0;border:0;border-radius:8px;background:#263346;color:#dbe4ef;font-size:20px;line-height:1;cursor:pointer}
+#categoryTabs{display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:7px;margin:0 0 15px;padding:0 0 6px;scrollbar-width:thin}
+#categoryTabs .category-btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;flex:0 0 auto;padding:0 15px;border:1px solid #303d4f;border-radius:10px;background:#141d29;color:#aebacc;font-size:11px;font-weight:750;letter-spacing:.55px;white-space:nowrap;box-shadow:none;transition:background .16s,border-color .16s,color .16s}
+#categoryTabs .category-btn:hover{background:#202c3d;border-color:#53647b;color:#fff}
+#categoryTabs .category-btn.active{background:rgba(231,173,62,.13);border-color:#b9873b;color:#f3c875;box-shadow:inset 0 -2px 0 #dca64b}
+@media(max-width:850px){#categoryTabs .category-btn{flex:0 0 auto}}
+@media(max-width:600px){.product-tools-row{gap:7px}.product-search-trigger{height:40px;padding:0 12px;font-size:10px}.product-search-panel{height:40px}#categoryTabs .category-btn{min-height:36px;padding:0 12px;font-size:10px}}
 
 </style>
 </head>
@@ -2040,39 +2064,14 @@ td{border-color:#2c394b!important}
 
 
 <div class="avatar-grid">
-
-  <button type="button" class="avatar-option" data-avatar="avatar1">
-    <img src="avatars/avatar1.png" alt="Avatar 1">
-  </button>
-
-  <button type="button" class="avatar-option" data-avatar="avatar2">
-    <img src="avatars/avatar2.png" alt="Avatar 2">
-  </button>
-
-  <button type="button" class="avatar-option" data-avatar="avatar3">
-    <img src="avatars/avatar3.png" alt="Avatar 3">
-  </button>
-
-  <button type="button" class="avatar-option" data-avatar="avatar4">
-    <img src="avatars/avatar4.png" alt="Avatar 4">
-  </button>
-
-  <button type="button" class="avatar-option" data-avatar="avatar5">
-    <img src="avatars/avatar5.png" alt="Avatar 5">
-  </button>
-
-  <button type="button" class="avatar-option" data-avatar="avatar6">
-    <img src="avatars/avatar6.png" alt="Avatar 6">
-  </button>
-
-  <button type="button" class="avatar-option" data-avatar="avatar7">
-    <img src="avatars/avatar7.png" alt="Avatar 7">
-  </button>
-
-  <button type="button" class="avatar-option" data-avatar="avatar8">
-    <img src="avatars/avatar8.png" alt="Avatar 8">
-  </button>
-
+  <button type="button" class="avatar-option" data-avatar="👦" aria-label="Boy avatar"><span>👦</span></button>
+  <button type="button" class="avatar-option" data-avatar="👧" aria-label="Girl avatar"><span>👧</span></button>
+  <button type="button" class="avatar-option" data-avatar="👨" aria-label="Man avatar"><span>👨</span></button>
+  <button type="button" class="avatar-option" data-avatar="👩" aria-label="Woman avatar"><span>👩</span></button>
+  <button type="button" class="avatar-option" data-avatar="👦🏻" aria-label="Boy avatar"><span>👦🏻</span></button>
+  <button type="button" class="avatar-option" data-avatar="👧🏻" aria-label="Girl avatar"><span>👧🏻</span></button>
+  <button type="button" class="avatar-option" data-avatar="👨🏻" aria-label="Man avatar"><span>👨🏻</span></button>
+  <button type="button" class="avatar-option" data-avatar="👩🏻" aria-label="Woman avatar"><span>👩🏻</span></button>
 </div>
 
 
@@ -2130,12 +2129,6 @@ td{border-color:#2c394b!important}
     ATTENDANCE
   </button>
 
-  <!-- SETTINGS -->
-  <button id="settingsBtn" type="button" title="Settings">
-    ⚙️
-    SETTINGS
-  </button>
-
   <!-- SALES -->
   <button class="active" data-page="salesPage">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -2180,6 +2173,12 @@ td{border-color:#2c394b!important}
     TEAM CHAT
   </button>
 
+  <!-- SETTINGS -->
+  <button id="settingsBtn" type="button" title="Settings">
+    ⚙️
+    SETTINGS
+  </button>
+
   <!-- LOGOUT -->
   <button id="logoutBtn" type="button" title="Log out">
     ↪
@@ -2190,7 +2189,7 @@ td{border-color:#2c394b!important}
 
   
 <section id="salesPage" class="hidden">
-  <div class="row" style="justify-content:space-between;flex-wrap:wrap">
+  <div class="row sales-terminal-heading" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
     <h2>Sales Terminal</h2>
     <button
       type="button"
@@ -2200,6 +2199,21 @@ td{border-color:#2c394b!important}
     >
       MANUAL ORDER ENTRY
     </button>
+    <div class="product-tools-row">
+      <button type="button" id="productSearchBtn" class="product-search-trigger">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path>
+        </svg>
+        <span>SEARCH PRODUCTS</span>
+      </button>
+      <div id="productSearchPanel" class="product-search-panel" style="display:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path>
+        </svg>
+        <input type="text" id="productSearchInput" placeholder="Search all products..." autocomplete="off">
+        <button type="button" id="closeProductSearch" aria-label="Close product search">×</button>
+      </div>
+    </div>
   </div>
 
   <div id="manualOrderModePanel" class="panel hidden" style="border-color:#e7ad3e">
@@ -2227,62 +2241,6 @@ td{border-color:#2c394b!important}
     </button>
   </div>
     <div class="sales-layout">
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-
-  <button
-    type="button"
-    id="productSearchBtn"
-    style="
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      padding:11px 16px;
-      border:1px solid #444;
-      border-radius:10px;
-      background:#222;
-      color:#e7ad3e;
-      font-weight:bold;
-      cursor:pointer;
-    ">
-    <svg width="19" height="19" viewBox="0 0 24 24"
-         fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round">
-      <circle cx="11" cy="11" r="7"></circle>
-      <path d="m16 16 4 4"></path>
-    </svg>
-    SEARCH PRODUCTS
-  </button>
-
-  <div id="productSearchPanel" style="display:none;flex:1;gap:8px;">
-    <input
-      type="text"
-      id="productSearchInput"
-      placeholder="Search all products..."
-      style="
-        flex:1;
-        min-width:0;
-        padding:12px;
-        border:1px solid #555;
-        border-radius:9px;
-        background:#222;
-        color:white;
-        font-size:15px;
-      ">
-    <button
-      type="button"
-      id="closeProductSearch"
-      style="
-        padding:8px 13px;
-        border:1px solid #555;
-        border-radius:9px;
-        background:#333;
-        color:white;
-        cursor:pointer;
-      ">✕</button>
-  </div>
-
-</div>
     <div id="categoryTabs" class="category-tabs"></div>
     <div class="grid" id="products"></div>
   </div>
@@ -4558,21 +4516,16 @@ updateDateTime();
 setInterval(updateDateTime, 1000);
 function renderProducts(){
 const categories = [
-  { name: "Wings", icon: "🍗" },
-  { name: "Fries", icon: "🍟" },
-  { name: "Floats", icon: "🥤" },
-  { name: "Drinks", icon: "🧋" },
-  { name: "Extras", icon: "🍚" },
-  { name: "Chicken Rings", icon: "🍤" }
+  "Wings", "Fries", "Chicken Rings", "Floats", "Drinks", "Extras"
 ];
 
 document.getElementById("categoryTabs").innerHTML =
   categories.map(category => `
     <button
-      class="category-btn ${selectedCategory === category.name ? "active" : ""}"
-      data-category="${category.name}">
-      <span class="category-icon">${category.icon}</span>
-      <span>${category.name}</span>
+      type="button"
+      class="category-btn ${selectedCategory === category ? "active" : ""}"
+      data-category="${category}">
+      ${category}
     </button>
   `).join("");
   document.querySelectorAll(".category-btn").forEach(btn=>{
@@ -13227,3 +13180,13 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 </body>
 </html>
+
+
+/* SALES TERMINAL: FULL-WIDTH PRODUCT AREA UNDER THE HEADING */
+#salesPage .sales-layout{display:grid;grid-template-columns:minmax(0,1fr)!important;align-items:start;gap:12px}
+#salesPage .sales-layout>#categoryTabs{grid-column:1;grid-row:1;width:100%;margin-top:0}
+#salesPage .sales-layout>#products{grid-column:1;grid-row:2;width:100%}
+#salesPage>.sales-terminal-heading{display:flex;align-items:center;gap:10px}
+#salesPage>.sales-terminal-heading h2{flex:0 0 auto}
+#salesPage>#manualOrderModePanel{margin:0 0 14px}
+@media(max-width:600px){#salesPage>.sales-terminal-heading{align-items:center;flex-wrap:wrap}#salesPage>.sales-terminal-heading h2{flex:1 0 100%}#salesPage>.sales-terminal-heading #manualOrderModeBtn{order:2}#salesPage>.sales-terminal-heading .product-tools-row{order:3;margin-left:0}}
