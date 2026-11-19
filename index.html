@@ -1932,6 +1932,42 @@ td{border-color:#2c394b!important}
   }
 }
 
+/* AUTH VISIBILITY GUARD: the app shell must stay hidden until login/avatar flow completes. */
+#app.hidden,
+#app.hidden > .terminal-nav,
+#app.hidden > section{
+  display:none !important;
+}
+/* Keep every page carrying .hidden out of layout, even under high-specificity page rules. */
+#app > section.hidden,
+#app > section.hidden *{
+  display:none !important;
+}
+/* Visible app pages only; never force hidden pages back into the layout. */
+#app:not(.hidden) > section:not(.hidden){
+  display:block !important;
+}
+/* Clear, consistent icon treatment for Settings and Logout on compact navigation. */
+#app > .terminal-nav #settingsBtn svg,
+#app > .terminal-nav #logoutBtn svg{
+  display:block;
+  width:21px;
+  height:21px;
+  min-width:21px;
+  min-height:21px;
+  flex:0 0 21px;
+  stroke:currentColor;
+  fill:none;
+}
+@media screen and (max-width:600px) and (orientation:portrait){
+  #app.hidden{display:none !important}
+  #app:not(.hidden) > section.hidden{display:none !important}
+  #app:not(.hidden) > section:not(.hidden){display:block !important}
+  #app > .terminal-nav #settingsBtn,
+  #app > .terminal-nav #logoutBtn{font-size:0 !important}
+  #app > .terminal-nav #settingsBtn svg,
+  #app > .terminal-nav #logoutBtn svg{display:block !important;visibility:visible !important;opacity:1 !important}
+}
 </style>
 </head>
 <body>
@@ -2326,14 +2362,19 @@ td{border-color:#2c394b!important}
   </button>
 
   <!-- SETTINGS -->
-  <button id="settingsBtn" type="button" title="Settings">
-    ⚙️
+  <button id="settingsBtn" type="button" title="Settings" aria-label="Settings">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 2.94-.09-.03a1.7 1.7 0 0 0-1.78.34l-.07.06h-3.4l-.03-.09a1.7 1.7 0 0 0-1.3-1.23l-.1-.02-1.7-2.94.07-.07A1.7 1.7 0 0 0 9.9 14l-.02-.1v-3.4l.09-.03a1.7 1.7 0 0 0 1.23-1.3l.02-.1 2.94-1.7.07.07a1.7 1.7 0 0 0 1.88.34l.06-.06 2.94 1.7-.03.09a1.7 1.7 0 0 0 .34 1.78l.06.07v3.4z" transform="translate(-1.5 -1.5) scale(1.125)"/>
+    </svg>
     SETTINGS
   </button>
 
   <!-- LOGOUT -->
-  <button id="logoutBtn" type="button" title="Log out">
-    ↪
+  <button id="logoutBtn" type="button" title="Log out" aria-label="Log out">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
+    </svg>
     LOG OUT
   </button>
 
