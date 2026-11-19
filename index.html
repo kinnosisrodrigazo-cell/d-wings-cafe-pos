@@ -1637,20 +1637,134 @@ header img {
 }
 
 
-/* TEAM CHAT */
-#teamChatButton{display:none;position:fixed;bottom:75px;left:15px;z-index:900;width:52px;height:52px;border-radius:50%;font-size:23px;padding:0;background:#000;border:1px solid #444;color:#e7ad3e;position:fixed}
-#teamChatBadge{display:none;position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 4px;border-radius:20px;background:#e53935;color:#fff;font-size:11px;font-weight:bold;line-height:19px;text-align:center;border:2px solid #111}
-#teamChatPanel{display:none;position:fixed;left:15px;bottom:318px;z-index:1300;width:min(360px,calc(100vw - 30px));height:430px;max-height:calc(100vh - 340px);min-height:280px;background:#171717;border:1px solid #555;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.55);overflow:hidden;flex-direction:column}
+
+/* TEAM CHAT - MOVABLE */
+#teamChatButton{
+  display:none;
+  position:fixed;
+  top:50%;
+  left:15px;
+  z-index:900;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  font-size:23px;
+  padding:0;
+  background:#000;
+  border:1px solid #444;
+  color:#e7ad3e;
+  cursor:move;
+  touch-action:none;
+}
+
+#teamChatBadge{
+  display:none;
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  min-width:19px;
+  height:19px;
+  padding:0 4px;
+  border-radius:20px;
+  background:#e53935;
+  color:#fff;
+  font-size:11px;
+  font-weight:bold;
+  line-height:19px;
+  text-align:center;
+  border:2px solid #111;
+}
+
+#teamChatPanel{
+  display:none;
+  position:fixed;
+  top:50%;
+  left:80px;
+  z-index:1300;
+  width:min(360px,calc(100vw - 30px));
+  height:430px;
+  max-height:calc(100vh - 30px);
+  min-height:280px;
+  background:#171717;
+  border:1px solid #555;
+  border-radius:14px;
+  box-shadow:0 8px 30px rgba(0,0,0,.55);
+  overflow:hidden;
+  flex-direction:column;
+  transform:translateY(-50%);
+}
+
 #teamChatPanel.open{display:flex}
-#teamChatMessages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
-.team-chat-message{max-width:88%;padding:9px 11px;border-radius:11px;background:#303030;overflow-wrap:anywhere;align-self:flex-start}
-.team-chat-message.mine{background:#57421e;align-self:flex-end}
-.team-chat-meta{font-size:10px;color:#c5c5c5;margin-bottom:4px}
-.team-chat-text{font-size:13px;white-space:pre-wrap;line-height:1.35}
-#teamChatInputRow{display:flex;gap:7px;padding:10px;border-top:1px solid #444;align-items:center}
-#teamChatInput{margin:0;min-width:0;flex:1;padding:11px;font-size:13px}
-#teamChatSend{padding:10px 13px;white-space:nowrap}
-@media(max-width:600px){#teamChatPanel{bottom:318px;max-height:calc(100vh - 330px)}}
+
+#teamChatPanel > div:first-child{
+  cursor:move;
+  touch-action:none;
+  user-select:none;
+}
+
+#teamChatMessages{
+  flex:1;
+  overflow-y:auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+
+.team-chat-message{
+  max-width:88%;
+  padding:9px 11px;
+  border-radius:11px;
+  background:#303030;
+  overflow-wrap:anywhere;
+  align-self:flex-start;
+}
+
+.team-chat-message.mine{
+  background:#57421e;
+  align-self:flex-end;
+}
+
+.team-chat-meta{
+  font-size:10px;
+  color:#c5c5c5;
+  margin-bottom:4px;
+}
+
+.team-chat-text{
+  font-size:13px;
+  white-space:pre-wrap;
+  line-height:1.35;
+}
+
+#teamChatInputRow{
+  display:flex;
+  gap:7px;
+  padding:10px;
+  border-top:1px solid #444;
+  align-items:center;
+}
+
+#teamChatInput{
+  margin:0;
+  min-width:0;
+  flex:1;
+  padding:11px;
+  font-size:13px;
+}
+
+#teamChatSend{
+  padding:10px 13px;
+  white-space:nowrap;
+}
+
+@media(max-width:600px){
+  #teamChatPanel{
+    width:calc(100vw - 20px);
+    max-height:calc(100vh - 20px);
+  }
+}
+
 /* DASHBOARD WIDTH */
 #dashboardPage{
   min-width:0 !important;
@@ -8256,6 +8370,129 @@ async function loadDashboardPayslips(){
             </div>
 
           
+
+/* D' WINGS TEAM CHAT - DRAG ANYWHERE */
+(function(){
+
+  const button = document.getElementById("teamChatButton");
+  const panel = document.getElementById("teamChatPanel");
+  const header = panel?.firstElementChild;
+
+  if(!button || !panel || !header) return;
+
+  function makeDraggable(element, handle, storageKey, isButton){
+
+    let startX, startY, startLeft, startTop;
+    let dragging = false;
+    let moved = false;
+
+    const saved = localStorage.getItem(storageKey);
+
+    if(saved){
+      try{
+        const pos = JSON.parse(saved);
+        element.style.left = pos.left + "px";
+        element.style.top = pos.top + "px";
+        element.style.right = "auto";
+        element.style.bottom = "auto";
+        if(!isButton) element.style.transform = "none";
+      }catch(e){}
+    }
+
+    handle.addEventListener("pointerdown", function(e){
+
+      if(e.target.closest("button") && !isButton) return;
+      if(e.target.closest("input")) return;
+
+      dragging = true;
+      moved = false;
+
+      const rect = element.getBoundingClientRect();
+
+      startX = e.clientX;
+      startY = e.clientY;
+      startLeft = rect.left;
+      startTop = rect.top;
+
+      handle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    handle.addEventListener("pointermove", function(e){
+
+      if(!dragging) return;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if(Math.abs(dx) > 3 || Math.abs(dy) > 3){
+        moved = true;
+      }
+
+      if(!moved) return;
+
+      const maxLeft = window.innerWidth - element.offsetWidth;
+      const maxTop = window.innerHeight - element.offsetHeight;
+
+      const left = Math.max(0,Math.min(maxLeft,startLeft + dx));
+      const top = Math.max(0,Math.min(maxTop,startTop + dy));
+
+      element.style.left = left + "px";
+      element.style.top = top + "px";
+      element.style.right = "auto";
+      element.style.bottom = "auto";
+
+      if(!isButton) element.style.transform = "none";
+    });
+
+    handle.addEventListener("pointerup", function(){
+
+      if(!dragging) return;
+
+      dragging = false;
+
+      if(moved){
+        const rect = element.getBoundingClientRect();
+
+        localStorage.setItem(storageKey,JSON.stringify({
+          left:rect.left,
+          top:rect.top
+        }));
+
+        if(isButton){
+          button.dataset.dragged = "yes";
+        }
+      }
+    });
+
+    handle.addEventListener("pointercancel",function(){
+      dragging = false;
+    });
+  }
+
+  makeDraggable(
+    button,
+    button,
+    "dwingsChatButtonPosition",
+    true
+  );
+
+  makeDraggable(
+    panel,
+    header,
+    "dwingsChatPanelPosition",
+    false
+  );
+
+  button.addEventListener("click",function(e){
+    if(button.dataset.dragged === "yes"){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      button.dataset.dragged = "";
+    }
+  },true);
+
+})();
 
 </body>
           </html>
