@@ -8460,39 +8460,104 @@ async function loadDashboardPayslips(){
         }));
 
         if(isButton){
+
+/* TEAM CHAT - DRAG FIX */
+(function () {
+  const button = document.getElementById("teamChatButton");
+  const panel = document.getElementById("teamChatPanel");
+
+  if (!button || !panel) return;
+
+  function enableDrag(element, handle, key) {
+    let active = false;
+    let moved = false;
+    let startX, startY, originalX, originalY;
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(key));
+      if (saved) {
+        element.style.left = saved.x + "px";
+        element.style.top = saved.y + "px";
+        element.style.right = "auto";
+        element.style.bottom = "auto";
+        element.style.transform = "none";
+      }
+    } catch (e) {}
+
+    handle.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0 && e.pointerType === "mouse") return;
+      if (e.target.closest("#teamChatClose")) return;
+
+      const rect = element.getBoundingClientRect();
+
+      active = true;
+      moved = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      originalX = rect.left;
+      originalY = rect.top;
+
+      e.preventDefault();
+    });
+
+    document.addEventListener("pointermove", function (e) {
+      if (!active) return;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (Math.abs(dx) + Math.abs(dy) > 5) moved = true;
+      if (!moved) return;
+
+      element.style.left = Math.max(0, Math.min(
+        window.innerWidth - element.offsetWidth,
+        originalX + dx
+      )) + "px";
+
+      element.style.top = Math.max(0, Math.min(
+        window.innerHeight - element.offsetHeight,
+        originalY + dy
+      )) + "px";
+
+      element.style.right = "auto";
+      element.style.bottom = "auto";
+      element.style.transform = "none";
+    });
+
+    document.addEventListener("pointerup", function () {
+      if (!active) return;
+      active = false;
+
+      if (moved) {
+        const rect = element.getBoundingClientRect();
+        localStorage.setItem(key, JSON.stringify({
+          x: rect.left,
+          y: rect.top
+        }));
+
+        if (element === button) {
           button.dataset.dragged = "yes";
         }
       }
     });
-
-    handle.addEventListener("pointercancel",function(){
-      dragging = false;
-    });
   }
 
-  makeDraggable(
-    button,
-    button,
-    "dwingsChatButtonPosition",
-    true
-  );
-
-  makeDraggable(
+  enableDrag(button, button, "dwingsChatButtonPosition");
+  enableDrag(
     panel,
-    header,
-    "dwingsChatPanelPosition",
-    false
+    panel.firstElementChild,
+    "dwingsChatPanelPosition"
   );
 
-  button.addEventListener("click",function(e){
-    if(button.dataset.dragged === "yes"){
+  button.addEventListener("click", function (e) {
+    if (button.dataset.dragged === "yes") {
       e.preventDefault();
       e.stopImmediatePropagation();
       button.dataset.dragged = "";
     }
-  },true);
-
+  }, true);
 })();
+
 
 </body>
           </html>
