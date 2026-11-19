@@ -1886,6 +1886,52 @@ td{border-color:#2c394b!important}
   #app>section{order:1!important;display:block!important;flex:1 1 auto!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important}
   #app>section:not(.hidden){min-height:0!important}
 }
+
+
+/* FINAL MOBILE PORTRAIT FIX: preserve hidden pages and use a 3 x 2 category grid */
+@media screen and (max-width:600px) and (orientation:portrait){
+  /* The generic mobile section rule must never override the hidden class. */
+  #app>section.hidden,
+  #app section.hidden{
+    display:none !important;
+  }
+  #app>section:not(.hidden){
+    display:block !important;
+  }
+  /* Product categories: three columns, two rows (six categories). */
+  #salesPage .sales-layout>#categoryTabs{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    grid-auto-rows:minmax(42px,auto);
+    align-items:stretch;
+    justify-content:stretch;
+    width:100% !important;
+    max-width:100% !important;
+    overflow:visible !important;
+    overflow-x:visible !important;
+    overflow-y:visible !important;
+    flex-wrap:initial !important;
+    gap:8px !important;
+    padding:0 !important;
+    margin:0 0 12px !important;
+  }
+  #salesPage .sales-layout>#categoryTabs .category-btn{
+    display:flex !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    min-height:44px !important;
+    height:auto !important;
+    padding:8px 5px !important;
+    white-space:normal !important;
+    text-align:center !important;
+    line-height:1.15 !important;
+    overflow-wrap:anywhere;
+    font-size:10px !important;
+    box-sizing:border-box !important;
+  }
+}
+
 </style>
 </head>
 <body>
