@@ -1824,6 +1824,21 @@ td{border-color:#2c394b!important}
 #dashboardPage .dashboard-payroll-profit-grid>.panel,#dashboardPage .dashboard-ranking-grid>.panel{min-width:0}
 #dashboardPage .dashboard-ranking-grid>.panel{padding:16px}
 @media(max-width:900px){#dashboardPage .dashboard-payroll-profit-grid{grid-template-columns:1fr!important}#dashboardPage .dashboard-ranking-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* MODERN MONTHLY PERFORMANCE */
+#dashboardPage .dashboard-monthly-panel{padding:20px;background:linear-gradient(145deg,#151a24,#10141c);border:1px solid #293241;overflow:hidden}
+#dashboardPage .dashboard-monthly-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 18px}
+#dashboardPage .dashboard-monthly-stat{padding:13px 14px;border:1px solid #2a3442;border-radius:12px;background:rgba(255,255,255,.025);min-width:0}
+#dashboardPage .dashboard-monthly-stat span{display:block;color:#9da9b8;font-size:10px;font-weight:800;letter-spacing:.7px;margin-bottom:7px}
+#dashboardPage .dashboard-monthly-stat strong{display:block;color:#f5f7fa;font-size:clamp(16px,2vw,23px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#dashboardPage .dashboard-monthly-stat small{display:block;color:#8995a5;font-size:10px;margin-top:5px}
+#dashboardPage .dashboard-monthly-stat.current{border-top:2px solid #d6ad55}
+#dashboardPage .dashboard-monthly-stat.previous{border-top:2px solid #78879a}
+#dashboardPage .dashboard-monthly-stat.profit{border-top:2px solid #55c995}
+#dashboardPage .dashboard-monthly-stat.growth{border-top:2px solid #6da9f7}
+#dashboardPage .dashboard-monthly-chart-wrap{height:320px;position:relative;width:100%}
+@media(max-width:800px){#dashboardPage .dashboard-monthly-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){#dashboardPage .dashboard-monthly-panel{padding:14px}#dashboardPage .dashboard-monthly-chart-wrap{height:270px}}
 @media(max-width:600px){#dashboardPage .dashboard-hero{align-items:flex-start;padding:17px;flex-direction:column}#dashboardPage .dashboard-kpi-grid{grid-template-columns:1fr}#dashboardPage .dashboard-kpi-card{padding:14px}#dashboardPage .dashboard-section-heading{align-items:flex-start}#dashboardPage .dashboard-ranking-grid{grid-template-columns:1fr!important}}
 </style>
 </head>
@@ -2760,6 +2775,24 @@ td{border-color:#2c394b!important}
     <div id="dashboardBusinessSummary">
       <p class="small">Loading today's business performance...</p>
     </div>
+  </section>
+
+  <!-- MONTHLY SALES & PROFIT COMPARISON -->
+  <section class="panel dashboard-monthly-panel">
+    <div class="dashboard-section-heading">
+      <div>
+        <h3>MONTHLY SALES &amp; PROFIT</h3>
+        <p class="small">Six-month performance · completed orders only · VOID excluded</p>
+      </div>
+      <span class="dashboard-date-label" id="dashboardMonthlyRange">LAST 6 MONTHS</span>
+    </div>
+    <div id="dashboardMonthlySummary" class="dashboard-monthly-summary">
+      <p class="small">Loading monthly comparison...</p>
+    </div>
+    <div class="dashboard-monthly-chart-wrap">
+      <canvas id="dashboardMonthlyChart" aria-label="Monthly sales and estimated profit chart"></canvas>
+    </div>
+    <p class="dashboard-estimate-note">Estimated profit uses the current POS assumptions: ₱3,000 daily rent, packaging at 50% of sales, recorded staff attendance and existing sales incentives. It is an estimate, not audited profit.</p>
   </section>
 
 <div class="dashboard-payroll-profit-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;">
@@ -6008,6 +6041,7 @@ function refreshDashboardOrderData(){
   if(!dashboard || dashboard.classList.contains("hidden")) return;
 
   loadDashboardBusinessPerformance();
+  loadDashboardMonthlyComparison();
   loadDashboardRankings();
   loadDashboardOrdersChart();
   loadDashboardPerformanceChart();
@@ -6627,6 +6661,110 @@ options:{
 
 }
 
+
+async function loadDashboardMonthlyComparison(){
+  const summaryEl = document.getElementById("dashboardMonthlySummary");
+  const canvasEl = document.getElementById("dashboardMonthlyChart");
+  if(!summaryEl || !canvasEl) return;
+  summaryEl.innerHTML = "<p class='small'>Loading monthly comparison...</p>";
+  try{
+    const today = getManilaDateTime().date;
+    const [year, month, day] = today.split("-").map(Number);
+    const currentMonthStart = `${year}-${String(month).padStart(2,"0")}-01`;
+    const previousMonthDate = new Date(year, month-2, 1, 12);
+    const previousMonthStart = `${previousMonthDate.getFullYear()}-${String(previousMonthDate.getMonth()+1).padStart(2,"0")}-01`;
+    const sixMonthDate = new Date(year, month-6, 1, 12);
+    const sixMonthStart = `${sixMonthDate.getFullYear()}-${String(sixMonthDate.getMonth()+1).padStart(2,"0")}-01`;
+    const [ordersSnapshot, attendanceSnapshot, employeesSnapshot] = await Promise.all([
+      getDocs(query(collection(db,"orders"),where("orderDate",">=",sixMonthStart),where("orderDate","<=",today))),
+      getDocs(query(collection(db,"attendance"),where("date",">=",sixMonthStart),where("date","<=",today))),
+      getDocs(collection(db,"employees"))
+    ]);
+    const orders = ordersSnapshot.docs.map(d=>d.data()).filter(o=>String(o.status||"").toUpperCase()==="COMPLETED");
+    const employees = {};
+    employeesSnapshot.forEach(d=>{ const e=d.data(); if(e.active===true) employees[d.id]=e; });
+    const salesByDate = {};
+    orders.forEach(o=>{
+      const date=String(o.orderDate||"");
+      if(!date) return;
+      salesByDate[date]=(salesByDate[date]||0)+(Number(o.total)||0);
+    });
+    const staffCostByDate = {};
+    const staffCountByDate = {};
+    attendanceSnapshot.forEach(d=>{
+      const a=d.data();
+      if(!a.date || !a.employeeId || !a.timeIn || String(a.status||"").toUpperCase()==="ABSENT") return;
+      const employee=employees[a.employeeId];
+      if(!employee) return;
+      staffCostByDate[a.date]=(staffCostByDate[a.date]||0)+(Number(employee.dailyRate)||500);
+      staffCountByDate[a.date]=(staffCountByDate[a.date]||0)+1;
+    });
+    const months=[];
+    for(let i=5;i>=0;i--){
+      const d=new Date(year,month-1-i,1,12);
+      const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+      months.push({key,label:d.toLocaleDateString("en-PH",{month:"short",year:"2-digit"})});
+    }
+    const monthly = months.map(m=>{
+      const dates=Object.keys(salesByDate).filter(k=>k.startsWith(m.key));
+      const sales=dates.reduce((sum,k)=>sum+salesByDate[k],0);
+      const isCurrent=m.key===today.slice(0,7);
+      const monthDate=new Date(Number(m.key.slice(0,4)),Number(m.key.slice(5,7))-1,1,12);
+      const daysInMonth=new Date(monthDate.getFullYear(),monthDate.getMonth()+1,0).getDate();
+      const daysToCount=isCurrent?day:daysInMonth;
+      let payroll=0, incentives=0;
+      for(let n=1;n<=daysToCount;n++){
+        const date=`${m.key}-${String(n).padStart(2,"0")}`;
+        const dailySales=Number(salesByDate[date])||0;
+        const staffCount=Number(staffCountByDate[date])||0;
+        payroll+=Number(staffCostByDate[date])||0;
+        const weekday=new Date(date+"T12:00:00").getDay();
+        if(dailySales>=20000) incentives+=staffCount*500;
+        else if(dailySales>=15000) incentives+=300;
+        else if(dailySales>=10000) incentives+=(weekday>=1&&weekday<=4)?200:100;
+      }
+      const rent=daysToCount*3000;
+      const packaging=sales*0.50;
+      const expenses=payroll+incentives+rent+packaging;
+      return {...m,sales,expenses,profit:sales-expenses,days:daysToCount,isCurrent};
+    });
+    const current=monthly[monthly.length-1];
+    const previous=monthly[monthly.length-2];
+    const comparisonPreviousMonthDate=new Date(Number(previous.key.slice(0,4)),Number(previous.key.slice(5,7))-1,1,12);
+    const previousComparableDays=Math.min(day,new Date(comparisonPreviousMonthDate.getFullYear(),comparisonPreviousMonthDate.getMonth()+1,0).getDate());
+    const previousComparableSales=Object.entries(salesByDate).reduce((sum,[date,value])=>{
+      if(date.startsWith(previous.key) && Number(date.slice(8,10))<=previousComparableDays) return sum+value;
+      return sum;
+    },0);
+    const change=previousComparableSales>0?((current.sales-previousComparableSales)/previousComparableSales)*100:null;
+    const pesoValue=value=>"₱"+(Number(value)||0).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:0});
+    const changeText=change===null?"No previous-period baseline":`${change>=0?"↑":"↓"} ${Math.abs(change).toFixed(1)}% vs same period last month`;
+    summaryEl.innerHTML=`
+      <div class="dashboard-monthly-stat current"><span>THIS MONTH · SALES</span><strong>${pesoValue(current.sales)}</strong><small>${current.days} days counted</small></div>
+      <div class="dashboard-monthly-stat previous"><span>PREVIOUS MONTH · SAME PERIOD</span><strong>${pesoValue(previousComparableSales)}</strong><small>${previousComparableDays} days compared</small></div>
+      <div class="dashboard-monthly-stat profit"><span>THIS MONTH · EST. PROFIT</span><strong>${pesoValue(current.profit)}</strong><small>After estimated expenses</small></div>
+      <div class="dashboard-monthly-stat growth"><span>SALES GROWTH</span><strong>${change===null?"—":`${change>=0?"+":""}${change.toFixed(1)}%`}</strong><small>${changeText}</small></div>`;
+    const range=document.getElementById("dashboardMonthlyRange");
+    if(range) range.textContent=`${months[0].label.toUpperCase()} – ${months[5].label.toUpperCase()}`;
+    if(typeof Chart==="undefined"){
+      canvasEl.parentElement.innerHTML="<p class='small'>Chart library is unavailable.</p>";
+      return;
+    }
+    const existing=Chart.getChart(canvasEl);
+    if(existing) existing.destroy();
+    new Chart(canvasEl,{
+      type:"bar",
+      data:{labels:monthly.map(m=>m.label),datasets:[
+        {type:"bar",label:"Sales",data:monthly.map(m=>m.sales),backgroundColor:"rgba(214,173,85,.78)",borderColor:"#d6ad55",borderWidth:1,borderRadius:7,borderSkipped:false,yAxisID:"y",maxBarThickness:34},
+        {type:"line",label:"Estimated Profit",data:monthly.map(m=>m.profit),borderColor:"#55c995",backgroundColor:"rgba(85,201,149,.13)",pointBackgroundColor:"#55c995",pointBorderColor:"#10141c",pointBorderWidth:2,pointRadius:4,pointHoverRadius:6,tension:.35,fill:true,yAxisID:"y"}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{position:"top",align:"end",labels:{color:"#c6cfda",usePointStyle:true,boxWidth:8,boxHeight:8,padding:18,font:{size:11}}},tooltip:{backgroundColor:"#171d28",titleColor:"#fff",bodyColor:"#dce2ea",borderColor:"#354153",borderWidth:1,padding:12,callbacks:{label:ctx=>`${ctx.dataset.label}: ${pesoValue(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{color:"#9ca8b8",font:{size:10}}},y:{beginAtZero:false,grid:{color:"rgba(148,163,184,.12)"},ticks:{color:"#9ca8b8",callback:value=>"₱"+Number(value).toLocaleString("en-PH")}}}}
+    });
+  }catch(error){
+    console.error("Monthly dashboard comparison error:",error);
+    summaryEl.innerHTML="<p class='small'>Unable to load monthly comparison. Please refresh the dashboard.</p>";
+  }
+}
 
 async function loadDashboardBusinessPerformance(){
 
