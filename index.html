@@ -2162,6 +2162,68 @@ td{border-color:#2c394b!important}
 @media(max-width:600px){#app:not(.hidden){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;width:100%!important}#app:not(.hidden)>.terminal-nav{order:0!important;width:100%!important;min-width:0!important;max-width:100%!important}#app:not(.hidden)>section:not(.hidden){order:1!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important}}
 </style>
 
+
+<style id="cart-side-by-side-fix">
+#cartPanel.hidden {
+  display: none !important;
+}
+
+#cartPanel:not(.hidden) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Desktop & Tablet Landscape: Put Cart beside the Menu (Right Column), NOT underneath */
+@media (min-width: 768px) {
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 350px !important;
+    align-items: start !important;
+    gap: 16px !important;
+  }
+
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) > .sales-terminal-heading,
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) > #manualOrderModePanel {
+    grid-column: 1 / -1 !important;
+  }
+
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) > .sales-layout {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) > #cartPanel {
+    grid-column: 2 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    position: sticky !important;
+    top: 16px !important;
+    max-height: calc(100vh - 32px) !important;
+    overflow-y: auto !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* Mobile Portrait: Put Cart at the TOP above the Menu instead of buried underneath */
+@media (max-width: 767px) {
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+
+  #salesPage:not(.hidden) > #cartPanel:not(.hidden) {
+    order: -1 !important;
+    width: 100% !important;
+    position: static !important;
+    max-height: none !important;
+  }
+}
+</style>
 </head>
 <body>
 <header style="display:none">
