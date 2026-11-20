@@ -1968,7 +1968,58 @@ td{border-color:#2c394b!important}
   #app > .terminal-nav #settingsBtn svg,
   #app > .terminal-nav #logoutBtn svg{display:block !important;visibility:visible !important;opacity:1 !important}
 }
+
+
+/* LAYOUT FIX — KEEP OWNER MONITOR AND PEAK HOURS BESIDE THE SIDEBAR */
+@media screen and (min-width:601px){
+  #app:not(.hidden){
+    display:grid!important;
+    grid-template-columns:218px minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    align-items:start!important;
+    width:100%!important;
+    min-width:0!important;
+    gap:16px!important;
+  }
+  #app:not(.hidden)>.terminal-nav{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:218px!important;
+    min-width:218px!important;
+    max-width:218px!important;
+    align-self:start!important;
+  }
+  #app:not(.hidden)>section:not(.hidden){
+    grid-column:2!important;
+    grid-row:1!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    justify-self:stretch!important;
+    align-self:start!important;
+  }
+}
+@media screen and (min-width:601px) and (max-width:850px){
+  #app:not(.hidden){grid-template-columns:66px minmax(0,1fr)!important;gap:12px!important}
+  #app:not(.hidden)>.terminal-nav{width:66px!important;min-width:66px!important;max-width:66px!important}
+}
+@media screen and (max-width:600px){
+  #app:not(.hidden){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto minmax(0,1fr)!important;
+    gap:8px!important;
+    width:100%!important;
+  }
+  #app:not(.hidden)>.terminal-nav{grid-column:1!important;grid-row:1!important;width:100%!important;min-width:0!important;max-width:100%!important}
+  #app:not(.hidden)>section:not(.hidden){grid-column:1!important;grid-row:2!important;width:100%!important;min-width:0!important;max-width:100%!important}
+}
+
+
+
 </style>
+<style id="daily-report-modern-style">#reportPage .daily-report-shell{padding:22px;border:1px solid rgba(201,166,92,.2);background:linear-gradient(160deg,#181a1d,#121416);border-radius:18px}#reportPage .daily-report-heading h2{margin:4px 0;font-size:26px;letter-spacing:-.6px;font-weight:650;color:#f4f4f2}#reportPage .report-eyebrow{font-size:10px;letter-spacing:2px;color:#c6a15a;margin:0;font-weight:700}#reportPage .report-muted{color:#92979b;font-size:12px;margin:4px 0}#reportPage .report-date-controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:18px 0 8px;align-items:end}#reportPage .report-date-controls label{grid-column:1/-1;font-size:10px;letter-spacing:1.4px;color:#aeb2b5;font-weight:700}#reportPage .report-date-controls input{grid-column:1/-1;min-width:0}#reportPage .report-date-controls button{margin:0;min-height:40px;border-radius:10px;font-size:12px}#reportPage .daily-report-content{margin-top:14px}#reportPage .daily-report-content .row{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}#reportPage .daily-report-content .panel{background:#1d2022;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:14px;margin:10px 0}#reportPage .daily-report-content .total{color:#e5bd72;font-size:20px;font-weight:700}#reportPage .payment-summary{margin-top:16px;padding:15px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:#1a1c1e}#reportPage .payment-heading{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;letter-spacing:1.1px;margin-bottom:12px}#reportPage .payment-grid{display:grid;grid-template-columns:1fr;gap:8px}#reportPage .payment-card{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:#222527}#reportPage .payment-card span{font-size:10px;color:#a9adaf;letter-spacing:1px;font-weight:700}#reportPage .payment-card strong{font-size:16px;color:#e6c273}#reportPage .report-export{width:100%;margin-top:14px;border-radius:10px}@media(min-width:700px){#reportPage .report-date-controls{grid-template-columns:minmax(180px,1fr) auto auto auto}#reportPage .report-date-controls label{grid-column:1/-1}#reportPage .report-date-controls input{grid-column:auto}#reportPage .payment-grid{grid-template-columns:repeat(3,1fr)}#reportPage .payment-card{display:block}#reportPage .payment-card strong{display:block;margin-top:8px}}</style>
+<style id="report-mini-analytics-style">#reportPage .report-chart-panel h3,#reportPage .report-top-products h3{font-size:11px;letter-spacing:1.3px;color:#aaa;margin:0 0 12px}.hourly-bars{height:120px;display:flex;align-items:flex-end;gap:3px;border-bottom:1px solid #383b3d}.hour-bar-wrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}.hour-bar{width:100%;max-width:14px;background:linear-gradient(#dfb86a,#9a7131);border-radius:3px 3px 0 0}.hour-bar-wrap span{font-size:8px;color:#85898b;height:10px}.top-product-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}.top-product-rank{color:#c9a35e;font-size:11px;width:20px}.top-product-name{flex:1;font-size:12px}.top-product-row strong{font-size:12px;color:#eee}</style>
 </head>
 <body>
 <header style="display:none">
@@ -2842,48 +2893,12 @@ td{border-color:#2c394b!important}
 </section>
 
 
-<section id="reportPage" class="hidden">
-  <!-- DAILY SALES REPORT -->
-  <div class="panel">
-    <h3>DAILY SALES REPORT</h3>
-
-    <label for="reportDate">Select Date</label>
-    <input type="date" id="reportDate">
-
-    <button id="viewReportBtn" class="secondary" style="width:100%">
-      VIEW DAILY REPORT
-    </button>
-
-     <button id="toggleSalesVisibility" class="secondary" style="width:100%;margin-top:12px">
-  SHOW AMOUNTS
-</button>
-
-    <div id="dailyReport" style="margin-top:15px"></div>
-    <div class="panel" style="margin-top:15px">
-  <h3>WHOLE-DAY PAYMENT SUMMARY</h3>
-
-<div class="row">
-  <strong>CASH RECEIVED</strong>
-  <strong class="total" id="summaryCash">₱0.00</strong>
-</div>
-
-  <div class="row">
-    <strong>GCASH RECEIVED</strong>
-    <strong class="total" id="summaryGCash">₱0.00</strong>
-  </div>
-
-  <div class="row">
-    <strong>PAYMAYA RECEIVED</strong>
-    <strong class="total" id="summaryPayMaya">₱0.00</strong>
-  </div>
-</div>
-
-<button id="exportExcelBtn" class="hidden" style="width:100%;margin-top:12px">
-  EXPORT TO EXCEL
-</button>
-  </div>
-  
-</section>
+<section id="reportPage" class="hidden"><div class="panel daily-report-shell">
+<div class="daily-report-heading"><p class="report-eyebrow">OWNER • ANALYTICS</p><h2>Daily Sales</h2><p class="report-muted">A clear snapshot of store performance.</p></div>
+<div class="report-date-controls"><label for="reportDate">REPORT DATE</label><input type="date" id="reportDate"><button id="viewReportBtn" class="secondary">VIEW REPORT</button><button id="toggleSalesVisibility" class="secondary">SHOW AMOUNTS</button></div>
+<div id="dailyReport" class="daily-report-content"></div>
+<div class="payment-summary"><div class="payment-heading"><span>PAYMENT BREAKDOWN</span><span class="report-muted">Collected today</span></div><div class="payment-grid"><div class="payment-card"><span>CASH</span><strong class="total" id="summaryCash">₱0.00</strong></div><div class="payment-card"><span>GCASH</span><strong class="total" id="summaryGCash">₱0.00</strong></div><div class="payment-card"><span>PAYMAYA</span><strong class="total" id="summaryPayMaya">₱0.00</strong></div></div></div>
+<button id="exportExcelBtn" class="hidden report-export">EXPORT TO EXCEL</button></div></section>
 
 
   <!-- OWNER DASHBOARD -->
@@ -3125,6 +3140,8 @@ td{border-color:#2c394b!important}
 </section>
 
 </div>
+
+
 </main>
   <div id="flavorModal" class="hidden">
   <div class="panel">
@@ -8392,6 +8409,7 @@ async function loadDashboardPayslips(){
   width:100%;
   box-sizing:border-box;
 }
+
 </style>
 
           </head>
@@ -10050,93 +10068,25 @@ const netSales = completedOrders.reduce(
       selectedDate,
       netSales
     );
+    const hourlyCounts = Array(24).fill(0);
+    const productCounts = {};
+    completedOrders.forEach(order => {
+      const ts = order.createdAt?.toMillis?.() || order.createdAt?.seconds * 1000 || 0;
+      if(ts){ const hour = new Date(ts).getHours(); hourlyCounts[hour] += 1; }
+      (order.items || []).forEach(item => { const name = item.name || "Item"; productCounts[name] = (productCounts[name] || 0) + (Number(item.qty) || 0); });
+    });
+    const maxHourCount = Math.max(1, ...hourlyCounts);
+    const hourlyMarkup = hourlyCounts.map((count,hour) => `<div class="hour-bar-wrap"><div class="hour-bar" style="height:${Math.max(count?5:0, count/maxHourCount*100)}%" title="${hour}:00 — ${count} orders"></div><span>${hour%3===0 ? String(hour).padStart(2,"0") : ""}</span></div>`).join("");
+    const topProducts = Object.entries(productCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const topProductsMarkup = topProducts.length ? topProducts.map(([name,qty],i)=>`<div class="top-product-row"><span class="top-product-rank">${i+1}</span><span class="top-product-name">${escapeHTML(name)}</span><strong>${qty}</strong></div>`).join("") : `<p class="report-muted">No product data for this date.</p>`;
     reportEl.innerHTML = `
-      <h3>REPORT SUMMARY</h3>
-
-      <p>Date: ${escapeHTML(selectedDate)}</p>
-
-      <div class="row">
-        <strong>Completed Orders</strong>
-        <strong>${completedOrders.length}</strong>
-      </div>
-
-      <div class="row">
-        <strong>VOID Orders</strong>
-        <strong>${voidOrders.length}</strong>
-      </div>
-
-     <div class="row">
-  <strong>NET SALES</strong>
-  <strong class="total" id="summaryNetSales">${peso(netSales)}</strong>
-</div>
-
-           <div class="panel" style="border:1px solid #765b28;background:#242016">
-      
-
-        <p class="small">CURRENT DAILY SALES</p>
-        <div class="total" id="currentDailySalesAmount">${salesAmountsVisible ? peso(netSales) : "*****"}</div>
-
-        <div class="row">
-          <strong>PROGRESS TO NEXT TARGET</strong>
-          <strong>${Math.round(incentiveInfo.progress)}%</strong>
-        </div>
-
-        <div style="height:14px;background:#444;border-radius:20px;overflow:hidden">
-          <div style="height:14px;width:${incentiveInfo.progress}%;background:#e7ad3e;border-radius:20px"></div>
-        </div>
-
-        ${incentiveInfo.earned ? `
-          <p style="color:#7de39a;font-weight:bold">
-            ${escapeHTML(incentiveInfo.earned)}
-          </p>
-        ` : ""}
-
-        <p><strong>${escapeHTML(incentiveInfo.next)}</strong></p>
-
-        ${netSales >= 20000 ? `
-          <p class="small">
-            Each staff member working that day receives twice their regular daily salary.
-          </p>
-        ` : ""}
-      </div>
-
-      <hr>
-
-      <h3>COMPLETED ORDERS</h3>
-
-      ${completedOrders.length ? completedOrders.map(order => `
-        <div class="panel">
-          <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
-          <p class="small">
-            ${escapeHTML(order.customerName || "Walk-in")} |
-            ${escapeHTML(order.orderType || "")}
-          </p>
-          ${(order.items || []).map(item => `
-            <p class="small">
-              ${escapeHTML(item.name)} × ${Number(item.qty) || 0}
-            </p>
-          `).join("")}
-          <strong>${peso(Number(order.total) || 0)}</strong>
-        </div>
-      `).join("") : "<p class='small'>No completed orders found.</p>"}
-
-      <hr>
-
-      <h3>VOID ORDERS</h3>
-
-      ${voidOrders.length ? voidOrders.map(order => `
-<div class="order-list-card">
-          <strong>ORDER #${escapeHTML(order.orderNumber || "LEGACY")}</strong>
-          <p class="small">
-            ${escapeHTML(order.customerName || "Walk-in")}
-          </p>
-          <strong>${peso(Number(order.total) || 0)}</strong>
-          <p class="small">
-            VOID REASON: ${escapeHTML(order.voidReason || "Not provided")}
-          </p>
-        </div>
-      `).join("") : "<p class='small'>No VOID orders found.</p>"}
-    `;
+<p class="report-muted">${escapeHTML(selectedDate)}</p>
+<div class="panel"><span class="report-muted">NET SALES</span><div class="total" id="summaryNetSales">${salesAmountsVisible ? peso(netSales) : "*****"}</div></div>
+<div class="row"><strong>COMPLETED ORDERS</strong><strong>${completedOrders.length}</strong></div><div class="row"><strong>VOID ORDERS</strong><strong>${voidOrders.length}</strong></div>
+<div class="row"><strong>AVERAGE ORDER</strong><strong>${salesAmountsVisible ? peso(completedOrders.length ? netSales/completedOrders.length : 0) : "*****"}</strong></div>
+<div class="panel report-chart-panel"><h3>HOURLY ORDERS</h3><div class="hourly-bars">${hourlyMarkup}</div></div>
+<div class="panel report-top-products"><h3>TOP-SELLING PRODUCTS</h3>${topProductsMarkup}</div>
+<div class="panel" style="border:1px solid rgba(201,166,92,.3);background:#211d16"><p class="small">DAILY SALES TARGET</p><div class="total" id="currentDailySalesAmount">${salesAmountsVisible ? peso(netSales) : "*****"}</div><div class="row"><strong>PROGRESS TO NEXT TARGET</strong><strong>${Math.round(incentiveInfo.progress)}%</strong></div><div style="height:9px;background:#393939;border-radius:20px;overflow:hidden"><div style="height:9px;width:${incentiveInfo.progress}%;background:#d9ad5d;border-radius:20px"></div></div>${incentiveInfo.earned ? `<p style="color:#7de39a;font-weight:bold;margin-top:12px">${escapeHTML(incentiveInfo.earned)}</p>` : ""}<p><strong>${escapeHTML(incentiveInfo.next)}</strong></p>${netSales >= 20000 ? `<p class="small">Each staff member working that day receives twice their regular daily salary.</p>` : ""}</div><p class="report-muted">VOID orders are excluded from sales totals.</p>`;
 const salesVisibilityBtn =
   document.getElementById("toggleSalesVisibility");
 
@@ -12885,7 +12835,7 @@ document.getElementById("employeeAttendanceBtn").addEventListener("click", () =>
     "queuePage",
     "historyPage",
     "reportPage",
-    "dashboardPage"
+    "dashboardPage",
   ].forEach(id => {
     document.getElementById(id).classList.add("hidden");
   });
@@ -12910,7 +12860,7 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
     "queuePage",
     "historyPage",
     "reportPage",
-    "employeeAttendancePage"
+    "employeeAttendancePage",
   ].forEach(id => {
     document.getElementById(id).classList.add("hidden");
   });
