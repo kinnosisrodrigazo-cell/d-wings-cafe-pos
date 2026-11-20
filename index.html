@@ -2017,9 +2017,151 @@ td{border-color:#2c394b!important}
 
 
 
+
+/* INVENTORY PAGE — keep content aligned beside the D’ Wings Cafe sidebar */
+@media screen and (min-width:601px){
+  #app:not(.hidden) > #inventoryPage:not(.hidden){
+    grid-column:2!important;grid-row:1!important;justify-self:stretch!important;
+    align-self:start!important;width:100%!important;min-width:0!important;
+    max-width:none!important;margin:0!important;
+  }
+}
+@media screen and (max-width:600px){
+  #app:not(.hidden) > #inventoryPage:not(.hidden){
+    grid-column:1!important;grid-row:2!important;width:100%!important;
+    min-width:0!important;max-width:100%!important;margin:0!important;
+  }
+}
+#app > .terminal-nav #inventoryBtn svg{display:block;width:21px;height:21px;min-width:21px;min-height:21px;flex:0 0 21px;stroke:currentColor;fill:none}
 </style>
 <style id="daily-report-modern-style">#reportPage .daily-report-shell{padding:22px;border:1px solid rgba(201,166,92,.2);background:linear-gradient(160deg,#181a1d,#121416);border-radius:18px}#reportPage .daily-report-heading h2{margin:4px 0;font-size:26px;letter-spacing:-.6px;font-weight:650;color:#f4f4f2}#reportPage .report-eyebrow{font-size:10px;letter-spacing:2px;color:#c6a15a;margin:0;font-weight:700}#reportPage .report-muted{color:#92979b;font-size:12px;margin:4px 0}#reportPage .report-date-controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:18px 0 8px;align-items:end}#reportPage .report-date-controls label{grid-column:1/-1;font-size:10px;letter-spacing:1.4px;color:#aeb2b5;font-weight:700}#reportPage .report-date-controls input{grid-column:1/-1;min-width:0}#reportPage .report-date-controls button{margin:0;min-height:40px;border-radius:10px;font-size:12px}#reportPage .daily-report-content{margin-top:14px}#reportPage .daily-report-content .row{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}#reportPage .daily-report-content .panel{background:#1d2022;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:14px;margin:10px 0}#reportPage .daily-report-content .total{color:#e5bd72;font-size:20px;font-weight:700}#reportPage .payment-summary{margin-top:16px;padding:15px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:#1a1c1e}#reportPage .payment-heading{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;letter-spacing:1.1px;margin-bottom:12px}#reportPage .payment-grid{display:grid;grid-template-columns:1fr;gap:8px}#reportPage .payment-card{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:#222527}#reportPage .payment-card span{font-size:10px;color:#a9adaf;letter-spacing:1px;font-weight:700}#reportPage .payment-card strong{font-size:16px;color:#e6c273}#reportPage .report-export{width:100%;margin-top:14px;border-radius:10px}@media(min-width:700px){#reportPage .report-date-controls{grid-template-columns:minmax(180px,1fr) auto auto auto}#reportPage .report-date-controls label{grid-column:1/-1}#reportPage .report-date-controls input{grid-column:auto}#reportPage .payment-grid{grid-template-columns:repeat(3,1fr)}#reportPage .payment-card{display:block}#reportPage .payment-card strong{display:block;margin-top:8px}}</style>
 <style id="report-mini-analytics-style">#reportPage .report-chart-panel h3,#reportPage .report-top-products h3{font-size:11px;letter-spacing:1.3px;color:#aaa;margin:0 0 12px}.hourly-bars{height:120px;display:flex;align-items:flex-end;gap:3px;border-bottom:1px solid #383b3d}.hour-bar-wrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}.hour-bar{width:100%;max-width:14px;background:linear-gradient(#dfb86a,#9a7131);border-radius:3px 3px 0 0}.hour-bar-wrap span{font-size:8px;color:#85898b;height:10px}.top-product-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}.top-product-rank{color:#c9a35e;font-size:11px;width:20px}.top-product-name{flex:1;font-size:12px}.top-product-row strong{font-size:12px;color:#eee}</style>
+
+<style id="dw-inventory-costing-style">
+#inventoryPage{color:#eee}#inventoryPage .inv-shell{background:linear-gradient(145deg,#191b1d,#111314);border:1px solid rgba(210,174,104,.2);border-radius:16px;padding:18px}#inventoryPage .inv-eyebrow{font-size:10px;letter-spacing:1.8px;color:#c8a568;font-weight:700}#inventoryPage .inv-title{font-size:24px;font-weight:650;margin:3px 0}#inventoryPage .inv-muted{color:#969b9d;font-size:11px}#inventoryPage .inv-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:15px 0}#inventoryPage .inv-stat{background:#202326;border:1px solid #303437;border-radius:12px;padding:12px;min-width:0}#inventoryPage .inv-stat small{display:block;color:#a5aaac;font-size:9px;letter-spacing:1px}#inventoryPage .inv-stat strong{display:block;font-size:21px;margin-top:5px;color:#e8c47e}#inventoryPage .inv-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}#inventoryPage .inv-tabs button{background:#25292c;border:1px solid #3b4043;color:#c6c9ca;padding:9px 12px;border-radius:9px;font-size:11px}#inventoryPage .inv-tabs button.active{background:#594729;border-color:#b28b4d;color:#ffe0a0}#inventoryPage .inv-panel{background:#1b1e20;border:1px solid #303538;border-radius:13px;padding:14px;margin:10px 0}#inventoryPage input,#inventoryPage select{background:#111416;color:#eee;border:1px solid #3a4043;border-radius:8px;padding:10px;min-width:0;width:100%;font-size:12px}#inventoryPage label{display:block;font-size:10px;color:#aeb2b3;margin:0 0 5px}#inventoryPage .inv-formgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}#inventoryPage .inv-action{background:#b58b4c;color:#17130d;border:0;border-radius:8px;padding:10px 14px;font-weight:700;font-size:11px;cursor:pointer}#inventoryPage .inv-secondary{background:#282d30;color:#ddd;border:1px solid #41474a;border-radius:8px;padding:9px 12px;font-size:11px}#inventoryPage .inv-table-wrap{overflow-x:auto;border:1px solid #303538;border-radius:10px}#inventoryPage table{width:100%;border-collapse:collapse;min-width:680px}#inventoryPage th{background:#25292c;color:#aeb4b6;font-size:9px;letter-spacing:.8px;text-align:left;padding:10px;white-space:nowrap}#inventoryPage td{padding:10px;border-top:1px solid #303538;font-size:11px;white-space:nowrap}#inventoryPage .inv-search{margin:12px 0}#inventoryPage .inv-product-row{display:grid;grid-template-columns:minmax(180px,2fr) repeat(4,minmax(75px,1fr));gap:8px;align-items:center;padding:10px;border-bottom:1px solid #303538;font-size:11px}#inventoryPage .inv-product-head{background:#25292c;color:#aeb4b6;font-size:9px;letter-spacing:.7px;border-radius:8px 8px 0 0}#inventoryPage .inv-product-row span{min-width:0}#inventoryPage .inv-profit{color:#e7c27b;font-weight:700}#inventoryPage .inv-empty{padding:18px;text-align:center;color:#92989a;font-size:11px}@media(max-width:760px){#inventoryPage .inv-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#inventoryPage .inv-formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}#inventoryPage .inv-shell{padding:12px}#inventoryPage .inv-title{font-size:20px}}
+</style>
+
+
+<style id="inventory-two-column-layout-final">
+/* Inventory page must occupy the right content column beside the permanent POS sidebar. */
+@media screen and (min-width: 601px) {
+  #app:not(.hidden) {
+    display: grid !important;
+    grid-template-columns: 218px minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    align-items: start !important;
+    column-gap: 16px !important;
+    row-gap: 0 !important;
+  }
+  #app:not(.hidden) > .terminal-nav {
+    display: flex !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 218px !important;
+    min-width: 218px !important;
+    max-width: 218px !important;
+    align-self: start !important;
+  }
+  #app:not(.hidden) > #inventoryPage:not(.hidden) {
+    display: block !important;
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    justify-self: stretch !important;
+    align-self: start !important;
+  }
+  #inventoryPage .inv-shell {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+}
+@media screen and (min-width: 601px) and (max-width: 850px) {
+  #app:not(.hidden) { grid-template-columns: 66px minmax(0, 1fr) !important; }
+  #app:not(.hidden) > .terminal-nav { width: 66px !important; min-width: 66px !important; max-width: 66px !important; }
+}
+@media screen and (max-width: 600px) {
+  #app:not(.hidden) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    row-gap: 8px !important;
+  }
+  #app:not(.hidden) > .terminal-nav {
+    display: flex !important; grid-column: 1 !important; grid-row: 1 !important;
+    width: 100% !important; min-width: 0 !important; max-width: 100% !important;
+  }
+  #app:not(.hidden) > #inventoryPage:not(.hidden) {
+    display: block !important; grid-column: 1 !important; grid-row: 2 !important;
+    width: 100% !important; min-width: 0 !important; max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
+/* Crisp stock-box icon in the sidebar */
+#inventoryBtn svg { display: block !important; width: 21px !important; height: 21px !important; flex: 0 0 21px !important; stroke: currentColor !important; fill: none !important; }
+</style>
+
+
+<style id="dw-settings-modern-compact">
+#settingsModal{padding:12px!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:rgba(3,6,10,.78)!important;backdrop-filter:blur(8px)}
+#settingsModal>.panel{width:min(1120px,calc(100vw - 24px))!important;max-width:1120px!important;max-height:calc(100dvh - 24px)!important;min-height:0!important;box-sizing:border-box!important;overflow:hidden!important;padding:18px!important;border-radius:18px!important;border:1px solid rgba(211,174,102,.28)!important;background:linear-gradient(145deg,#171d27,#10151d)!important;box-shadow:0 24px 70px rgba(0,0,0,.5)!important;display:flex!important;flex-direction:column!important;gap:10px!important}
+#settingsModal>.panel>.row{display:flex;align-items:center;justify-content:space-between;margin:0!important;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)}
+#settingsModal>.panel>.row h3{margin:0!important;font-size:18px!important;letter-spacing:1.5px;color:#f2d49a}
+#settingsModal>.panel>h3{margin:2px 0 0!important;font-size:12px!important;letter-spacing:1.2px;color:#f3f4f6}
+#settingsModal>.panel>p.small{margin:0!important;font-size:11px;color:#9ca7b5}
+#availabilitySettings{width:100%;min-height:0;overflow:visible!important}
+#availabilitySettings .availability-category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;align-items:start}
+#availabilitySettings .availability-category-card{min-width:0;padding:10px;border:1px solid #2d3745;border-radius:12px;background:rgba(255,255,255,.025)}
+#availabilitySettings .availability-category-card h4{margin:0 0 7px!important;color:#d8b66f!important;font-size:10px!important;letter-spacing:1.1px;text-transform:uppercase}
+#availabilitySettings .availability-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+#availabilitySettings .availability-item{display:flex!important;align-items:center!important;gap:6px!important;min-width:0;padding:6px 7px!important;margin:0!important;border:1px solid rgba(255,255,255,.055)!important;border-radius:8px!important;background:#1c2531!important;color:#e8edf4!important;font-size:10px!important;line-height:1.2!important;cursor:pointer}
+#availabilitySettings .availability-item input{appearance:none!important;-webkit-appearance:none!important;flex:0 0 14px!important;width:14px!important;height:14px!important;margin:0!important;border:1px solid #68788c!important;border-radius:4px!important;background:#101722!important;cursor:pointer}
+#availabilitySettings .availability-item input:checked{background:#bd8f43!important;border-color:#e0b969!important;box-shadow:inset 0 0 0 3px #1c2531!important}
+#availabilitySettings .availability-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#availabilitySettings .availability-status{flex:0 0 auto;margin-left:auto!important;color:#7dd6a0!important;font-size:8px!important;font-weight:800!important;letter-spacing:.5px}
+#availabilitySettings .availability-item.is-unavailable{border-color:rgba(236,120,120,.22)!important;background:rgba(125,45,45,.13)!important}
+#availabilitySettings .availability-item.is-unavailable .availability-status{color:#ff9a9a!important}
+#settingsModal>.panel>div:last-child{margin-top:auto!important;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
+#settingsModal #closeSettingsBtn,#settingsModal #closeSettingsWindowBtn{min-width:100px!important;min-height:36px!important;padding:8px 14px!important;border-radius:9px!important;font-size:10px!important;font-weight:800!important;letter-spacing:.7px!important}
+#settingsModal #closeSettingsBtn{background:linear-gradient(135deg,#d8b36d,#a87935)!important;color:#151515!important;border:0!important}
+#settingsModal #closeSettingsWindowBtn{background:#252f3d!important;color:#dce3ec!important;border:1px solid #3a4655!important}
+@media(max-width:1000px){#availabilitySettings .availability-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){#availabilitySettings .availability-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#settingsModal{padding:7px!important}#settingsModal>.panel{width:calc(100vw - 14px)!important;max-height:calc(100dvh - 14px)!important;padding:12px!important}#availabilitySettings .availability-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#availabilitySettings .availability-items{grid-template-columns:1fr}#availabilitySettings .availability-item{padding:5px 6px!important;font-size:9px!important}#settingsModal #closeSettingsBtn,#settingsModal #closeSettingsWindowBtn{min-width:0!important;flex:1}}
+@media(max-height:700px){#settingsModal>.panel{padding:12px!important;gap:6px!important}#availabilitySettings .availability-category-card{padding:7px}#availabilitySettings .availability-items{gap:3px}#availabilitySettings .availability-item{padding:4px 5px!important;font-size:9px!important}}
+</style>
+
+<style id="dw-settings-product-readability-fix">
+/* Product availability: prioritize readable full product names over dense cards. */
+#settingsModal>.panel{overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain}
+#availabilitySettings .availability-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important;align-items:stretch!important}
+#availabilitySettings .availability-category-card{padding:11px!important;min-width:0!important}
+#availabilitySettings .availability-category-card h4{font-size:11px!important;line-height:1.3!important;letter-spacing:.8px!important;margin-bottom:9px!important}
+#availabilitySettings .availability-items{grid-template-columns:minmax(0,1fr)!important;gap:6px!important}
+#availabilitySettings .availability-item{display:grid!important;grid-template-columns:17px minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;padding:8px 9px!important;min-height:36px!important;font-size:13px!important;line-height:1.35!important}
+#availabilitySettings .availability-item input{width:16px!important;height:16px!important;flex-basis:16px!important}
+#availabilitySettings .availability-item-name{display:block!important;min-width:0!important;overflow:visible!important;text-overflow:clip!important;white-space:normal!important;overflow-wrap:anywhere!important;font-size:13px!important;line-height:1.35!important;font-weight:600!important;color:#f1f4f8!important}
+#availabilitySettings .availability-status{font-size:9px!important;letter-spacing:.45px!important;padding:3px 5px!important;border-radius:5px!important;background:rgba(125,214,160,.09)!important}
+#availabilitySettings .availability-item.is-unavailable .availability-status{background:rgba(255,154,154,.09)!important}
+#settingsModal>.panel>div:last-child{position:sticky!important;bottom:-1px!important;background:linear-gradient(180deg,rgba(16,21,29,.92),#10151d 35%)!important;padding:12px 0 2px!important;margin-top:8px!important}
+@media(max-width:1050px){#availabilitySettings .availability-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:760px){#availabilitySettings .availability-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}#availabilitySettings .availability-item{font-size:12px!important;padding:7px!important}#availabilitySettings .availability-item-name{font-size:12px!important}}
+@media(max-width:480px){#availabilitySettings .availability-category-grid{grid-template-columns:1fr!important}#settingsModal>.panel{max-height:calc(100dvh - 14px)!important}}
+</style>
+
+<style id="dw-app-two-column-structural-layout">
+@media(min-width:601px){
+ #app:not(.hidden){display:grid!important;grid-template-columns:218px minmax(0,1fr)!important;grid-template-rows:auto!important;align-items:start!important;gap:14px!important}
+ #app:not(.hidden)>.terminal-nav{grid-column:1!important;grid-row:1!important;width:218px!important;min-width:218px!important;max-width:218px!important;position:relative!important;align-self:start!important}
+ #app:not(.hidden)>section:not(.hidden){grid-column:2!important;grid-row:1!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;justify-self:stretch!important;align-self:start!important}
+}
+@media(min-width:601px) and (max-width:850px){#app:not(.hidden){grid-template-columns:66px minmax(0,1fr)!important}#app:not(.hidden)>.terminal-nav{width:66px!important;min-width:66px!important;max-width:66px!important}}
+@media(max-width:600px){#app:not(.hidden){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;width:100%!important}#app:not(.hidden)>.terminal-nav{order:0!important;width:100%!important;min-width:0!important;max-width:100%!important}#app:not(.hidden)>section:not(.hidden){order:1!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important}}
+</style>
+
 </head>
 <body>
 <header style="display:none">
@@ -2410,6 +2552,14 @@ td{border-color:#2c394b!important}
     💬
     <span id="teamChatBadge">0</span>
     TEAM CHAT
+  </button>
+
+  <button data-page="inventoryPage" id="inventoryBtn" type="button" title="Inventory & Recipe Costing" aria-label="Inventory & Costing">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/>
+      <path d="M3.5 7.8 12 12l8.5-4.2M12 12v8.5M8 5l9 4.2M8 14.2l2.2 1.1M15.5 13.8v3.1"/>
+    </svg>
+    <span>INVENTORY &amp; COSTING</span>
   </button>
 
   <!-- SETTINGS -->
@@ -2899,9 +3049,65 @@ td{border-color:#2c394b!important}
 <div id="dailyReport" class="daily-report-content"></div>
 <div class="payment-summary"><div class="payment-heading"><span>PAYMENT BREAKDOWN</span><span class="report-muted">Collected today</span></div><div class="payment-grid"><div class="payment-card"><span>CASH</span><strong class="total" id="summaryCash">₱0.00</strong></div><div class="payment-card"><span>GCASH</span><strong class="total" id="summaryGCash">₱0.00</strong></div><div class="payment-card"><span>PAYMAYA</span><strong class="total" id="summaryPayMaya">₱0.00</strong></div></div></div>
 <button id="exportExcelBtn" class="hidden report-export">EXPORT TO EXCEL</button></div></section>
-
-
   <!-- OWNER DASHBOARD -->
+
+<section id="inventoryPage" class="hidden">
+ <div class="inv-shell">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+   <div><div class="inv-eyebrow">D’ WINGS CAFE · OWNER CONTROL</div><h2 class="inv-title">Inventory & Recipe Costing</h2><div class="inv-muted">Ingredient stock, purchase prices and automatic menu costing</div></div>
+   <span style="font-size:10px;color:#e6c47d;border:1px solid #80643a;padding:7px 10px;border-radius:20px">OWNER ONLY</span>
+  </div>
+  <div class="inv-grid">
+   <div class="inv-stat"><small>TOTAL INGREDIENTS</small><strong id="invTotalIngredients">0</strong></div>
+   <div class="inv-stat"><small>LOW STOCK</small><strong id="invLowStock">0</strong></div>
+   <div class="inv-stat"><small>RECIPES SET UP</small><strong id="invRecipeCount">0</strong></div>
+   <div class="inv-stat"><small>STOCK VALUE</small><strong id="invStockValue">₱0.00</strong></div>
+  </div>
+  <input id="invGlobalSearch" class="inv-search" placeholder="Search ingredients or products — e.g. Wings, Chicken, Rice, Cheese, Milk..." autocomplete="off">
+  <div class="inv-tabs">
+   <button type="button" class="active" data-inv-tab="overview">Overview</button><button type="button" data-inv-tab="ingredients">Ingredient Inventory</button><button type="button" data-inv-tab="purchases">Stock In / Purchases</button><button type="button" data-inv-tab="recipes">Recipe Builder</button><button type="button" data-inv-tab="costing">Product Costing</button>
+  </div>
+  <div id="invOverviewPanel" class="inv-panel">
+   <h3 style="font-size:13px;margin:0 0 10px">QUICK INVENTORY OVERVIEW</h3><div class="inv-muted">Use one search to find raw ingredients and every menu product that matches them. Select a menu product to view its recipe and calculated cost.</div>
+   <div id="invSearchResults" style="margin-top:14px"></div>
+  </div>
+  <div id="invIngredientsPanel" class="inv-panel hidden">
+   <h3 style="font-size:13px;margin:0 0 12px">ADD / UPDATE INGREDIENT</h3>
+   <div class="inv-formgrid">
+    <div><label>INGREDIENT NAME</label><input id="invIngredientName" placeholder="e.g. Chicken Wings"></div>
+    <div><label>CATEGORY</label><select id="invIngredientCategory"><option>Meat & Poultry</option><option>Rice & Grains</option><option>Dairy & Cheese</option><option>Sauces & Condiments</option><option>Seasonings & Spices</option><option>Drinks Ingredients</option><option>Cooking Supplies</option><option>Packaging</option><option>Others</option></select></div>
+    <div><label>PURCHASE UNIT</label><select id="invIngredientUnit"><option value="kg">kg</option><option value="g">g</option><option value="L">L</option><option value="ml">ml</option><option value="pcs">pcs</option><option value="pack">pack</option><option value="bottle">bottle</option><option value="sack">sack</option><option value="box">box</option></select></div>
+    <div><label>OPENING STOCK</label><input id="invIngredientStock" type="number" min="0" step="0.001" placeholder="0"></div>
+    <div><label>PURCHASE PRICE (₱)</label><input id="invIngredientPrice" type="number" min="0" step="0.01" placeholder="0.00"></div>
+    <div><label>LOW STOCK ALERT</label><input id="invIngredientAlert" type="number" min="0" step="0.001" placeholder="0"></div>
+    <div><label>SUPPLIER (OPTIONAL)</label><input id="invIngredientSupplier" placeholder="Supplier name"></div>
+    <div style="display:flex;align-items:end"><button type="button" id="invSaveIngredient" class="inv-action" style="width:100%">SAVE INGREDIENT</button></div>
+   </div>
+   <div class="inv-muted" style="margin:10px 0">Unit cost is calculated from purchase price and purchase unit. Example: ₱200 per kg = ₱0.20 per gram. Recipe quantities use grams, ml, or pcs.</div>
+   <div id="invIngredientTable" class="inv-table-wrap"></div>
+  </div>
+  <div id="invPurchasesPanel" class="inv-panel hidden">
+   <h3 style="font-size:13px;margin:0 0 12px">RECORD STOCK PURCHASE</h3>
+   <div class="inv-formgrid">
+    <div><label>INGREDIENT</label><select id="invPurchaseIngredient"><option value="">Select ingredient</option></select></div>
+    <div><label>QUANTITY PURCHASED</label><input id="invPurchaseQty" type="number" min="0.001" step="0.001" placeholder="Quantity"></div>
+    <div><label>TOTAL PURCHASE PRICE (₱)</label><input id="invPurchasePrice" type="number" min="0" step="0.01" placeholder="Total amount"></div>
+    <div style="display:flex;align-items:end"><button type="button" id="invRecordPurchase" class="inv-action" style="width:100%">RECORD PURCHASE</button></div>
+   </div>
+   <div class="inv-muted" style="margin-top:9px">For recipe quantities, use the base unit: kg → grams, L → ml. Purchases update stock and weighted-average ingredient cost. Each purchase is saved in purchase history.</div><div id="invPurchaseHistory" class="inv-table-wrap" style="margin-top:14px"></div>
+  </div>
+  <div id="invRecipesPanel" class="inv-panel hidden">
+   <h3 style="font-size:13px;margin:0 0 12px">RECIPE BUILDER</h3>
+   <div class="inv-formgrid">
+    <div><label>MENU PRODUCT</label><select id="invRecipeProduct"></select></div><div><label>INGREDIENT</label><select id="invRecipeIngredient"><option value="">Select ingredient</option></select></div><div><label>QUANTITY USED PER SERVING (g / ml / pcs)</label><input id="invRecipeQty" type="number" min="0.001" step="0.001" placeholder="e.g. 250"></div><div style="display:flex;align-items:end"><button id="invAddRecipeLine" class="inv-action" type="button" style="width:100%">ADD INGREDIENT</button></div>
+   </div><div id="invRecipeLines" style="margin-top:14px"></div><button id="invSaveRecipe" class="inv-action" type="button" style="margin-top:12px">SAVE PRODUCT RECIPE</button>
+  </div>
+  <div id="invCostingPanel" class="inv-panel hidden">
+   <h3 style="font-size:13px;margin:0 0 10px">PRODUCT COSTING PREVIEW</h3><div class="inv-muted">Selling prices are taken from the POS menu. Cost and profit appear after recipe ingredients are configured.</div><div id="invCostingTable" style="margin-top:12px"></div>
+  </div>
+ </div>
+</section>
+
 <section id="dashboardPage" class="hidden">
 
   <div class="panel dashboard-hero">
@@ -3142,6 +3348,19 @@ td{border-color:#2c394b!important}
 </div>
 
 
+
+<script id="dw-app-page-structure-fix">
+/* Keep the permanent sidebar and every POS page in the same app grid.
+   Earlier markup closed the app wrapper before several page sections. */
+(function(){
+  const app = document.getElementById("app");
+  if(!app) return;
+  ["employeeAttendancePage","historyPage","reportPage","inventoryPage","dashboardPage"].forEach(id=>{
+    const page = document.getElementById(id);
+    if(page && page.parentElement !== app) app.appendChild(page);
+  });
+})();
+</script>
 </main>
   <div id="flavorModal" class="hidden">
   <div class="panel">
@@ -4367,90 +4586,33 @@ function startAvailabilitySync(){
 
 function renderAvailabilitySettings(){
   const container = document.getElementById("availabilitySettings");
-console.log("Availability render started", menu.length);
-const categories = [
-  "Wings",
-  "Fries",
-  "Floats",
-  "Drinks",
-  "Extras",
-  "Chicken Rings"
-];
+  const preferredOrder = ["Wings","Fries","Floats","Drinks","Extras","Sandwich","Chicken Burger","Chicken Rings"];
+  const categories = [...new Set(menu.map(product => product.category).filter(Boolean))]
+    .sort((a,b)=>{
+      const ai=preferredOrder.indexOf(a), bi=preferredOrder.indexOf(b);
+      return (ai<0?999:ai)-(bi<0?999:bi) || a.localeCompare(b);
+    });
 
-  let html = "";
+  const renderAvailabilityItem = (name,key) => {
+    const unavailable = unavailableItems[key] === true;
+    return `
+      <label class="availability-item ${unavailable ? "is-unavailable" : ""}">
+        <input type="checkbox" data-availability-key="${key}" ${unavailable ? "checked" : ""}>
+        <span class="availability-item-name">${name}</span>
+        <span class="availability-status">${unavailable ? "OFF" : "ON"}</span>
+      </label>`;
+  };
 
+  let html = `<div class="availability-category-grid">`;
   categories.forEach(category => {
     const products = menu.filter(product => product.category === category);
-
-    html += `
-      <h4 style="color:#f5bd4f;margin:20px 0 8px">
-        ${category.toUpperCase()}
-      </h4>
-    `;
-
-    products.forEach(product => {
-      const key = productAvailabilityKey(product);
-      const unavailable = unavailableItems[key] === true;
-
-      html += `
-        <label style="
-          display:flex;
-          align-items:center;
-          gap:10px;
-          padding:10px;
-          margin-bottom:6px;
-          background:#292929;
-          border-radius:8px;
-        ">
-          <input
-            type="checkbox"
-            data-availability-key="${key}"
-            ${unavailable ? "checked" : ""}
-            style="width:20px;height:20px;margin:0"
-          >
-          <span>${product.name}</span>
-          <span style="margin-left:auto;color:${unavailable ? "#ff7777" : "#7de39a"};font-size:12px">
-            ${unavailable ? "NOT AVAILABLE" : "AVAILABLE"}
-          </span>
-        </label>
-      `;
-    });
+    html += `<section class="availability-category-card"><h4>${category}</h4><div class="availability-items">`;
+    products.forEach(product => html += renderAvailabilityItem(product.name, productAvailabilityKey(product)));
+    html += `</div></section>`;
   });
-
-  html += `
-    <h4 style="color:#f5bd4f;margin:20px 0 8px">
-      INDIVIDUAL WINGS FLAVORS
-    </h4>
-  `;
-
-  wingFlavors.forEach(flavor => {
-    const key = wingFlavorAvailabilityKey(flavor);
-    const unavailable = unavailableItems[key] === true;
-
-    html += `
-      <label style="
-        display:flex;
-        align-items:center;
-        gap:10px;
-        padding:10px;
-        margin-bottom:6px;
-        background:#292929;
-        border-radius:8px;
-      ">
-        <input
-          type="checkbox"
-          data-availability-key="${key}"
-          ${unavailable ? "checked" : ""}
-          style="width:20px;height:20px;margin:0"
-        >
-        <span>${flavor}</span>
-        <span style="margin-left:auto;color:${unavailable ? "#ff7777" : "#7de39a"};font-size:12px">
-          ${unavailable ? "NOT AVAILABLE" : "AVAILABLE"}
-        </span>
-      </label>
-    `;
-  });
-
+  html += `<section class="availability-category-card availability-flavors-card"><h4>Individual Wings Flavors</h4><div class="availability-items">`;
+  wingFlavors.forEach(flavor => html += renderAvailabilityItem(flavor, wingFlavorAvailabilityKey(flavor)));
+  html += `</div></section></div>`;
   container.innerHTML = html;
 
 container.querySelectorAll("[data-availability-key]").forEach(checkbox => {
@@ -8412,7 +8574,70 @@ async function loadDashboardPayslips(){
 
 </style>
 
-          </head>
+          
+<style id="inventory-two-column-layout-final">
+/* Inventory page must occupy the right content column beside the permanent POS sidebar. */
+@media screen and (min-width: 601px) {
+  #app:not(.hidden) {
+    display: grid !important;
+    grid-template-columns: 218px minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    align-items: start !important;
+    column-gap: 16px !important;
+    row-gap: 0 !important;
+  }
+  #app:not(.hidden) > .terminal-nav {
+    display: flex !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 218px !important;
+    min-width: 218px !important;
+    max-width: 218px !important;
+    align-self: start !important;
+  }
+  #app:not(.hidden) > #inventoryPage:not(.hidden) {
+    display: block !important;
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    justify-self: stretch !important;
+    align-self: start !important;
+  }
+  #inventoryPage .inv-shell {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+}
+@media screen and (min-width: 601px) and (max-width: 850px) {
+  #app:not(.hidden) { grid-template-columns: 66px minmax(0, 1fr) !important; }
+  #app:not(.hidden) > .terminal-nav { width: 66px !important; min-width: 66px !important; max-width: 66px !important; }
+}
+@media screen and (max-width: 600px) {
+  #app:not(.hidden) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    row-gap: 8px !important;
+  }
+  #app:not(.hidden) > .terminal-nav {
+    display: flex !important; grid-column: 1 !important; grid-row: 1 !important;
+    width: 100% !important; min-width: 0 !important; max-width: 100% !important;
+  }
+  #app:not(.hidden) > #inventoryPage:not(.hidden) {
+    display: block !important; grid-column: 1 !important; grid-row: 2 !important;
+    width: 100% !important; min-width: 0 !important; max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
+/* Crisp stock-box icon in the sidebar */
+#inventoryBtn svg { display: block !important; width: 21px !important; height: 21px !important; flex: 0 0 21px !important; stroke: currentColor !important; fill: none !important; }
+</style>
+
+</head>
 
           <body>
 
@@ -11277,6 +11502,7 @@ customNotes: item.customNotes || ""
   }
 
 currentUserRole = String(profile.role || "").toLowerCase();
+const inventoryNavButton = document.getElementById("inventoryBtn"); if(inventoryNavButton) inventoryNavButton.classList.toggle("hidden", currentUserRole !== "owner");
 document.getElementById("teamChatButton").style.display = "block";
 startTeamChat();
 currentUserName = profile.name || profile.fullName || profile.displayName ||
@@ -12806,7 +13032,8 @@ document.querySelectorAll(".terminal-nav button").forEach(button=>{
       "historyPage",
       "reportPage",
       "dashboardPage",
-      "employeeAttendancePage"
+      "employeeAttendancePage",
+      "inventoryPage"
     ].forEach(id=>{
 
       const page = document.getElementById(id);
@@ -12824,6 +13051,10 @@ document.querySelectorAll(".terminal-nav button").forEach(button=>{
     if(target === "employeeAttendancePage"){
       loadTodayAttendance();
     }
+    if(target === "inventoryPage"){
+      if(String(currentUserRole || "").toLowerCase() !== "owner"){ alert("Inventory & Costing is owner-only."); document.getElementById("salesPage").classList.remove("hidden"); document.getElementById("inventoryPage").classList.add("hidden"); return; }
+      loadInventoryModule();
+    }
 
   });
 });
@@ -12836,6 +13067,7 @@ document.getElementById("employeeAttendanceBtn").addEventListener("click", () =>
     "historyPage",
     "reportPage",
     "dashboardPage",
+    "inventoryPage",
   ].forEach(id => {
     document.getElementById(id).classList.add("hidden");
   });
@@ -12861,6 +13093,7 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
     "historyPage",
     "reportPage",
     "employeeAttendancePage",
+    "inventoryPage",
   ].forEach(id => {
     document.getElementById(id).classList.add("hidden");
   });
@@ -13439,6 +13672,61 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+// ================= D' WINGS INVENTORY & RECIPE COSTING =================
+let invIngredientsCache = [], invRecipesCache = [], invPurchasesCache = [], invRecipeDraft = [];
+const invMoney = n => '₱' + (Number(n)||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const invUnitBase = u => ({kg:1000,g:1,L:1000,ml:1,pcs:1,pack:1,bottle:1,sack:1,box:1}[u]||1);
+const invSafe = v => String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function invSetTab(tab){
+ document.querySelectorAll('[data-inv-tab]').forEach(b=>b.classList.toggle('active',b.dataset.invTab===tab));
+ ['overview','ingredients','purchases','recipes','costing'].forEach(k=>document.getElementById('inv'+k[0].toUpperCase()+k.slice(1)+'Panel').classList.toggle('hidden',k!==tab));
+ if(tab==='ingredients') renderInvIngredients(); if(tab==='purchases') renderInvPurchases(); if(tab==='recipes') populateInvRecipeSelectors(); if(tab==='costing') renderInvCosting();
+}
+document.querySelectorAll('[data-inv-tab]').forEach(b=>b.addEventListener('click',()=>invSetTab(b.dataset.invTab)));
+async function loadInventoryModule(){
+ if(String(currentUserRole||'').toLowerCase()!=='owner') return;
+ try{
+  const [a,b,c]=await Promise.all([getDocs(collection(db,'ingredients')),getDocs(collection(db,'recipes')),getDocs(collection(db,'ingredient_purchases'))]);
+  invIngredientsCache=a.docs.map(x=>({id:x.id,...x.data()})); invRecipesCache=b.docs.map(x=>({id:x.id,...x.data()})); invPurchasesCache=c.docs.map(x=>({id:x.id,...x.data()}));
+  updateInvStats(); renderInvSearch(); renderInvIngredients(); renderInvPurchases(); renderInvCosting(); populateInvRecipeSelectors();
+ }catch(e){console.error('Inventory load failed:',e);alert('Unable to load inventory. Check Firestore rules for ingredients, recipes and ingredient_purchases.');}
+}
+function updateInvStats(){
+ document.getElementById('invTotalIngredients').textContent=invIngredientsCache.length;
+ document.getElementById('invLowStock').textContent=invIngredientsCache.filter(x=>Number(x.stock||0)<=Number(x.lowStockAlert||0)).length;
+ document.getElementById('invRecipeCount').textContent=new Set(invRecipesCache.map(x=>x.productName)).size;
+ document.getElementById('invStockValue').textContent=invMoney(invIngredientsCache.reduce((s,x)=>s+Number(x.stock||0)*invUnitBase(x.unit||'pcs')*Number(x.averageUnitCost||x.unitCost||0),0));
+}
+function invCost(productName){const lines=invRecipesCache.filter(r=>r.productName===productName);return lines.reduce((s,r)=>{const ing=invIngredientsCache.find(x=>x.id===r.ingredientId);return s+(ing?Number(r.quantity||0)*Number(ing.averageUnitCost||ing.unitCost||0):0)},0)}
+function renderInvSearch(){
+ const q=(document.getElementById('invGlobalSearch').value||'').trim().toLowerCase();
+ const matchedIng=invIngredientsCache.filter(x=>!q||[x.name,x.category,x.supplier].join(' ').toLowerCase().includes(q));
+ const products=(menu||[]).filter(x=>!q||[x.name,x.category].join(' ').toLowerCase().includes(q)||invRecipesCache.filter(r=>r.productName===x.name).some(r=>{const ing=invIngredientsCache.find(i=>i.id===r.ingredientId);return ing&&ing.name.toLowerCase().includes(q)}));
+ let html='<div class="inv-panel"><b style="font-size:11px">MATCHING INGREDIENTS</b>'+(matchedIng.length?'<div class="inv-table-wrap" style="margin-top:8px"><table><thead><tr><th>INGREDIENT</th><th>STOCK</th><th>UNIT</th><th>AVERAGE UNIT COST</th><th>STATUS</th></tr></thead><tbody>'+matchedIng.map(x=>`<tr><td>${invSafe(x.name)}</td><td>${Number(x.stock||0).toLocaleString()}</td><td>${invSafe(x.unit||'')}</td><td>${invMoney(x.averageUnitCost||x.unitCost||0)}</td><td>${Number(x.stock||0)<=Number(x.lowStockAlert||0)?'<span style="color:#e7a56b">LOW STOCK</span>':'OK'}</td></tr>`).join('')+'</tbody></table></div>':'<div class="inv-empty">No matching ingredients yet. Add them under Ingredient Inventory.</div>')+'</div>';
+ html+='<div class="inv-panel"><b style="font-size:11px">MATCHING PRODUCTS — '+(q?invSafe(q.toUpperCase()):'ALL MENU PRODUCTS')+'</b><div class="inv-product-row inv-product-head"><span>PRODUCT</span><span>SELLING PRICE</span><span>PRODUCT COST</span><span>GROSS PROFIT</span><span>MARGIN</span></div>';
+ html+=products.length?products.map(p=>{const cost=invCost(p.name),profit=Number(p.price)-cost,has=invRecipesCache.some(r=>r.productName===p.name);return `<div class="inv-product-row"><span>${invSafe(p.name)}</span><span>${invMoney(p.price)}</span><span>${has?invMoney(cost):'—'}</span><span class="inv-profit">${has?invMoney(profit):'—'}</span><span>${has&&p.price?(profit/p.price*100).toFixed(1)+'%':'—'}</span></div>`}).join(''):'<div class="inv-empty">No matching menu products.</div>';
+ html+='</div>';document.getElementById('invSearchResults').innerHTML=html;
+}
+document.getElementById('invGlobalSearch').addEventListener('input',renderInvSearch);
+async function saveInvIngredient(){
+ if(String(currentUserRole||'').toLowerCase()!=='owner')return;
+ const name=document.getElementById('invIngredientName').value.trim(),unit=document.getElementById('invIngredientUnit').value,stock=Number(document.getElementById('invIngredientStock').value||0),price=Number(document.getElementById('invIngredientPrice').value||0);
+ if(!name){alert('Enter an ingredient name.');return;} if(stock<0||price<0){alert('Stock and price cannot be negative.');return;}
+ try{await addDoc(collection(db,'ingredients'),{name,category:document.getElementById('invIngredientCategory').value,unit,stock,unitCost:price/((stock||1)*invUnitBase(unit)),averageUnitCost:price/((stock||1)*invUnitBase(unit)),purchasePrice:price,lowStockAlert:Number(document.getElementById('invIngredientAlert').value||0),supplier:document.getElementById('invIngredientSupplier').value.trim(),createdAt:serverTimestamp(),updatedAt:serverTimestamp()});['invIngredientName','invIngredientStock','invIngredientPrice','invIngredientAlert','invIngredientSupplier'].forEach(id=>document.getElementById(id).value='');await loadInventoryModule();alert('Ingredient saved.');}catch(e){console.error(e);alert('Could not save ingredient. Check Firestore permissions.');}
+}
+document.getElementById('invSaveIngredient').addEventListener('click',saveInvIngredient);
+function renderInvIngredients(){const el=document.getElementById('invIngredientTable');el.innerHTML='<table><thead><tr><th>INGREDIENT</th><th>CATEGORY</th><th>ON HAND</th><th>UNIT</th><th>AVG. UNIT COST</th><th>STOCK VALUE</th><th>STATUS</th></tr></thead><tbody>'+invIngredientsCache.map(x=>`<tr><td>${invSafe(x.name)}</td><td>${invSafe(x.category||'')}</td><td>${Number(x.stock||0)}</td><td>${invSafe(x.unit||'')}</td><td>${invMoney(x.averageUnitCost||x.unitCost||0)}</td><td>${invMoney(Number(x.stock||0)*invUnitBase(x.unit||'pcs')*Number(x.averageUnitCost||x.unitCost||0))}</td><td>${Number(x.stock||0)<=Number(x.lowStockAlert||0)?'<span style="color:#e7a56b">LOW</span>':'IN STOCK'}</td></tr>`).join('')+'</tbody></table>'+(invIngredientsCache.length?'':'<div class="inv-empty">No ingredients added yet.</div>');}
+function populateInvIngredientSelects(){['invPurchaseIngredient','invRecipeIngredient'].forEach(id=>{const s=document.getElementById(id),old=s.value;s.innerHTML='<option value="">Select ingredient</option>'+invIngredientsCache.map(x=>`<option value="${x.id}">${invSafe(x.name)} (${invSafe(x.unit||'')})</option>`).join('');if(old)s.value=old;});}
+function renderInvPurchases(){populateInvIngredientSelects();document.getElementById('invPurchaseHistory').innerHTML='<table><thead><tr><th>DATE</th><th>INGREDIENT</th><th>QUANTITY</th><th>PURCHASE TOTAL</th><th>UNIT PRICE</th></tr></thead><tbody>'+invPurchasesCache.slice().sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).map(x=>{const ing=invIngredientsCache.find(i=>i.id===x.ingredientId);return `<tr><td>${x.createdAt?.toDate?x.createdAt.toDate().toLocaleDateString('en-PH'):'—'}</td><td>${invSafe(ing?.name||x.ingredientName||'')}</td><td>${x.quantity} ${invSafe(x.unit||'')}</td><td>${invMoney(x.totalPrice)}</td><td>${invMoney(x.quantity?x.totalPrice/x.quantity:0)}</td></tr>`}).join('')+'</tbody></table>'+(invPurchasesCache.length?'':'<div class="inv-empty">No purchases recorded yet.</div>');}
+document.getElementById('invRecordPurchase').addEventListener('click',async()=>{const id=document.getElementById('invPurchaseIngredient').value,qty=Number(document.getElementById('invPurchaseQty').value),total=Number(document.getElementById('invPurchasePrice').value),ing=invIngredientsCache.find(x=>x.id===id);if(!ing||qty<=0||total<0){alert('Select an ingredient and enter a valid quantity and purchase price.');return;}try{const base=invUnitBase(ing.unit||'pcs'),oldQty=Number(ing.stock||0),oldCost=Number(ing.averageUnitCost||ing.unitCost||0),newQty=oldQty+qty,avg=((oldQty*base*oldCost)+total)/(newQty*base);await updateDoc(doc(db,'ingredients',id),{stock:newQty,averageUnitCost:avg,unitCost:avg,updatedAt:serverTimestamp()});await addDoc(collection(db,'ingredient_purchases'),{ingredientId:id,ingredientName:ing.name,quantity:qty,unit:ing.unit,totalPrice:total,unitPrice:newUnitCost,createdAt:serverTimestamp(),createdBy:currentUserName||'Owner'});document.getElementById('invPurchaseQty').value='';document.getElementById('invPurchasePrice').value='';await loadInventoryModule();alert('Purchase recorded and stock updated.');}catch(e){console.error(e);alert('Purchase could not be saved. Check Firestore permissions.');}});
+function populateInvRecipeSelectors(){const p=document.getElementById('invRecipeProduct'),old=p.value;p.innerHTML=(menu||[]).map(x=>`<option value="${invSafe(x.name)}">${invSafe(x.name)} — ${invMoney(x.price)}</option>`).join('');if(old)p.value=old;populateInvIngredientSelects();renderInvRecipeDraft();}
+document.getElementById('invAddRecipeLine').addEventListener('click',()=>{const id=document.getElementById('invRecipeIngredient').value,qty=Number(document.getElementById('invRecipeQty').value),ing=invIngredientsCache.find(x=>x.id===id);if(!ing||qty<=0){alert('Select an ingredient and enter quantity used.');return;}invRecipeDraft.push({ingredientId:id,ingredientName:ing.name,quantity:qty,unit:ing.unit});document.getElementById('invRecipeQty').value='';renderInvRecipeDraft();});
+function renderInvRecipeDraft(){document.getElementById('invRecipeLines').innerHTML=invRecipeDraft.length?'<div class="inv-table-wrap"><table><thead><tr><th>INGREDIENT</th><th>QUANTITY PER PRODUCT</th><th>UNIT</th><th>ESTIMATED COST</th><th></th></tr></thead><tbody>'+invRecipeDraft.map((x,i)=>{const ing=invIngredientsCache.find(z=>z.id===x.ingredientId),cost=Number(x.quantity)*(Number(ing?.averageUnitCost||ing?.unitCost||0));return `<tr><td>${invSafe(x.ingredientName)}</td><td>${x.quantity}</td><td>${invSafe(x.unit)}</td><td>${invMoney(cost)}</td><td><button type="button" class="inv-secondary" data-remove-recipe="${i}">REMOVE</button></td></tr>`}).join('')+'</tbody></table></div>':'<div class="inv-empty">Add ingredients used in one serving of the selected menu product.</div>';document.querySelectorAll('[data-remove-recipe]').forEach(b=>b.addEventListener('click',()=>{invRecipeDraft.splice(Number(b.dataset.removeRecipe),1);renderInvRecipeDraft();}));}
+document.getElementById('invRecipeProduct').addEventListener('change',()=>{invRecipeDraft=invRecipesCache.filter(x=>x.productName===document.getElementById('invRecipeProduct').value).map(x=>({...x}));renderInvRecipeDraft();});
+document.getElementById('invSaveRecipe').addEventListener('click',async()=>{const productName=document.getElementById('invRecipeProduct').value;if(!productName||!invRecipeDraft.length){alert('Choose a product and add at least one ingredient.');return;}try{const old=invRecipesCache.filter(x=>x.productName===productName);await Promise.all(old.map(x=>deleteDoc(doc(db,'recipes',x.id))));await Promise.all(invRecipeDraft.map(x=>addDoc(collection(db,'recipes'),{productName,ingredientId:x.ingredientId,ingredientName:x.ingredientName,quantity:Number(x.quantity),unit:x.unit,updatedAt:serverTimestamp(),updatedBy:currentUserName||'Owner'})));invRecipeDraft=[];await loadInventoryModule();alert('Recipe saved. Product costing updated.');}catch(e){console.error(e);alert('Recipe could not be saved. Check Firestore permissions.');}});
+function renderInvCosting(){const rows=(menu||[]).map(p=>{const has=invRecipesCache.some(x=>x.productName===p.name),cost=invCost(p.name),profit=Number(p.price)-cost;return `<div class="inv-product-row"><span>${invSafe(p.name)}</span><span>${invMoney(p.price)}</span><span>${has?invMoney(cost):'—'}</span><span class="inv-profit">${has?invMoney(profit):'—'}</span><span>${has&&p.price?(profit/p.price*100).toFixed(1)+'%':'NOT SET'}</span></div>`}).join('');document.getElementById('invCostingTable').innerHTML='<div class="inv-product-row inv-product-head"><span>PRODUCT</span><span>SELLING PRICE</span><span>PRODUCT COST</span><span>GROSS PROFIT</span><span>MARGIN</span></div>'+rows;}
+
 </script>
 </body>
 </html>
