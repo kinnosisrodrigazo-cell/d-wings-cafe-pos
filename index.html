@@ -3129,7 +3129,8 @@ td{border-color:#2c394b!important}
   <div class="inv-tabs">
    <button type="button" class="active" data-inv-tab="overview">Overview</button><button type="button" data-inv-tab="ingredients">Ingredient Inventory</button><button type="button" data-inv-tab="purchases">Stock In / Purchases</button><button type="button" data-inv-tab="recipes">Recipe Builder</button><button type="button" data-inv-tab="costing">Product Costing</button>
   </div>
-  <div id="invOverviewPanel" class="inv-panel">
+  <div id="invLoadWarning" class="inv-panel" style="display:none;border:1px solid #b7791f;color:#f6c76b;margin-bottom:12px"></div>
+   <div id="invOverviewPanel" class="inv-panel">
    <h3 style="font-size:13px;margin:0 0 10px">QUICK INVENTORY OVERVIEW</h3><div class="inv-muted">Use one search to find raw ingredients and every menu product that matches them. Select a menu product to view its recipe and calculated cost.</div>
    <div id="invSearchResults" style="margin-top:14px"></div>
   </div>
@@ -4583,6 +4584,7 @@ let pendingRequiredFlavors = null;
   let pendingFlavorQuantities = {};
 let pendingIncludedItems = [];
 let pendingRequiresDip = false;
+let pendingIsStandaloneDip = false;
 let editingCartIndex = null;
 // ===================================
 // PRODUCT AVAILABILITY - FIREBASE SYNC
@@ -5150,9 +5152,10 @@ if(
   product.name === "DIP"
 ){
     pendingProduct = {...product, menuIndex:index};
+    pendingIsStandaloneDip = product.name === "DIP";
 
 if(product.name === "DIP"){
-  pendingFlavorList = ["GARLIC MAYO", "RANCH", "THOUSAND ISLAND"];
+  pendingFlavorList = ["RANCH", "GARLIC MAYO", "THOUSAND ISLAND"];
   pendingRequiredFlavors = null;
 } else if(product.category === "Chicken Rings"){
   pendingFlavorList = chickenRingFlavors;
@@ -5364,7 +5367,7 @@ document.querySelectorAll('#flavorOptions input[name="wingFlavor"]').forEach(box
   }
 });
   // STANDALONE DIP SELECTION
-  if(pendingProduct && pendingProduct.name === "DIP"){
+  if(pendingIsStandaloneDip){
     const selected = document.querySelectorAll(
       'input[name="wingFlavor"]:checked'
     ).length;
@@ -5494,29 +5497,34 @@ const valid = adjustableFlavorOrder
 
   if(!valid) return;
   if(pendingRequiresDip && !selectedDip) return;
-if(pendingProduct.name === "DIP"){
-  if(editingCartIndex !== null) return;
+if(pendingIsStandaloneDip){
+  const notes = document.getElementById("flavorCustomNotes").value.trim();
+  const dipItems = selectedFlavors.map(dipName => ({
+    name: dipName,
+    category: "Extras",
+    price: 25,
+    qty: 1,
+    flavors: [],
+    dip: null,
+    includedItems: [],
+    customNotes: notes
+  }));
 
-  selectedFlavors.forEach(dipName => {
-    cart.push({
-      name: dipName,
-      category: "Extras",
-      price: 25,
-      qty: 1,
-      flavors: [],
-      dip: null,
-      includedItems: [],
-      customNotes: ""
-    });
-  });
+  if(editingCartIndex !== null){
+    // Replace the edited dip with the selected dip item(s), preserving their position.
+    cart.splice(editingCartIndex, 1, ...dipItems);
+  } else {
+    cart.push(...dipItems);
+  }
 
   document.getElementById("flavorModal").classList.add("hidden");
-
+  editingCartIndex = null;
   pendingProduct = null;
   pendingRequiredFlavors = null;
   pendingIncludedItems = [];
   pendingRequiresDip = false;
-
+  pendingIsStandaloneDip = false;
+  document.getElementById("confirmFlavor").textContent = "CONFIRM FLAVORS";
   renderCart();
   return;
 }
@@ -5562,6 +5570,7 @@ if(existingUnli){
   pendingRequiredFlavors = null;
   pendingIncludedItems = [];
   pendingRequiresDip = false;
+  pendingIsStandaloneDip = false;
 
   renderCart();
 };
@@ -5578,6 +5587,7 @@ document.getElementById("cancelFlavor").onclick = ()=>{
   pendingRequiredFlavors = null;
   pendingIncludedItems = [];
   pendingRequiresDip = false;
+  pendingIsStandaloneDip = false;
 };
 
 document.getElementById("clearCartBtn").onclick = ()=>{
@@ -5723,8 +5733,12 @@ el.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
       b.onclick = ()=>{
         const index = Number(b.dataset.edit);
         const item = cart[index];
+        const dipChoices = ["RANCH", "GARLIC MAYO", "THOUSAND ISLAND"];
+        const isStandaloneDip = item.category === "Extras" &&
+          dipChoices.includes(String(item.name || "").toUpperCase());
 
         editingCartIndex = index;
+pendingIsStandaloneDip = isStandaloneDip;
 pendingProduct = {...item};
 const adjustableFlavorOrder =
   item.category !== "Chicken Rings" &&
@@ -5736,11 +5750,15 @@ pendingFlavorQuantities = adjustableFlavorOrder
         Object.fromEntries((item.flavors || []).map(flavor => [flavor, 1])))
     }
   : {};
-pendingFlavorList = item.category === "Chicken Rings"
-  ? chickenRingFlavors
-  : wingFlavors;
+pendingFlavorList = isStandaloneDip
+  ? dipChoices
+  : item.category === "Chicken Rings"
+    ? chickenRingFlavors
+    : wingFlavors;
 
-if(item.category === "Chicken Rings"){
+if(isStandaloneDip){
+  pendingRequiredFlavors = null;
+} else if(item.category === "Chicken Rings"){
   pendingRequiredFlavors = /HOOP FEAST/i.test(item.name) ? 2 : 1;
 } else {
   const match = item.name.match(/^(\d+)PCS/);
@@ -5758,11 +5776,13 @@ document.getElementById("flavorTitle").textContent =
   "EDIT " + item.name;
 
 document.getElementById("flavorInstruction").textContent =
-  item.category === "Chicken Rings"
-    ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
-    : pendingRequiredFlavors
-      ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
-      : "SELECT ANY OR ALL 15 FLAVORS.";
+  isStandaloneDip
+    ? "SELECT ANY OR ALL 3 DIPS."
+    : item.category === "Chicken Rings"
+      ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S).`
+      : pendingRequiredFlavors
+        ? `SELECT EXACTLY ${pendingRequiredFlavors} FLAVOR(S). EACH FLAVOR = 3 PIECES.`
+        : "SELECT ANY OR ALL 15 FLAVORS.";
 
         document.getElementById("includedSection").classList.toggle(
           "hidden",
@@ -5779,7 +5799,7 @@ document.getElementById("flavorInstruction").textContent =
 
         document.getElementById("dipSection").classList.toggle(
           "hidden",
-          !pendingRequiresDip
+          isStandaloneDip || !pendingRequiresDip
         );
 
         document.getElementById("dipChoice").value = item.dip || "";
@@ -5797,9 +5817,9 @@ document.getElementById("flavorInstruction").textContent =
 
 
 document.getElementById("flavorOptions").innerHTML =
-`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${item.name === "DIP" ? "DIP" : "FLAVOR"}</div>` +
+`<div style="grid-column:1/-1;font-size:13px;font-weight:900;color:#e7ad3e;letter-spacing:1.5px;margin-bottom:8px">${isStandaloneDip ? "DIP" : "FLAVOR"}</div>` +
 pendingFlavorList.map(flavor => {
-  const unavailable = item.name === "DIP"
+  const unavailable = isStandaloneDip
     ? false
     : isWingFlavorUnavailable(flavor);
 
@@ -5816,7 +5836,7 @@ pendingFlavorList.map(flavor => {
           type="checkbox"
           name="wingFlavor"
           value="${flavor}"
-          ${(pendingFlavorQuantities[flavor] > 0 || (!adjustable && (item.flavors || []).includes(flavor))) ? "checked" : ""}
+          ${(isStandaloneDip ? flavor === String(item.name || "").toUpperCase() : (pendingFlavorQuantities[flavor] > 0 || (!adjustable && (item.flavors || []).includes(flavor)))) ? "checked" : ""}
           ${unavailable && !pendingFlavorQuantities[flavor] ? "disabled" : ""}
         >
 
@@ -13719,22 +13739,13 @@ if(!attendancePage || attendancePage.classList.contains("hidden")) return;
   }
 
 });
-</script>
 
-<!-- FIX: Keep every POS page inside the app content layout -->
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const app = document.getElementById("app");
-  if (!app) return;
 
-  ["employeeAttendancePage", "historyPage", "reportPage", "dashboardPage"].forEach(function (id) {
-    const page = document.getElementById(id);
-    if (page && page.parentElement !== app) {
-      app.appendChild(page);
-    }
-  });
-});
+// INVENTan><span>GROSS PROFIT</span><span>MARGIN</span></div>'+rows;}
 
+
+
+// Inventory & Recipe Costing: kept inside Firebase module scope
 // ================= D' WINGS INVENTORY & RECIPE COSTING =================
 let invIngredientsCache = [], invRecipesCache = [], invPurchasesCache = [], invRecipeDraft = [];
 const invMoney = n => '₱' + (Number(n)||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -13747,12 +13758,32 @@ function invSetTab(tab){
 }
 document.querySelectorAll('[data-inv-tab]').forEach(b=>b.addEventListener('click',()=>invSetTab(b.dataset.invTab)));
 async function loadInventoryModule(){
- if(String(currentUserRole||'').toLowerCase()!=='owner') return;
- try{
-  const [a,b,c]=await Promise.all([getDocs(collection(db,'ingredients')),getDocs(collection(db,'recipes')),getDocs(collection(db,'ingredient_purchases'))]);
-  invIngredientsCache=a.docs.map(x=>({id:x.id,...x.data()})); invRecipesCache=b.docs.map(x=>({id:x.id,...x.data()})); invPurchasesCache=c.docs.map(x=>({id:x.id,...x.data()}));
-  updateInvStats(); renderInvSearch(); renderInvIngredients(); renderInvPurchases(); renderInvCosting(); populateInvRecipeSelectors();
- }catch(e){console.error('Inventory load failed:',e);alert('Unable to load inventory. Check Firestore rules for ingredients, recipes and ingredient_purchases.');}
+ if(String(currentUserRole||'').toLowerCase()!=='owner'){
+  console.warn('Inventory load skipped: signed-in role is not owner.', {currentUserRole});
+  return;
+ }
+ const failed=[];
+ const readCollection=async(name)=>{
+  try{
+   const snap=await getDocs(collection(db,name));
+   return snap.docs.map(x=>({id:x.id,...x.data()}));
+  }catch(e){
+   console.error('Inventory Firestore read failed for collection: '+name, e);
+   failed.push({name,code:e?.code||'unknown',message:e?.message||String(e)});
+   return [];
+  }
+ };
+ // Read independently so one missing collection rule does not hide data from the others.
+ [invIngredientsCache,invRecipesCache,invPurchasesCache]=await Promise.all([
+  readCollection('ingredients'),readCollection('recipes'),readCollection('ingredient_purchases')
+ ]);
+ updateInvStats(); renderInvSearch(); renderInvIngredients(); renderInvPurchases(); renderInvCosting(); populateInvRecipeSelectors();
+ const warning=document.getElementById('invLoadWarning');
+ if(failed.length){
+  const detail=failed.map(x=>x.name+' ('+x.code+')').join(', ');
+  if(warning){warning.style.display='block';warning.textContent='Firestore access denied or failed for: '+detail+'. Update Firestore Rules to allow active owners to read/write these collections. Open the browser console for the exact Firebase error.';}
+  console.error('Inventory collections failed to load:',failed);
+ }else if(warning){warning.style.display='none';warning.textContent='';}
 }
 function updateInvStats(){
  document.getElementById('invTotalIngredients').textContent=invIngredientsCache.length;
@@ -13774,20 +13805,47 @@ document.getElementById('invGlobalSearch').addEventListener('input',renderInvSea
 async function saveInvIngredient(){
  if(String(currentUserRole||'').toLowerCase()!=='owner')return;
  const name=document.getElementById('invIngredientName').value.trim(),unit=document.getElementById('invIngredientUnit').value,stock=Number(document.getElementById('invIngredientStock').value||0),price=Number(document.getElementById('invIngredientPrice').value||0);
- if(!name){alert('Enter an ingredient name.');return;} if(stock<0||price<0){alert('Stock and price cannot be negative.');return;}
+ if(!name){alert('Enter an ingredient name.');return;} if(stock<0||price<0){alert('Stock and price cannot be negative.');return;} if(invIngredientsCache.some(x=>String(x.name||'').trim().toLowerCase()===name.toLowerCase())){alert('Ingredient already exists. Use RECORD PURCHASE to add stock.');return;}
  try{await addDoc(collection(db,'ingredients'),{name,category:document.getElementById('invIngredientCategory').value,unit,stock,unitCost:price/((stock||1)*invUnitBase(unit)),averageUnitCost:price/((stock||1)*invUnitBase(unit)),purchasePrice:price,lowStockAlert:Number(document.getElementById('invIngredientAlert').value||0),supplier:document.getElementById('invIngredientSupplier').value.trim(),createdAt:serverTimestamp(),updatedAt:serverTimestamp()});['invIngredientName','invIngredientStock','invIngredientPrice','invIngredientAlert','invIngredientSupplier'].forEach(id=>document.getElementById(id).value='');await loadInventoryModule();alert('Ingredient saved.');}catch(e){console.error(e);alert('Could not save ingredient. Check Firestore permissions.');}
 }
 document.getElementById('invSaveIngredient').addEventListener('click',saveInvIngredient);
 function renderInvIngredients(){const el=document.getElementById('invIngredientTable');el.innerHTML='<table><thead><tr><th>INGREDIENT</th><th>CATEGORY</th><th>ON HAND</th><th>UNIT</th><th>AVG. UNIT COST</th><th>STOCK VALUE</th><th>STATUS</th></tr></thead><tbody>'+invIngredientsCache.map(x=>`<tr><td>${invSafe(x.name)}</td><td>${invSafe(x.category||'')}</td><td>${Number(x.stock||0)}</td><td>${invSafe(x.unit||'')}</td><td>${invMoney(x.averageUnitCost||x.unitCost||0)}</td><td>${invMoney(Number(x.stock||0)*invUnitBase(x.unit||'pcs')*Number(x.averageUnitCost||x.unitCost||0))}</td><td>${Number(x.stock||0)<=Number(x.lowStockAlert||0)?'<span style="color:#e7a56b">LOW</span>':'IN STOCK'}</td></tr>`).join('')+'</tbody></table>'+(invIngredientsCache.length?'':'<div class="inv-empty">No ingredients added yet.</div>');}
 function populateInvIngredientSelects(){['invPurchaseIngredient','invRecipeIngredient'].forEach(id=>{const s=document.getElementById(id),old=s.value;s.innerHTML='<option value="">Select ingredient</option>'+invIngredientsCache.map(x=>`<option value="${x.id}">${invSafe(x.name)} (${invSafe(x.unit||'')})</option>`).join('');if(old)s.value=old;});}
 function renderInvPurchases(){populateInvIngredientSelects();document.getElementById('invPurchaseHistory').innerHTML='<table><thead><tr><th>DATE</th><th>INGREDIENT</th><th>QUANTITY</th><th>PURCHASE TOTAL</th><th>UNIT PRICE</th></tr></thead><tbody>'+invPurchasesCache.slice().sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).map(x=>{const ing=invIngredientsCache.find(i=>i.id===x.ingredientId);return `<tr><td>${x.createdAt?.toDate?x.createdAt.toDate().toLocaleDateString('en-PH'):'—'}</td><td>${invSafe(ing?.name||x.ingredientName||'')}</td><td>${x.quantity} ${invSafe(x.unit||'')}</td><td>${invMoney(x.totalPrice)}</td><td>${invMoney(x.quantity?x.totalPrice/x.quantity:0)}</td></tr>`}).join('')+'</tbody></table>'+(invPurchasesCache.length?'':'<div class="inv-empty">No purchases recorded yet.</div>');}
-document.getElementById('invRecordPurchase').addEventListener('click',async()=>{const id=document.getElementById('invPurchaseIngredient').value,qty=Number(document.getElementById('invPurchaseQty').value),total=Number(document.getElementById('invPurchasePrice').value),ing=invIngredientsCache.find(x=>x.id===id);if(!ing||qty<=0||total<0){alert('Select an ingredient and enter a valid quantity and purchase price.');return;}try{const base=invUnitBase(ing.unit||'pcs'),oldQty=Number(ing.stock||0),oldCost=Number(ing.averageUnitCost||ing.unitCost||0),newQty=oldQty+qty,avg=((oldQty*base*oldCost)+total)/(newQty*base);await updateDoc(doc(db,'ingredients',id),{stock:newQty,averageUnitCost:avg,unitCost:avg,updatedAt:serverTimestamp()});await addDoc(collection(db,'ingredient_purchases'),{ingredientId:id,ingredientName:ing.name,quantity:qty,unit:ing.unit,totalPrice:total,unitPrice:newUnitCost,createdAt:serverTimestamp(),createdBy:currentUserName||'Owner'});document.getElementById('invPurchaseQty').value='';document.getElementById('invPurchasePrice').value='';await loadInventoryModule();alert('Purchase recorded and stock updated.');}catch(e){console.error(e);alert('Purchase could not be saved. Check Firestore permissions.');}});
+document.getElementById('invRecordPurchase').addEventListener('click',async()=>{
+ if(String(currentUserRole||'').toLowerCase()!=='owner'){alert('Owner access required.');return;}
+ const id=document.getElementById('invPurchaseIngredient').value,qty=Number(document.getElementById('invPurchaseQty').value),total=Number(document.getElementById('invPurchasePrice').value),ing=invIngredientsCache.find(x=>x.id===id);
+ if(!ing||!Number.isFinite(qty)||qty<=0||!Number.isFinite(total)||total<0){alert('Select an ingredient and enter a valid quantity and purchase price.');return;}
+ try{
+  const base=invUnitBase(ing.unit||'pcs'),oldQty=Number(ing.stock||0),oldCost=Number(ing.averageUnitCost||ing.unitCost||0),newQty=oldQty+qty;
+  const avg=newQty>0?((oldQty*base*oldCost)+total)/(newQty*base):0,unitPrice=total/(qty*base);
+  const ingredientRef=doc(db,'ingredients',id),purchaseRef=doc(collection(db,'ingredient_purchases'));
+  await runTransaction(db,async tx=>{tx.update(ingredientRef,{stock:newQty,averageUnitCost:avg,unitCost:avg,updatedAt:serverTimestamp()});tx.set(purchaseRef,{ingredientId:id,ingredientName:ing.name,quantity:qty,unit:ing.unit,totalPrice:total,unitPrice,createdAt:serverTimestamp(),createdBy:currentUserName||'Owner'});});
+  document.getElementById('invPurchaseQty').value='';document.getElementById('invPurchasePrice').value='';await loadInventoryModule();alert('Purchase recorded and stock updated.');
+ }catch(e){console.error('Purchase save failed:',e);alert('Purchase could not be saved. Check Firestore permissions and connection.');}
+});
 function populateInvRecipeSelectors(){const p=document.getElementById('invRecipeProduct'),old=p.value;p.innerHTML=(menu||[]).map(x=>`<option value="${invSafe(x.name)}">${invSafe(x.name)} — ${invMoney(x.price)}</option>`).join('');if(old)p.value=old;populateInvIngredientSelects();renderInvRecipeDraft();}
-document.getElementById('invAddRecipeLine').addEventListener('click',()=>{const id=document.getElementById('invRecipeIngredient').value,qty=Number(document.getElementById('invRecipeQty').value),ing=invIngredientsCache.find(x=>x.id===id);if(!ing||qty<=0){alert('Select an ingredient and enter quantity used.');return;}invRecipeDraft.push({ingredientId:id,ingredientName:ing.name,quantity:qty,unit:ing.unit});document.getElementById('invRecipeQty').value='';renderInvRecipeDraft();});
+document.getElementById('invAddRecipeLine').addEventListener('click',()=>{const id=document.getElementById('invRecipeIngredient').value,qty=Number(document.getElementById('invRecipeQty').value),ing=invIngredientsCache.find(x=>x.id===id);if(!ing||qty<=0){alert('Select an ingredient and enter quantity used.');return;}const existing=invRecipeDraft.find(x=>x.ingredientId===id);if(existing){existing.quantity=Number(existing.quantity)+qty;}else{invRecipeDraft.push({ingredientId:id,ingredientName:ing.name,quantity:qty,unit:ing.unit});}document.getElementById('invRecipeQty').value='';renderInvRecipeDraft();});
 function renderInvRecipeDraft(){document.getElementById('invRecipeLines').innerHTML=invRecipeDraft.length?'<div class="inv-table-wrap"><table><thead><tr><th>INGREDIENT</th><th>QUANTITY PER PRODUCT</th><th>UNIT</th><th>ESTIMATED COST</th><th></th></tr></thead><tbody>'+invRecipeDraft.map((x,i)=>{const ing=invIngredientsCache.find(z=>z.id===x.ingredientId),cost=Number(x.quantity)*(Number(ing?.averageUnitCost||ing?.unitCost||0));return `<tr><td>${invSafe(x.ingredientName)}</td><td>${x.quantity}</td><td>${invSafe(x.unit)}</td><td>${invMoney(cost)}</td><td><button type="button" class="inv-secondary" data-remove-recipe="${i}">REMOVE</button></td></tr>`}).join('')+'</tbody></table></div>':'<div class="inv-empty">Add ingredients used in one serving of the selected menu product.</div>';document.querySelectorAll('[data-remove-recipe]').forEach(b=>b.addEventListener('click',()=>{invRecipeDraft.splice(Number(b.dataset.removeRecipe),1);renderInvRecipeDraft();}));}
 document.getElementById('invRecipeProduct').addEventListener('change',()=>{invRecipeDraft=invRecipesCache.filter(x=>x.productName===document.getElementById('invRecipeProduct').value).map(x=>({...x}));renderInvRecipeDraft();});
 document.getElementById('invSaveRecipe').addEventListener('click',async()=>{const productName=document.getElementById('invRecipeProduct').value;if(!productName||!invRecipeDraft.length){alert('Choose a product and add at least one ingredient.');return;}try{const old=invRecipesCache.filter(x=>x.productName===productName);await Promise.all(old.map(x=>deleteDoc(doc(db,'recipes',x.id))));await Promise.all(invRecipeDraft.map(x=>addDoc(collection(db,'recipes'),{productName,ingredientId:x.ingredientId,ingredientName:x.ingredientName,quantity:Number(x.quantity),unit:x.unit,updatedAt:serverTimestamp(),updatedBy:currentUserName||'Owner'})));invRecipeDraft=[];await loadInventoryModule();alert('Recipe saved. Product costing updated.');}catch(e){console.error(e);alert('Recipe could not be saved. Check Firestore permissions.');}});
 function renderInvCosting(){const rows=(menu||[]).map(p=>{const has=invRecipesCache.some(x=>x.productName===p.name),cost=invCost(p.name),profit=Number(p.price)-cost;return `<div class="inv-product-row"><span>${invSafe(p.name)}</span><span>${invMoney(p.price)}</span><span>${has?invMoney(cost):'—'}</span><span class="inv-profit">${has?invMoney(profit):'—'}</span><span>${has&&p.price?(profit/p.price*100).toFixed(1)+'%':'NOT SET'}</span></div>`}).join('');document.getElementById('invCostingTable').innerHTML='<div class="inv-product-row inv-product-head"><span>PRODUCT</span><span>SELLING PRICE</span><span>PRODUCT COST</span><span>GROSS PROFIT</span><span>MARGIN</span></div>'+rows;}
+
+</script>
+
+<!-- FIX: Keep every POS page inside the app content layout -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const app = document.getElementById("app");
+  if (!app) return;
+
+  ["employeeAttendancePage", "historyPage", "reportPage", "dashboardPage"].forEach(function (id) {
+    const page = document.getElementById(id);
+    if (page && page.parentElement !== app) {
+      app.appendChild(page);
+    }
+  });
+});
 
 </script>
 </body>
