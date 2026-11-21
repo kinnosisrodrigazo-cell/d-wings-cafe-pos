@@ -11738,6 +11738,31 @@ async function saveSale(){
     const today = manualOrderMode ? manualOrderDate : getTodayDate();
     const counterRef = doc(db,"daily_counters",today);
 
+    // Read the counter before querying the day's orders. This lets the
+    // transaction detect another checkout that commits while this order saves.
+    const counterBeforeQuery = await getDoc(counterRef);
+    const counterNumberBeforeQuery = counterBeforeQuery.exists()
+      ? (Number(counterBeforeQuery.data().lastOrderNumber) || 0)
+      : 0;
+
+    const dayOrdersSnapshot = await getDocs(query(
+      collection(db,"orders"),
+      where("orderDate","==",today)
+    ));
+
+    // VOID orders are excluded from the completed-order sequence.
+    const completedDayOrders = dayOrdersSnapshot.docs
+      .filter(orderDoc => String(orderDoc.data().status || "COMPLETED").toUpperCase() !== "VOID")
+      .sort((a,b)=>{
+        const aTime = a.data().createdAt?.toMillis?.() || a.data().orderTime?.toMillis?.() || 0;
+        const bTime = b.data().createdAt?.toMillis?.() || b.data().orderTime?.toMillis?.() || 0;
+        return aTime - bTime || a.id.localeCompare(b.id);
+      });
+
+    if(completedDayOrders.length > 450){
+      throw new Error("There are too many orders for this date to safely reconcile numbering.");
+    }
+
 const sale = {
   orderDate: today,
   status: "COMPLETED",
@@ -11799,10 +11824,30 @@ customNotes: item.customNotes || ""
 
     const orderNumber = await runTransaction(db, async (transaction)=>{
       const counterSnap = await transaction.get(counterRef);
+      const currentCounterNumber = counterSnap.exists()
+        ? (Number(counterSnap.data().lastOrderNumber) || 0)
+        : 0;
 
-      const nextNumber = counterSnap.exists()
-        ? (counterSnap.data().lastOrderNumber || 0) + 1
-        : 1;
+      // If another checkout committed after our initial counter read, continue
+      // from its number. Otherwise rebuild the sequence from actual non-VOID
+      // orders for this date, correcting stale counter values such as 9 -> 1.
+      const concurrentCheckoutDetected = currentCounterNumber !== counterNumberBeforeQuery;
+      const nextNumber = concurrentCheckoutDetected
+        ? currentCounterNumber + 1
+        : completedDayOrders.length + 1;
+
+      // Repair existing non-VOID orders in chronological order so a date with
+      // one completed order displays #1 even if its old counter was incorrect.
+      const existingSnapshots = [];
+      for(const existingOrder of completedDayOrders){
+        existingSnapshots.push(await transaction.get(existingOrder.ref));
+      }
+
+      existingSnapshots.forEach((existingSnap,index)=>{
+        if(existingSnap.exists()){
+          transaction.set(existingSnap.ref,{orderNumber:index + 1},{merge:true});
+        }
+      });
 
       transaction.set(counterRef,{
         date: today,
