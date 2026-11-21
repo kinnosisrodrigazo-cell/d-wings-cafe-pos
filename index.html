@@ -2224,6 +2224,243 @@ td{border-color:#2c394b!important}
   }
 }
 </style>
+
+<style id="dw-sales-terminal-grid-layout">
+/* Sales-only compact icon rail on the left */
+#app.sales-nav-compact {
+  display: grid !important;
+  grid-template-columns: 62px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 10px !important;
+}
+#app.sales-nav-compact > .terminal-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 7px !important;
+  width: 62px !important;
+  min-width: 62px !important;
+  max-width: 62px !important;
+  padding: 8px 5px !important;
+  background: #171717 !important;
+  border: 1px solid #303030 !important;
+  border-radius: 14px !important;
+  position: sticky !important;
+  top: 10px !important;
+}
+#app.sales-nav-compact > .terminal-nav button {
+  position: relative !important;
+  display: flex !important;
+  flex: 0 0 48px !important;
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 5px !important;
+  margin: 0 !important;
+  border: 1px solid #333 !important;
+  border-radius: 11px !important;
+  background: #242424 !important;
+  color: #d7d7d7 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+#app.sales-nav-compact > .terminal-nav button.active {
+  background: #e7ad3e !important;
+  color: #111 !important;
+  border-color: #e7ad3e !important;
+}
+#app.sales-nav-compact > .terminal-nav button svg {
+  display: block !important;
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  min-height: 22px !important;
+  stroke: currentColor !important;
+}
+#app.sales-nav-compact > .terminal-nav button span {
+  display: none !important;
+}
+#app.sales-nav-compact > .terminal-nav #teamChatButton::before {
+  content: "💬";
+  display: block;
+  font-size: 21px;
+  line-height: 1;
+}
+#app.sales-nav-compact > .terminal-nav #teamChatButton #teamChatBadge {
+  display: none !important;
+}
+#app.sales-nav-compact > section:not(.hidden) {
+  grid-column: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Category buttons and compact square product cards */
+#salesPage .sales-layout {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+#salesPage #categoryTabs {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+}
+#salesPage #categoryTabs .category-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 42px !important;
+  padding: 7px 4px !important;
+  justify-content: center !important;
+  border-radius: 9px !important;
+  font-size: clamp(9px, 1vw, 12px) !important;
+  white-space: normal !important;
+  line-height: 1.15 !important;
+}
+#salesPage #products.product-layout {
+  display: grid !important;
+  grid-template-columns: repeat(var(--product-columns, 3), minmax(0, 1fr)) !important;
+  grid-auto-rows: 88px !important;
+  grid-auto-flow: row !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-items: stretch !important;
+}
+#salesPage #products .product {
+  display: flex !important;
+  position: relative !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 88px !important;
+  min-height: 88px !important;
+  max-height: 88px !important;
+  margin: 0 !important;
+  padding: 9px 6px 22px !important;
+  border: 1px solid #4a4a4a !important;
+  border-radius: 11px !important;
+  background: #292929 !important;
+  color: #fff !important;
+  text-align: center !important;
+  overflow: hidden !important;
+  line-height: 1.15 !important;
+}
+#salesPage #products .product strong {
+  display: -webkit-box !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+  font-size: clamp(9px, 1vw, 12px) !important;
+  line-height: 1.2 !important;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+#salesPage #products .product .price {
+  position: absolute !important;
+  bottom: 5px !important;
+  left: 5px !important;
+  right: 5px !important;
+  color: #f5bd4f !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+}
+#salesPage #products .product-availability {
+  display: none !important;
+}
+#salesPage #products .product-slot-empty {
+  width: 100% !important;
+  height: 88px !important;
+  min-height: 88px !important;
+  border: 1px dashed #3d3d3d !important;
+  border-radius: 11px !important;
+  background: rgba(255,255,255,.015) !important;
+}
+
+/* When products are added, the cart opens in its own right column. */
+@media (min-width: 601px) {
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(285px, 34%) !important;
+    align-items: start !important;
+    gap: 12px !important;
+  }
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) > .sales-terminal-heading,
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) > #manualOrderModePanel {
+    grid-column: 1 / -1 !important;
+  }
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) > .sales-layout {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    min-width: 0 !important;
+  }
+  #salesPage:not(.hidden):has(> #cartPanel:not(.hidden)) > #cartPanel {
+    display: block !important;
+    grid-column: 2 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: none !important;
+    position: sticky !important;
+    top: 10px !important;
+    max-height: calc(100vh - 20px) !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    border: 1px solid #484848 !important;
+    border-radius: 13px !important;
+    background: #202020 !important;
+    z-index: 5 !important;
+  }
+}
+#cartPanel.hidden { display: none !important; }
+#openCartPanelBtn { align-items: center; gap: 5px; }
+#closeCartPanelBtn { min-width: 34px; font-size: 16px; line-height: 1; }
+
+/* Small screens keep controls usable without allowing horizontal overflow. */
+@media (max-width: 600px) {
+  #app.sales-nav-compact {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #app.sales-nav-compact > .terminal-nav {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  #app.sales-nav-compact > .terminal-nav button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  #salesPage #products.product-layout {
+    grid-auto-rows: 76px !important;
+    gap: 6px !important;
+  }
+  #salesPage #products .product,
+  #salesPage #products .product-slot-empty {
+    height: 76px !important;
+    min-height: 76px !important;
+    max-height: 76px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header style="display:none">
@@ -2656,6 +2893,9 @@ td{border-color:#2c394b!important}
       MANUAL ORDER ENTRY
     </button>
     <div class="product-tools-row">
+      <button type="button" id="openCartPanelBtn" class="secondary" style="display:none;padding:10px 14px">
+        CART <span id="cartItemCount">0</span>
+      </button>
       <button type="button" id="productSearchBtn" class="product-search-trigger">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path>
@@ -2712,7 +2952,10 @@ td{border-color:#2c394b!important}
         </svg>
         <strong>CART</strong>
       </div>
-      <button type="button" class="secondary" id="clearCartBtn">CLEAR CART</button>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button type="button" class="secondary" id="closeCartPanelBtn" title="Hide cart" aria-label="Hide cart" style="padding:8px 11px">✕</button>
+        <button type="button" class="secondary" id="clearCartBtn">CLEAR CART</button>
+      </div>
     </div>
 
     <label>ORDER TYPE</label>
@@ -3687,6 +3930,7 @@ const menu = [
 
 
 let cart = [];
+let cartPanelManuallyClosed = false;
 let splitPaymentMethods = [];
 let isSavingSale = false;
 let saleSaved = false;
@@ -4987,155 +5231,155 @@ document.getElementById("closeDailyOrderSearch").addEventListener("click", () =>
 updateDateTime();
 setInterval(updateDateTime, 1000);
 function renderProducts(){
-const categories = [
-  "Wings", "Fries", "Chicken Rings", "Floats", "Drinks", "Extras"
-];
+  const categories = [
+    "Wings", "Fries", "Chicken Rings", "Floats", "Drinks", "Extras"
+  ];
 
-document.getElementById("categoryTabs").innerHTML =
-  categories.map(category => `
-    <button
-      type="button"
-      class="category-btn ${selectedCategory === category ? "active" : ""}"
-      data-category="${category}">
-      ${category}
-    </button>
-  `).join("");
+  document.getElementById("categoryTabs").innerHTML =
+    categories.map(category => `
+      <button
+        type="button"
+        class="category-btn ${selectedCategory === category ? "active" : ""}"
+        data-category="${category}">
+        ${category}
+      </button>
+    `).join("");
+
   document.querySelectorAll(".category-btn").forEach(btn=>{
     btn.addEventListener("click",()=>{
       selectedCategory = btn.dataset.category;
       renderProducts();
     });
   });
-// PRODUCT SEARCH CONTROLS
-const searchBtn = document.getElementById("productSearchBtn");
-const searchPanel = document.getElementById("productSearchPanel");
-const searchInput = document.getElementById("productSearchInput");
-const closeSearchBtn = document.getElementById("closeProductSearch");
 
-searchBtn.onclick = () => {
-  searchPanel.style.display = "flex";
-  searchBtn.style.display = "none";
-  searchInput.focus();
-};
+  // PRODUCT SEARCH CONTROLS
+  const searchBtn = document.getElementById("productSearchBtn");
+  const searchPanel = document.getElementById("productSearchPanel");
+  const searchInput = document.getElementById("productSearchInput");
+  const closeSearchBtn = document.getElementById("closeProductSearch");
 
-closeSearchBtn.onclick = () => {
-  productSearchQuery = "";
-  searchInput.value = "";
-  searchPanel.style.display = "none";
-  searchBtn.style.display = "flex";
-  renderProducts();
-};
+  searchBtn.onclick = () => {
+    searchPanel.style.display = "flex";
+    searchBtn.style.display = "none";
+    searchInput.focus();
+  };
 
-searchInput.oninput = () => {
-  productSearchQuery = searchInput.value;
-  renderProducts();
-};
-const filteredProducts = productSearchQuery.trim()
-  ? menu.filter(p =>
-      p.name.toLowerCase().includes(productSearchQuery.trim().toLowerCase())
-    )
-  : menu.filter(p => p.category === selectedCategory);
+  closeSearchBtn.onclick = () => {
+    productSearchQuery = "";
+    searchInput.value = "";
+    searchPanel.style.display = "none";
+    searchBtn.style.display = "flex";
+    renderProducts();
+  };
 
- const productsEl = document.getElementById("products");
-  productsEl.classList.toggle("fries-layout", selectedCategory !== "Wings");
+  searchInput.oninput = () => {
+    productSearchQuery = searchInput.value;
+    renderProducts();
+  };
 
-const renderProductCards = items => items.map(p => {
-  const index = menu.indexOf(p);
-  const unavailable = isProductUnavailable(p);
+  const productsEl = document.getElementById("products");
+  const searchActive = Boolean(productSearchQuery.trim());
+  const filteredProducts = searchActive
+    ? menu.filter(p =>
+        p.name.toLowerCase().includes(productSearchQuery.trim().toLowerCase())
+      )
+    : menu.filter(p => p.category === selectedCategory);
 
-  return `
-    <button
-      class="product"
-      data-index="${index}"
-      ${unavailable ? "disabled" : ""}
-      style="
-        position:relative;
-        padding-bottom:28px;
-        ${unavailable ? "opacity:.45;border:1px solid #ff5555;" : ""}
-      "
-    >
-      <strong>${p.name}</strong>
+  const slotLayouts = {
+    "Wings": [
+      "UNLI 269 WINGS", "3PCS CHICKEN", "6PCS CHICKEN",
+      null, "3PCS CHICKEN + RICE + DIP", "6PCS CHICKEN + RICE + DIP",
+      "UNLI 299 WINGS", "9PCS CHICKEN", "18PCS CHICKEN",
+      null, "9PCS CHICKEN + RICE + DIP", "24PCS CHICKEN",
+      null, null, null
+    ],
+    "Fries": [
+      "SOUR CREAM", "DOUBLE BBQ", "DOUBLE CHEESE",
+      "CLASSIC", "DOUBLE DUO", "CHILI CHEESE",
+      "SOUR CHEESE", "CHEESY BACON", "CHILI BACON",
+      "MAPLE BACON", "TRIPLE CHEESE", "TRIPLE CHEESY BACON",
+      "GARLIC PARMESAN", "HONEY BUTTER", "YANGNYEOM"
+    ],
+    "Chicken Rings": [
+      "HOOP 'N STICK", "HOOP BOWL", "HOOP & FRIES", "HOOP FEAST"
+    ],
+    "Floats": [
+      "CHOCO FLOAT", "ROYAL FLOAT", "COKE FLOAT",
+      "OREO FLOAT", "MATCHA FLOAT", "LYCHEE FLOAT",
+      "MANGO FLOAT", "OREO MATCHA FLOAT", "MANGO OREO FLOAT",
+      "STRAWBERRY OREO FLOAT", "CHOCO OREO FLOAT", "STRAWBERRY FLOAT",
+      null, null, null
+    ],
+    "Drinks": [
+      "CHOCO BLISS", "VANILLA OREO", "CARAMEL BLISS",
+      "MATCHA LATTE", "OREO BLAST", "CARAMEL MATCHA",
+      "CHOCO OREO", "STRAWBERRY MATCHA", "STRAWBERRY LATTE",
+      "OREO MATCHA", "STRAWBERRY CLOUD", "STRAWBERRY OREO",
+      null, null, null
+    ],
+    "Extras": ["DIP", "RICE", "TAKE OUT BOX", "KETCHUP"]
+  };
 
-      <span style="
-        position:absolute;
-        bottom:6px;
-        left:8px;
-        font-size:15px;
-        font-weight:600;
-        letter-spacing:.4px;
-        color:#e7ad3e;
-      ">
-        ₱${Number(p.price).toFixed(2)}
-      </span>
+  const columnsByCategory = {
+    "Wings": 3,
+    "Fries": 3,
+    "Chicken Rings": 2,
+    "Floats": 3,
+    "Drinks": 3,
+    "Extras": 2
+  };
 
-      <span style="
-        position:absolute;
-        bottom:6px;
-        right:8px;
-        font-size:9px;
-        font-weight:600;
-        letter-spacing:.4px;
-        color:${unavailable ? "#ff3333" : "#22aa55"};
-      ">
-        ${unavailable ? "NOT AVAILABLE" : "AVAILABLE"}
-      </span>
-    </button>
-  `;
-}).join("");
+  const renderProductCard = p => {
+    const index = menu.indexOf(p);
+    const unavailable = isProductUnavailable(p);
+    return `
+      <button
+        class="product"
+        type="button"
+        data-index="${index}"
+        ${unavailable ? "disabled" : ""}
+        aria-label="${p.name}, ₱${Number(p.price).toFixed(2)}${unavailable ? ", not available" : ""}"
+      >
+        <strong>${p.name}</strong>
+        <span class="price">₱${Number(p.price).toFixed(2)}</span>
+        <span class="product-availability ${unavailable ? "unavailable" : ""}">
+          ${unavailable ? "NOT AVAILABLE" : "AVAILABLE"}
+        </span>
+      </button>
+    `;
+  };
 
-if (!productSearchQuery.trim() && selectedCategory === "Wings") {
-  productsEl.style.display = "block";
+  if (searchActive) {
+    productsEl.className = "grid product-layout-search";
+    productsEl.style.setProperty("--product-columns", "3");
+    productsEl.innerHTML = [...filteredProducts]
+      .sort((a,b) => Number(a.price) - Number(b.price))
+      .map(renderProductCard).join("");
+  } else {
+    const layout = slotLayouts[selectedCategory] || [];
+    const productByName = new Map(
+      filteredProducts.map(p => [p.name.toUpperCase(), p])
+    );
 
-  const unli = filteredProducts.filter(p =>
-    /^UNLI\b/i.test(p.name)
-  );
+    productsEl.className = `grid product-layout product-layout-${selectedCategory.toLowerCase().replace(/[^a-z]+/g,"-")}`;
+    productsEl.style.setProperty("--product-columns", String(columnsByCategory[selectedCategory] || 3));
 
-  const barkada = filteredProducts.filter(p =>
-    /^(18|24)\s*PCS\b/i.test(p.name)
-  );
+    productsEl.innerHTML = layout.map((name, slotIndex) => {
+      if (!name) {
+        return `<div class="product-slot-empty" aria-hidden="true" data-slot="${slotIndex + 1}"></div>`;
+      }
+      const product = productByName.get(name.toUpperCase());
+      return product ? renderProductCard(product) :
+        `<div class="product-slot-empty" aria-hidden="true" data-slot="${slotIndex + 1}"></div>`;
+    }).join("");
+  }
 
-  const soloDuo = filteredProducts.filter(p =>
-    !unli.includes(p) && !barkada.includes(p)
-  );
-
-  productsEl.innerHTML = `
-    <section class="product-group">
-      <h3 class="product-section-title">UNLI</h3>
-      <div class="product-group-grid">
-        ${renderProductCards(unli)}
-      </div>
-    </section>
-
-    <section class="product-group">
-      <h3 class="product-section-title">SOLO / DUO</h3>
-      <div class="product-group-grid">
-        ${renderProductCards(soloDuo)}
-      </div>
-    </section>
-
-    <section class="product-group">
-      <h3 class="product-section-title">BARKADA</h3>
-      <div class="product-group-grid">
-        ${renderProductCards(barkada)}
-      </div>
-    </section>
-  `;
-
-} else {
-
-  productsEl.style.display = "";
-  productsEl.innerHTML = renderProductCards(
-    [...filteredProducts].sort((a, b) => Number(a.price) - Number(b.price))
-  );
-
-}
-
-  document.querySelectorAll(".product").forEach(btn=>{
+  document.querySelectorAll("#products .product").forEach(btn=>{
     btn.addEventListener("click",()=>{
+      cartPanelManuallyClosed = false;
       addItem(Number(btn.dataset.index));
     });
   });
-
 }
 
 function addItem(index){
@@ -5623,7 +5867,21 @@ function renderCart(){
   takeOutOption.closest(".order-type-btn").style.cursor =
     hasUnliProduct ? "not-allowed" : "pointer";
   const el = document.getElementById("cart");
-  document.getElementById("cartPanel").classList.toggle("hidden", cart.length === 0);
+  const cartPanel = document.getElementById("cartPanel");
+  const cartOpenButton = document.getElementById("openCartPanelBtn");
+  const cartCount = document.getElementById("cartItemCount");
+  const totalCartQty = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+
+  if (cartCount) cartCount.textContent = String(totalCartQty);
+  if (cartOpenButton) {
+    cartOpenButton.style.display =
+      cart.length > 0 && cartPanelManuallyClosed ? "inline-flex" : "none";
+  }
+  cartPanel.classList.toggle(
+    "hidden",
+    cart.length === 0 || cartPanelManuallyClosed
+  );
+
   const discountType = document.getElementById("discount").value;
 
   const subtotal = cart.reduce(
@@ -5955,6 +6213,21 @@ if (paymentMethod === "CASH") {
 document.getElementById("change").textContent = peso(change);
 
 } // END OF renderCart()
+
+// Right-side cart drawer controls.
+document.getElementById("closeCartPanelBtn").addEventListener("click", () => {
+  cartPanelManuallyClosed = true;
+  document.getElementById("cartPanel").classList.add("hidden");
+  const openButton = document.getElementById("openCartPanelBtn");
+  if (openButton && cart.length > 0) openButton.style.display = "inline-flex";
+});
+
+document.getElementById("openCartPanelBtn").addEventListener("click", () => {
+  if (cart.length === 0) return;
+  cartPanelManuallyClosed = false;
+  document.getElementById("cartPanel").classList.remove("hidden");
+  document.getElementById("openCartPanelBtn").style.display = "none";
+});
 
 function escapeHTML(value){
   return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -12667,6 +12940,8 @@ document.getElementById("avatarSelection").classList.add("hidden");
 document.getElementById("app").classList.remove("hidden");
 document.getElementById("queuePage").classList.add("hidden");
 document.getElementById("salesPage").classList.remove("hidden");
+document.getElementById("app").classList.add("sales-nav-compact");
+cartPanelManuallyClosed = false;
 
 document.querySelector(".terminal-nav").style.display = "grid";
 
@@ -13129,6 +13404,7 @@ document.querySelectorAll(".terminal-nav button").forEach(button=>{
     document.querySelectorAll(".terminal-nav button").forEach(navButton=>{
       navButton.classList.toggle("active", navButton === button);
     });
+    document.getElementById("app").classList.toggle("sales-nav-compact", target === "salesPage");
 
     if(target === "employeeAttendancePage"){
       loadTodayAttendance();
@@ -13155,6 +13431,7 @@ document.getElementById("employeeAttendanceBtn").addEventListener("click", () =>
   });
 
   document.getElementById("employeeAttendancePage").classList.remove("hidden");
+  document.getElementById("app").classList.remove("sales-nav-compact");
 
   document.querySelectorAll(".terminal-nav button").forEach(button => {
     button.classList.remove("active");
@@ -13181,6 +13458,7 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
   });
 
 document.getElementById("dashboardPage").classList.remove("hidden");
+document.getElementById("app").classList.remove("sales-nav-compact");
 window.scrollTo(0, 0);
 loadDashboardPayroll();
 loadDashboardPayslips();
