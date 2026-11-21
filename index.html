@@ -3935,6 +3935,7 @@ let splitPaymentMethods = [];
 let isSavingSale = false;
 let saleSaved = false;
 let pendingSaleRef = null;
+let lastSavedSaleForPrint = null;
 let currentUserRole = null;
 let currentUserName = "";
 let teamChatUnsubscribe = null;
@@ -6354,6 +6355,12 @@ historyEl.innerHTML = `
         gap:5px;
         min-width:0;
       ">
+        <button
+          class="secondary"
+          data-print="${orderDoc.id}"
+          style="width:100%;padding:5px 2px;font-size:10px">
+          REPRINT
+        </button>
         ${status !== "VOID" ? `
           <button
             class="secondary"
@@ -6382,6 +6389,10 @@ historyEl.innerHTML = `
 
 
     applyOrderHistoryFilters();
+
+    historyEl.querySelectorAll("[data-print]").forEach(button=>{
+      button.onclick = () => printOrderFromHistory(button.dataset.print);
+    });
 
     historyEl.querySelectorAll("[data-void]").forEach(button=>{
       button.onclick = async()=>{
@@ -11665,6 +11676,156 @@ charts.forEach(([chartTitle,imageData]) => {
     );
   }
 }
+function receiptEscape(value){
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  })[character]);
+}
+
+function receiptDate(orderDate){
+  const value = String(orderDate || "");
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[2]}/${match[3]}/${match[1]}` : value;
+}
+
+function buildReceiptHtml(order){
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemRows = items.map(item => {
+    const name = receiptEscape(item.name || "Item");
+    const qty = Number(item.qty) || 0;
+    const amount = (Number(item.price) || 0) * qty;
+    const details = [];
+    if(Array.isArray(item.flavors) && item.flavors.length){
+      details.push(`Flavors: ${item.flavors.map(receiptEscape).join(", ")}`);
+    }
+    if(item.dip) details.push(`Dip: ${receiptEscape(item.dip)}`);
+    if(Array.isArray(item.includedItems) && item.includedItems.length){
+      details.push(`Included: ${item.includedItems.map(receiptEscape).join(", ")}`);
+    }
+    if(item.customNotes) details.push(`Note: ${receiptEscape(item.customNotes)}`);
+
+    return `
+      <div class="item-row">
+        <span class="item-name">${name} × ${qty}</span>
+        <span class="amount">${peso(amount)}</span>
+      </div>
+      ${details.length ? `<div class="item-details">${details.join("<br>")}</div>` : ""}
+    `;
+  }).join("");
+
+  const paymentMethod = String(order.paymentMethod || "").toUpperCase();
+  let paymentLine = `Payment: ${receiptEscape(paymentMethod || "N/A")}`;
+  const splitMethods = [order.firstPaymentMethod, order.secondPaymentMethod]
+    .filter(Boolean).map(value => String(value).toUpperCase());
+  const isSplit = splitMethods.length === 2;
+
+  if(isSplit){
+    paymentLine = `Payment: ${receiptEscape(splitMethods[0])} ${peso(Number(order.firstPaymentAmount) || 0)} + ${receiptEscape(splitMethods[1])} ${peso(Number(order.secondPaymentAmount) || 0)}`;
+    if(Number(order.change) > 0){
+      paymentLine += ` | Change: ${peso(Number(order.change) || 0)}`;
+    }
+  }else if(paymentMethod === "CASH"){
+    paymentLine = `Payment: CASH | Cash: ${peso(Number(order.cashReceived) || 0)} | Change: ${peso(Number(order.change) || 0)}`;
+  }
+
+  const isVoid = String(order.status || "COMPLETED").toUpperCase() === "VOID";
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D’ Wings Cafe Receipt</title>
+<style>
+  @page { size: 58mm auto; margin: 2mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; color: #000; }
+  body { width: 54mm; font-family: Arial, sans-serif; }
+  .receipt { width: 100%; font-size: 10px; line-height: 1.2; }
+  .center { text-align: center; }
+  .brand { font-size: 14px; font-weight: 800; letter-spacing: .2px; }
+  .address { font-size: 9px; margin-top: 1px; }
+  .meta, .item-row, .summary-row, .total-row { display: flex; justify-content: space-between; gap: 5px; }
+  .meta { margin: 5px 0 4px; font-size: 9px; }
+  .item-row { align-items: flex-start; margin: 3px 0; }
+  .item-name { min-width: 0; overflow-wrap: anywhere; }
+  .amount { white-space: nowrap; text-align: right; }
+  .item-details { font-size: 8px; line-height: 1.15; margin: 0 0 3px 4px; overflow-wrap: anywhere; }
+  .summary-row { margin: 2px 0; }
+  .total-row { border-top: 1px solid #000; padding-top: 3px; margin-top: 3px; font-weight: 700; }
+  .payment-line { font-size: 8px; line-height: 1.2; margin-top: 4px; overflow-wrap: anywhere; }
+  .void-label { text-align: center; font-weight: 800; margin: 3px 0; }
+  @media screen { body { margin: 0 auto; } }
+</style>
+</head>
+<body>
+  <main class="receipt">
+    <header class="center">
+      <div class="brand">D’ WINGS CAFE</div>
+      <div class="address">MAPLE GROVE GENTRI</div>
+    </header>
+    ${isVoid ? '<div class="void-label">*** VOID ORDER ***</div>' : ''}
+    <div class="meta">
+      <strong>ORDER #${receiptEscape(order.orderNumber ?? "LEGACY")}</strong>
+      <span>${receiptEscape(receiptDate(order.orderDate))}</span>
+    </div>
+    ${itemRows}
+    <div class="summary-row"><span>Subtotal</span><span>${peso(Number(order.subtotal) || 0)}</span></div>
+    <div class="summary-row"><span>Discount</span><span>${peso(Number(order.discountAmount) || 0)}</span></div>
+    <div class="total-row"><span>TOTAL</span><span>${peso(Number(order.total) || 0)}</span></div>
+    <div class="payment-line">${paymentLine}</div>
+  </main>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => { window.focus(); window.print(); }, 250);
+    });
+  <\/script>
+</body>
+</html>`;
+}
+
+function writeReceiptToWindow(printWindow, order){
+  if(!printWindow || printWindow.closed) return;
+  printWindow.document.open();
+  printWindow.document.write(buildReceiptHtml(order));
+  printWindow.document.close();
+}
+
+function printReceipt(order){
+  if(!order){
+    alert("Receipt details are not available for this sale.");
+    return;
+  }
+  const printWindow = window.open("", "_blank", "width=360,height=640");
+  if(!printWindow){
+    alert("Please allow pop-ups for this POS to print the receipt.");
+    return;
+  }
+  writeReceiptToWindow(printWindow, order);
+}
+
+async function printOrderFromHistory(orderId){
+  // Open the print window during the direct click so the browser does not block it.
+  const printWindow = window.open("", "_blank", "width=360,height=640");
+  if(!printWindow){
+    alert("Please allow pop-ups for this POS to reprint the receipt.");
+    return;
+  }
+  printWindow.document.write("<p style='font:14px Arial;padding:12px'>Loading receipt...</p>");
+  try{
+    const orderSnapshot = await getDoc(doc(db, "orders", orderId));
+    if(!orderSnapshot.exists()){
+      printWindow.close();
+      alert("This order could not be found.");
+      return;
+    }
+    writeReceiptToWindow(printWindow, orderSnapshot.data());
+  }catch(error){
+    console.error("Receipt reprint error:", error);
+    printWindow.close();
+    alert("Unable to load this receipt. Please try again.");
+  }
+}
+
 async function saveSale(){
   if(isSavingSale || saleSaved) return;
 
@@ -11864,6 +12025,7 @@ customNotes: item.customNotes || ""
     });
 
     saleSaved = true;
+    lastSavedSaleForPrint = { ...sale, orderNumber };
 
     document.getElementById("checkoutMessage").textContent =
       (manualOrderMode
@@ -11871,6 +12033,7 @@ customNotes: item.customNotes || ""
         : "SALE SUCCESSFULLY SAVED! ORDER #") + orderNumber;
 
     document.getElementById("checkoutButtons").classList.add("hidden");
+    document.getElementById("printReceiptBtn").classList.remove("hidden");
     document.getElementById("newOrderBtn").classList.remove("hidden");
 
   }catch(error){
@@ -13782,6 +13945,10 @@ ${item.flavors?.length ? `
   </button>
 </div>
 
+<button id="printReceiptBtn" class="hidden" type="button" style="width:100%;margin:8px 0;background:#168b45;color:#fff">
+  PRINT RECEIPT
+</button>
+
 <button id="newOrderBtn" class="hidden" style="width:100%">
   NEW ORDER
 </button>
@@ -13857,12 +14024,19 @@ document.getElementById("cancelCheckout").onclick=()=>{
   document.getElementById("checkoutModal").classList.add("hidden");
 };
 
+document.getElementById("printReceiptBtn").onclick=()=>{
+  if(!saleSaved || !lastSavedSaleForPrint) return;
+  printReceipt(lastSavedSaleForPrint);
+};
+
 document.getElementById("newOrderBtn").onclick=()=>{
   if(!saleSaved) return;
 
   cart = [];
   saleSaved = false;
   pendingSaleRef = null;
+  lastSavedSaleForPrint = null;
+  document.getElementById("printReceiptBtn").classList.add("hidden");
 
   document.getElementById("customerName").value = "";
   document.querySelector('input[name="orderType"][value="DINE IN"]').checked = true;
