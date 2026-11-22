@@ -2510,6 +2510,73 @@ td{border-color:#2c394b!important}
 #employeeAttendancePage .attendance-data-table th{color:#e7c783;background:#202a36;font-size:10px;letter-spacing:.5px}
 #employeeAttendancePage #manualAttendanceEditorPanel,#employeeAttendancePage #staffPayslipsAttendancePanel{margin:0}
 @media(max-width:600px){#employeeAttendancePage .attendance-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#employeeAttendancePage .attendance-history-controls{grid-template-columns:1fr}}
+
+/* ASSIGN SCHEDULE — MOBILE PORTRAIT WIDTH FIX */
+@media screen and (max-width:600px) and (orientation:portrait){
+  #employeeAttendancePage .staff-left-column,
+  #employeeAttendancePage .staff-left-column > .panel,
+  #employeeAttendancePage #staffScheduleControls,
+  #employeeAttendancePage #staffWeeklySchedule{
+    box-sizing:border-box!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  #employeeAttendancePage .staff-left-column > .panel:first-child{
+    padding:12px!important;
+    overflow:hidden!important;
+  }
+  #employeeAttendancePage #staffScheduleControls > div:first-child{
+    gap:8px!important;
+  }
+  #employeeAttendancePage #scheduleWeekLabel{
+    min-width:0!important;
+    max-width:calc(100% - 88px)!important;
+    text-align:center!important;
+    overflow-wrap:anywhere!important;
+    font-size:12px!important;
+  }
+  #employeeAttendancePage #staffScheduleControls > div:nth-child(2){
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+    width:100%!important;
+  }
+  #employeeAttendancePage #clearStaffScheduleBtn,
+  #employeeAttendancePage #saveStaffScheduleBtn{
+    box-sizing:border-box!important;
+    width:100%!important;
+    min-width:0!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
+    line-height:1.25!important;
+    padding:10px 4px!important;
+    font-size:clamp(9px,2.7vw,11px)!important;
+  }
+  #employeeAttendancePage .staff-schedule-table-wrap{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    touch-action:pan-x!important;
+    scrollbar-width:thin;
+  }
+  #employeeAttendancePage .staff-schedule-table{
+    display:table!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    table-layout:fixed!important;
+    white-space:normal!important;
+  }
+  #employeeAttendancePage .staff-schedule-table th,
+  #employeeAttendancePage .staff-schedule-table td{
+    box-sizing:border-box!important;
+    min-width:0!important;
+    overflow-wrap:anywhere!important;
+  }
+}
 </style>
 
 </head>
@@ -4275,9 +4342,11 @@ function renderStaffWeeklySchedule(){
   );
 
   let html = `
-<div style="width:100%;overflow-x:hidden">
-  <table style="
+<div class="staff-schedule-table-wrap" style="width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch">
+  <table class="staff-schedule-table" style="
     width:100%;
+    min-width:0;
+    max-width:100%;
     table-layout:fixed;
         border-collapse:separate;
         border-spacing:0 5px;
