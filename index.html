@@ -2034,56 +2034,18 @@ td{border-color:#2c394b!important}
 }
 #app > .terminal-nav #inventoryBtn svg{display:block;width:21px;height:21px;min-width:21px;min-height:21px;flex:0 0 21px;stroke:currentColor;fill:none}
 
-/* ================= DAILY STAFF CHECKLIST UPGRADE ================= */
-.daily-checklist-page,.daily-checklist-prep-page{color:#f5f5f5}
-.checklist-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-.checklist-topbar h2{margin:0;color:#f3c45f;letter-spacing:1px}
-.checklist-actions{display:flex;gap:8px;flex-wrap:wrap}
-.checklist-progress-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 24px}
-.checklist-progress-card{background:linear-gradient(145deg,#202020,#141414);border:1px solid #454545;border-radius:14px;padding:16px;min-width:0}
-.checklist-progress-label{color:#c8c8c8;font-size:12px;font-weight:700;letter-spacing:1px}
-.checklist-progress-number{font-size:30px;font-weight:800;color:#f3c45f;margin:7px 0}
-.checklist-progress-track{height:7px;background:#383838;border-radius:20px;overflow:hidden}
-.checklist-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#d79b28,#ffe08a);border-radius:20px;transition:width .2s}
-.checklist-section{background:#191919;border:1px solid #353535;border-radius:14px;padding:18px;margin:0 0 18px}
-.checklist-section h3{color:#f3c45f;margin:0 0 7px;font-size:18px}
-.checklist-section-subtitle{color:#aaa;font-size:13px;margin:0 0 15px}
-.sauce-grid,.store-task-grid,.cashier-flavor-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
-.sauce-task-card,.cashier-flavor-card{min-width:0;background:#242424;border:1px solid #484848;border-radius:10px;padding:11px 9px;display:flex;flex-direction:column;gap:10px}
-.sauce-task-name{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
-.sauce-task-check{display:flex;align-items:center;gap:7px;min-width:0}
-.sauce-task-check input,.cashier-flavor-card input,.store-task-card input{width:18px;height:18px;accent-color:#e5ae3d;flex:0 0 auto}
-.sauce-task-card button{width:100%;font-size:11px;padding:9px 5px;white-space:nowrap}
-.store-task-card{background:#242424;border:1px solid #444;border-radius:9px;padding:12px;display:flex;align-items:center;gap:8px;min-height:56px;font-size:13px;font-weight:600}
-.store-task-card label{display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0}
-.store-task-card span{overflow-wrap:anywhere}
-.checklist-empty{border:1px dashed #555;border-radius:10px;padding:20px;text-align:center;color:#aaa;background:#151515}
-.buy-list{display:grid;gap:8px}
-.buy-list-item{padding:11px 13px;border:1px solid #414141;border-radius:9px;background:#232323}
-.recipe-overlay,.closing-reminder-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px}
-.recipe-modal,.closing-reminder-modal{width:min(560px,100%);max-height:88vh;overflow:auto;background:#181818;border:1px solid #d6a83e;border-radius:16px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.55)}
-.recipe-overlay.hidden,.closing-reminder-overlay.hidden{display:none}
-.recipe-modal h2{color:#f3c45f;margin:4px 0 18px;font-size:23px}
-.recipe-modal h3{font-size:13px;color:#e8b64e;letter-spacing:1px;margin:18px 0 8px}
-.recipe-modal li{margin:0 0 8px;line-height:1.45;color:#eee}
-.recipe-modal .recipe-note{background:#3b2d12;border:1px solid #a77920;color:#ffe1a0;border-radius:8px;padding:10px;font-weight:700;font-size:13px;margin:12px 0}
-.prep-form-grid{display:grid;grid-template-columns:1fr;gap:16px}
-.cashier-flavor-card{flex-direction:row;align-items:center;min-height:50px;padding:10px}
-.cashier-flavor-card label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-.prep-task-list,.prep-buy-list{display:grid;gap:8px;margin-top:12px}
-.prep-list-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;background:#242424;border:1px solid #444;border-radius:8px}
-.prep-list-row span{overflow-wrap:anywhere}
-.prep-list-row button{padding:6px 10px;font-size:11px}
-.prep-add-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.prep-add-row input{flex:1 1 220px;min-width:0}
-.prep-save-row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
-.closing-reminder-modal{text-align:center;max-width:420px}
-.closing-reminder-modal h2{color:#f3c45f;margin:4px 0 8px}
-.closing-reminder-time{font-size:36px;font-weight:800;margin:10px 0 18px}
-#dailyChecklistNavBtn{border-color:#b8892f}
-#dailyChecklistNavBtn.active{background:#3a2d12;color:#ffe19a}
-@media(max-width:900px){.sauce-grid,.store-task-grid,.cashier-flavor-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:600px){.checklist-progress-grid{gap:8px}.checklist-progress-card{padding:12px}.checklist-progress-number{font-size:25px}.sauce-grid,.store-task-grid,.cashier-flavor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.checklist-section{padding:13px}.sauce-task-name{font-size:11px}.recipe-modal{padding:17px}}
+/* ================= MODERN DAILY STAFF CHECKLIST ================= */
+.daily-checklist-page,.daily-checklist-prep-page{color:#f4f5f7;max-width:1500px;margin:0 auto;padding:clamp(12px,2vw,26px)!important}
+.daily-checklist-page{background:radial-gradient(ellipse at 8% 0%,rgba(196,151,71,.11),transparent 34%),#10151d;border:1px solid #293241;border-radius:22px;box-shadow:0 18px 55px rgba(0,0,0,.24)}
+.checklist-topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:0 0 22px;padding:22px 24px;background:linear-gradient(120deg,#1d2938,#18212d 62%,#2b261d);border:1px solid rgba(211,174,104,.32);border-radius:18px;box-shadow:inset 0 1px rgba(255,255,255,.04)}
+.checklist-brand-block{min-width:240px}.checklist-eyebrow{font-size:9px;font-weight:800;letter-spacing:2.3px;color:#d8b36d;margin-bottom:8px}.checklist-topbar h2{margin:0;color:#fff;font-size:clamp(21px,3vw,29px);font-weight:850;letter-spacing:-.7px}.checklist-date-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:9px;color:#aeb9c8;font-size:11px}.checklist-date-line span{padding:5px 9px;border-radius:20px;background:#303a47;color:#f0d49b;font-weight:800;letter-spacing:.6px}
+.checklist-actions{display:flex;gap:8px;flex-wrap:wrap}.checklist-actions button{min-height:39px;padding:9px 13px;border-radius:10px!important;font-size:10px;font-weight:800;letter-spacing:.35px;background:#283442;border:1px solid #465365;color:#e8edf4}.checklist-actions button:hover{background:#3a4654;border-color:#c39a55}
+.checklist-history-panel{background:#182332!important;border:1px solid #3b4a5e!important;border-radius:13px!important;color:#dce3ed;margin-bottom:18px!important}.checklist-history-panel input{background:#0f1722;color:#fff;border:1px solid #46566b;border-radius:8px;padding:9px}
+.checklist-progress-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0 0 20px}.checklist-progress-card{position:relative;overflow:hidden;background:linear-gradient(145deg,#202d3c,#17212d);border:1px solid #354456;border-radius:16px;padding:19px 20px;min-width:0;box-shadow:0 8px 24px rgba(0,0,0,.14)}.checklist-progress-card:after{content:"";position:absolute;width:100px;height:100px;border-radius:50%;right:-32px;top:-45px;background:rgba(207,166,91,.08)}.checklist-progress-label{color:#aebdce;font-size:10px;font-weight:800;letter-spacing:1.5px}.checklist-progress-number{font-size:32px;font-weight:850;color:#f0cb83;margin:8px 0 12px;line-height:1}.checklist-progress-track{height:8px;background:#0e1722;border-radius:20px;overflow:hidden}.checklist-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#a97b35,#f2d18d);border-radius:20px;transition:width .25s}
+.checklist-section{background:linear-gradient(150deg,#1b2633,#17212c);border:1px solid #334255;border-radius:17px;padding:20px;margin:0 0 16px;box-shadow:0 8px 22px rgba(0,0,0,.12)}.checklist-section h3{display:flex;align-items:center;gap:10px;color:#f0d095;margin:0 0 7px;font-size:15px;font-weight:850;letter-spacing:.8px}.checklist-section h3:before{content:"";width:4px;height:20px;border-radius:4px;background:#c49a54}.checklist-section-subtitle{color:#9eacbc;font-size:12px;margin:0 0 16px}
+.sauce-grid,.store-task-grid,.cashier-flavor-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.sauce-task-card,.cashier-flavor-card{min-width:0;background:#222f3e;border:1px solid #3a4b60;border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,transform .15s}.sauce-task-card:hover,.cashier-flavor-card:hover{border-color:#c49a54;transform:translateY(-1px)}.sauce-task-name{font-size:11px;font-weight:850;white-space:normal;overflow-wrap:anywhere;letter-spacing:.15px;color:#f1f3f6}.sauce-task-check{display:flex;align-items:center;gap:8px;min-width:0}.sauce-task-check input,.cashier-flavor-card input,.store-task-card input{width:18px;height:18px;accent-color:#d6ad65;flex:0 0 auto}.sauce-task-card button{width:100%;font-size:10px;padding:9px 5px;white-space:nowrap;border-radius:8px;background:#303d4d;border:1px solid #4a5b70;color:#f0d49b}.store-task-card{background:#222f3e;border:1px solid #3a4b60;border-radius:11px;padding:13px;display:flex;align-items:center;gap:9px;min-height:58px;font-size:12px;font-weight:650;color:#e8edf4}.store-task-card label{display:flex;align-items:center;gap:9px;cursor:pointer;min-width:0}.store-task-card span{overflow-wrap:anywhere}.checklist-empty{border:1px dashed #4b5b6e;border-radius:12px;padding:22px;text-align:center;color:#aab6c5;background:#182331}.buy-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.buy-list-item{padding:12px 14px;border:1px solid #3a4b60;border-radius:10px;background:#222f3e;color:#eef1f5;font-size:12px}
+.recipe-overlay,.closing-reminder-overlay{position:fixed;inset:0;background:rgba(3,7,12,.82);backdrop-filter:blur(5px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px}.recipe-modal,.closing-reminder-modal{width:min(560px,100%);max-height:88vh;overflow:auto;background:#1b2735;border:1px solid #c49a54;border-radius:18px;padding:23px;box-shadow:0 22px 70px rgba(0,0,0,.6)}.recipe-overlay.hidden,.closing-reminder-overlay.hidden{display:none}.recipe-modal h2{color:#f0d095;margin:4px 0 18px;font-size:23px}.recipe-modal h3{font-size:12px;color:#e8c27c;letter-spacing:1px;margin:18px 0 8px}.recipe-modal li{margin:0 0 8px;line-height:1.5;color:#eef1f5}.recipe-modal .recipe-note{background:#3a3020;border:1px solid #96743f;color:#ffe1a0;border-radius:9px;padding:11px;font-weight:700;font-size:12px;margin:12px 0}.prep-form-grid{display:grid;grid-template-columns:1fr;gap:16px}.cashier-flavor-card{flex-direction:row;align-items:center;min-height:50px;padding:11px}.cashier-flavor-card label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;white-space:normal;cursor:pointer;color:#edf1f6}.prep-task-list,.prep-buy-list{display:grid;gap:8px;margin-top:12px}.prep-list-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#222f3e;border:1px solid #3a4b60;border-radius:9px}.prep-list-row span{overflow-wrap:anywhere}.prep-list-row button{padding:6px 10px;font-size:11px}.prep-add-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.prep-add-row input{flex:1 1 220px;min-width:0;background:#101a26;color:#fff;border:1px solid #46566b;border-radius:9px;padding:11px}.prep-save-row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}.closing-reminder-modal{text-align:center;max-width:420px}.closing-reminder-modal h2{color:#f0d095;margin:4px 0 8px}.closing-reminder-time{font-size:36px;font-weight:800;margin:10px 0 18px}#dailyChecklistNavBtn{border-color:#b8892f}#dailyChecklistNavBtn.active{background:#3a2d12;color:#ffe19a}
+@media(max-width:900px){.sauce-grid,.store-task-grid,.cashier-flavor-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:650px){.daily-checklist-page{padding:10px!important;border-radius:14px}.checklist-topbar{padding:17px;align-items:flex-start}.checklist-actions{width:100%}.checklist-actions button{flex:1 1 130px}.checklist-progress-grid{gap:8px}.checklist-progress-card{padding:14px}.checklist-progress-number{font-size:26px}.sauce-grid,.store-task-grid,.cashier-flavor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.checklist-section{padding:14px}.buy-list{grid-template-columns:1fr}.recipe-modal{padding:17px}}
 
 </style>
 <style id="daily-report-modern-style">#reportPage .daily-report-shell{padding:22px;border:1px solid rgba(201,166,92,.2);background:linear-gradient(160deg,#181a1d,#121416);border-radius:18px}#reportPage .daily-report-heading h2{margin:4px 0;font-size:26px;letter-spacing:-.6px;font-weight:650;color:#f4f4f2}#reportPage .report-eyebrow{font-size:10px;letter-spacing:2px;color:#c6a15a;margin:0;font-weight:700}#reportPage .report-muted{color:#92979b;font-size:12px;margin:4px 0}#reportPage .report-date-controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:18px 0 8px;align-items:end}#reportPage .report-date-controls label{grid-column:1/-1;font-size:10px;letter-spacing:1.4px;color:#aeb2b5;font-weight:700}#reportPage .report-date-controls input{grid-column:1/-1;min-width:0}#reportPage .report-date-controls button{margin:0;min-height:40px;border-radius:10px;font-size:12px}#reportPage .daily-report-content{margin-top:14px}#reportPage .daily-report-content .row{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}#reportPage .daily-report-content .panel{background:#1d2022;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:14px;margin:10px 0}#reportPage .daily-report-content .total{color:#e5bd72;font-size:20px;font-weight:700}#reportPage .payment-summary{margin-top:16px;padding:15px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:#1a1c1e}#reportPage .payment-heading{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;letter-spacing:1.1px;margin-bottom:12px}#reportPage .payment-grid{display:grid;grid-template-columns:1fr;gap:8px}#reportPage .payment-card{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:#222527}#reportPage .payment-card span{font-size:10px;color:#a9adaf;letter-spacing:1px;font-weight:700}#reportPage .payment-card strong{font-size:16px;color:#e6c273}#reportPage .report-export{width:100%;margin-top:14px;border-radius:10px}@media(min-width:700px){#reportPage .report-date-controls{grid-template-columns:minmax(180px,1fr) auto auto auto}#reportPage .report-date-controls label{grid-column:1/-1}#reportPage .report-date-controls input{grid-column:auto}#reportPage .payment-grid{grid-template-columns:repeat(3,1fr)}#reportPage .payment-card{display:block}#reportPage .payment-card strong{display:block;margin-top:8px}}</style>
@@ -2943,7 +2905,7 @@ td{border-color:#2c394b!important}
 
 <section id="dailyChecklistPage" class="hidden daily-checklist-page">
   <div class="checklist-topbar">
-    <div><h2>D’ WINGS CAFE</h2><div style="font-weight:800;letter-spacing:1.4px;margin-top:4px">DAILY STAFF CHECKLIST</div></div>
+    <div class="checklist-brand-block"><div class="checklist-eyebrow">D’ WINGS CAFE · TEAM WORKSPACE</div><h2>DAILY STAFF CHECKLIST</h2><div class="checklist-date-line">Your shift preparation at a glance <span id="dailyChecklistDateLabel">TODAY’S CHECKLIST</span></div></div>
     <div class="checklist-actions">
       <button type="button" id="checklistHistoryBtn" class="secondary" aria-expanded="false">CHECKLIST HISTORY</button>
       <button type="button" id="prepareTomorrowBtn" class="secondary">PREPARE TOMORROW'S LIST</button>
@@ -14487,6 +14449,8 @@ async function dwLoadDailyChecklist(date=dwSelectedChecklistDate||dwChecklistMan
   dwSelectedChecklistDate=date;
   const picker=document.getElementById("dailyChecklistDatePicker");
   if(picker)picker.value=date;
+  const dateLabel=document.getElementById("dailyChecklistDateLabel");
+  if(dateLabel){const d=new Date(date+"T12:00:00");dateLabel.textContent=isNaN(d)?date:d.toLocaleDateString("en-PH",{month:"short",day:"numeric",year:"numeric"}).toUpperCase();}
   const grid=document.getElementById("staffSauceGrid");
   if(grid)grid.innerHTML='<div class="checklist-empty">Loading checklist...</div>';
   try{
@@ -14509,17 +14473,18 @@ function dwRenderDailyChecklist(){
   }
   const selected=Array.isArray(data.selectedSauces)?data.selectedSauces:[];
   const completed=new Set(Array.isArray(data.sauceCompleted)?data.sauceCompleted:[]);
-  const active=selected.filter(name=>!completed.has(name));
-  sauceGrid.innerHTML=active.length?active.map(name=>`<div class="sauce-task-card"><div class="sauce-task-check"><input type="checkbox" data-complete-sauce="${dwEscape(name)}" aria-label="Mark ${dwEscape(name)} prepared"><span class="sauce-task-name" title="${dwEscape(name)}">${dwEscape(name)}</span></div><button type="button" class="secondary" data-open-recipe="${dwEscape(name)}">SEE THE RECIPE</button></div>`).join(""):'<div class="checklist-empty" style="grid-column:1/-1">'+(selected.length?'All selected sauces are prepared.':'No sauces to prepare today.')+'</div>';
+  const pendingSauces=selected.filter(name=>!completed.has(name));
+  sauceGrid.innerHTML=pendingSauces.length?pendingSauces.map(name=>`<div class="sauce-task-card"><div class="sauce-task-check"><input type="checkbox" data-complete-sauce="${dwEscape(name)}" aria-label="Mark ${dwEscape(name)} prepared"><span class="sauce-task-name" title="${dwEscape(name)}">${dwEscape(name)}</span></div><button type="button" class="secondary" data-open-recipe="${dwEscape(name)}">SEE THE RECIPE</button></div>`).join(""):(selected.length?'<div class="checklist-empty" style="grid-column:1/-1">All selected sauces are prepared.</div>':'<div class="checklist-empty" style="grid-column:1/-1">No sauces to prepare today.</div>');
   const tasks=(Array.isArray(data.storeTasks)?data.storeTasks:[]).map(dwNormalizeTask);
-  taskGrid.innerHTML=tasks.length?tasks.map((task,index)=>`<div class="store-task-card"><label><input type="checkbox" data-store-task-index="${index}" ${task.done?'checked':''}><span>${dwEscape(task.label)}</span></label></div>`).join(""):'<div class="checklist-empty" style="grid-column:1/-1">No store preparation tasks saved.</div>';
+  const pendingTasks=tasks.map((task,index)=>({task,index})).filter(item=>!item.task.done);
+  taskGrid.innerHTML=pendingTasks.length?pendingTasks.map(({task,index})=>`<div class="store-task-card"><label><input type="checkbox" data-store-task-index="${index}"><span>${dwEscape(task.label)}</span></label></div>`).join(""):(tasks.length?'<div class="checklist-empty" style="grid-column:1/-1">All store preparation tasks are completed.</div>':'<div class="checklist-empty" style="grid-column:1/-1">No store preparation tasks saved.</div>');
   const items=Array.isArray(data.toBuyItems)?data.toBuyItems:[];
   buyList.innerHTML=items.length?items.map(item=>`<div class="buy-list-item">${dwEscape(typeof item==='string'?item:item.label||item.name||'')}</div>`).join(""):'<div class="checklist-empty">No items to buy.</div>';
   const defaultTasks=tasks.filter(x=>DW_DEFAULT_STORE_TASKS.includes(x.label));
   const completedSelected=selected.filter(name=>completed.has(name)).length;
   dwUpdateProgress(defaultTasks.filter(x=>x.done).length,10,completedSelected,selected.length);
   sauceGrid.querySelectorAll('[data-open-recipe]').forEach(btn=>btn.addEventListener('click',()=>dwOpenRecipe(btn.dataset.openRecipe)));
-  sauceGrid.querySelectorAll('[data-complete-sauce]').forEach(input=>input.addEventListener('change',()=>dwCompleteSauce(input.dataset.completeSauce)));
+  sauceGrid.querySelectorAll('[data-complete-sauce]').forEach(input=>input.addEventListener('change',()=>dwCompleteSauce(input.dataset.completeSauce,input.checked)));
   taskGrid.querySelectorAll('[data-store-task-index]').forEach(input=>input.addEventListener('change',()=>dwCompleteStoreTask(Number(input.dataset.storeTaskIndex),input.checked)));
 }
 function dwUpdateProgress(doneTasks,totalTasks,doneSauces,totalSauces){
@@ -14536,16 +14501,17 @@ async function dwSaveChecklistPatch(patch){
   dwDailyChecklistData=snap.exists()?{date,...snap.data()}:null;
   dwRenderDailyChecklist();
 }
-async function dwCompleteSauce(name){
+async function dwCompleteSauce(name,checked=true){
   if(!dwDailyChecklistData)return;
-  const done=new Set(Array.isArray(dwDailyChecklistData.sauceCompleted)?dwDailyChecklistData.sauceCompleted:[]);done.add(name);
-  try{await dwSaveChecklistPatch({sauceCompleted:[...done]});dwChecklistMessage(name+" marked prepared.");}catch(error){console.error(error);dwChecklistMessage("Could not save sauce completion. Please try again.",true);dwRenderDailyChecklist();}
+  const done=new Set(Array.isArray(dwDailyChecklistData.sauceCompleted)?dwDailyChecklistData.sauceCompleted:[]);
+  if(checked)done.add(name);else done.delete(name);
+  try{await dwSaveChecklistPatch({sauceCompleted:[...done]});dwChecklistMessage(name+(checked?" completed and hidden from the active list.":" returned to the active list."));}catch(error){console.error(error);dwChecklistMessage("Could not save sauce completion. Please try again.",true);dwRenderDailyChecklist();}
 }
 async function dwCompleteStoreTask(index,checked){
   if(!dwDailyChecklistData)return;
   const tasks=(Array.isArray(dwDailyChecklistData.storeTasks)?dwDailyChecklistData.storeTasks:[]).map(dwNormalizeTask);
   if(!tasks[index])return;tasks[index].done=checked;
-  try{await dwSaveChecklistPatch({storeTasks:tasks});dwChecklistMessage("Store task progress saved.");}catch(error){console.error(error);dwChecklistMessage("Could not save task completion. Please try again.",true);dwRenderDailyChecklist();}
+  try{await dwSaveChecklistPatch({storeTasks:tasks});dwChecklistMessage(checked?"Task completed and hidden from the active list.":"Task returned to the active list.");}catch(error){console.error(error);dwChecklistMessage("Could not save task completion. Please try again.",true);dwRenderDailyChecklist();}
 }
 function dwOpenRecipe(name){
   const recipe=DW_SAUCE_RECIPES[name];if(!recipe){alert("Recipe not found for "+name);return;}
