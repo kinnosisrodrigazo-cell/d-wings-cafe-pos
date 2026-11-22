@@ -2522,10 +2522,13 @@ td{border-color:#2c394b!important}
     min-width:0!important;
     max-width:100%!important;
   }
-  #employeeAttendancePage .staff-left-column > .panel:first-child{
-    padding:12px!important;
-    overflow:hidden!important;
-  }
+
+#employeeAttendancePage .staff-left-column > .panel:first-child{
+  padding:12px!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+}
+
   #employeeAttendancePage #staffScheduleControls > div:first-child{
     gap:8px!important;
   }
@@ -2559,7 +2562,7 @@ td{border-color:#2c394b!important}
     max-width:100%!important;
     overflow-x:auto!important;
     overflow-y:hidden!important;
-    touch-action:pan-x!important;
+    touch-action:pan-x pan-y!important;
     scrollbar-width:thin;
   }
   #employeeAttendancePage .staff-schedule-table{
