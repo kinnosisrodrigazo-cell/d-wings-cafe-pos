@@ -2114,6 +2114,57 @@ td{border-color:#2c394b!important}
     margin: 0 !important;
   }
 }
+
+
+/* MOBILE PORTRAIT: SIDEBAR ICONS - 5 COLUMNS x 2 ROWS */
+@media screen and (max-width: 600px) {
+
+  #app:not(.hidden) > .terminal-nav {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, auto) !important;
+    gap: 6px !important;
+    padding: 8px 5px !important;
+    box-sizing: border-box !important;
+    align-items: stretch !important;
+  }
+
+  #app:not(.hidden) > .terminal-nav > button {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 65px !important;
+    padding: 7px 2px !important;
+    box-sizing: border-box !important;
+    font-size: 9px !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  #app:not(.hidden) > .terminal-nav > button svg {
+    width: 22px !important;
+    height: 22px !important;
+    flex: 0 0 22px !important;
+  }
+
+  #teamChatButton {
+    position: relative !important;
+  }
+
+  #teamChatBadge {
+    position: absolute !important;
+    top: 2px !important;
+    right: 5px !important;
+  }
+}
+
+  
 /* Crisp stock-box icon in the sidebar */
 #inventoryBtn svg { display: block !important; width: 21px !important; height: 21px !important; flex: 0 0 21px !important; stroke: currentColor !important; fill: none !important; }
 </style>
