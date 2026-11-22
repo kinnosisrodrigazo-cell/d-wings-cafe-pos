@@ -2033,6 +2033,58 @@ td{border-color:#2c394b!important}
   }
 }
 #app > .terminal-nav #inventoryBtn svg{display:block;width:21px;height:21px;min-width:21px;min-height:21px;flex:0 0 21px;stroke:currentColor;fill:none}
+
+/* ================= DAILY STAFF CHECKLIST UPGRADE ================= */
+.daily-checklist-page,.daily-checklist-prep-page{color:#f5f5f5}
+.checklist-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.checklist-topbar h2{margin:0;color:#f3c45f;letter-spacing:1px}
+.checklist-actions{display:flex;gap:8px;flex-wrap:wrap}
+.checklist-progress-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 24px}
+.checklist-progress-card{background:linear-gradient(145deg,#202020,#141414);border:1px solid #454545;border-radius:14px;padding:16px;min-width:0}
+.checklist-progress-label{color:#c8c8c8;font-size:12px;font-weight:700;letter-spacing:1px}
+.checklist-progress-number{font-size:30px;font-weight:800;color:#f3c45f;margin:7px 0}
+.checklist-progress-track{height:7px;background:#383838;border-radius:20px;overflow:hidden}
+.checklist-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#d79b28,#ffe08a);border-radius:20px;transition:width .2s}
+.checklist-section{background:#191919;border:1px solid #353535;border-radius:14px;padding:18px;margin:0 0 18px}
+.checklist-section h3{color:#f3c45f;margin:0 0 7px;font-size:18px}
+.checklist-section-subtitle{color:#aaa;font-size:13px;margin:0 0 15px}
+.sauce-grid,.store-task-grid,.cashier-flavor-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.sauce-task-card,.cashier-flavor-card{min-width:0;background:#242424;border:1px solid #484848;border-radius:10px;padding:11px 9px;display:flex;flex-direction:column;gap:10px}
+.sauce-task-name{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px}
+.sauce-task-check{display:flex;align-items:center;gap:7px;min-width:0}
+.sauce-task-check input,.cashier-flavor-card input,.store-task-card input{width:18px;height:18px;accent-color:#e5ae3d;flex:0 0 auto}
+.sauce-task-card button{width:100%;font-size:11px;padding:9px 5px;white-space:nowrap}
+.store-task-card{background:#242424;border:1px solid #444;border-radius:9px;padding:12px;display:flex;align-items:center;gap:8px;min-height:56px;font-size:13px;font-weight:600}
+.store-task-card label{display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0}
+.store-task-card span{overflow-wrap:anywhere}
+.checklist-empty{border:1px dashed #555;border-radius:10px;padding:20px;text-align:center;color:#aaa;background:#151515}
+.buy-list{display:grid;gap:8px}
+.buy-list-item{padding:11px 13px;border:1px solid #414141;border-radius:9px;background:#232323}
+.recipe-overlay,.closing-reminder-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px}
+.recipe-modal,.closing-reminder-modal{width:min(560px,100%);max-height:88vh;overflow:auto;background:#181818;border:1px solid #d6a83e;border-radius:16px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+.recipe-overlay.hidden,.closing-reminder-overlay.hidden{display:none}
+.recipe-modal h2{color:#f3c45f;margin:4px 0 18px;font-size:23px}
+.recipe-modal h3{font-size:13px;color:#e8b64e;letter-spacing:1px;margin:18px 0 8px}
+.recipe-modal li{margin:0 0 8px;line-height:1.45;color:#eee}
+.recipe-modal .recipe-note{background:#3b2d12;border:1px solid #a77920;color:#ffe1a0;border-radius:8px;padding:10px;font-weight:700;font-size:13px;margin:12px 0}
+.prep-form-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.cashier-flavor-card{flex-direction:row;align-items:center;min-height:50px;padding:10px}
+.cashier-flavor-card label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.prep-task-list,.prep-buy-list{display:grid;gap:8px;margin-top:12px}
+.prep-list-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;background:#242424;border:1px solid #444;border-radius:8px}
+.prep-list-row span{overflow-wrap:anywhere}
+.prep-list-row button{padding:6px 10px;font-size:11px}
+.prep-add-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.prep-add-row input{flex:1 1 220px;min-width:0}
+.prep-save-row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.closing-reminder-modal{text-align:center;max-width:420px}
+.closing-reminder-modal h2{color:#f3c45f;margin:4px 0 8px}
+.closing-reminder-time{font-size:36px;font-weight:800;margin:10px 0 18px}
+#dailyChecklistNavBtn{border-color:#b8892f}
+#dailyChecklistNavBtn.active{background:#3a2d12;color:#ffe19a}
+@media(max-width:900px){.sauce-grid,.store-task-grid,.cashier-flavor-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.checklist-progress-grid{gap:8px}.checklist-progress-card{padding:12px}.checklist-progress-number{font-size:25px}.sauce-grid,.store-task-grid,.cashier-flavor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.checklist-section{padding:13px}.sauce-task-name{font-size:11px}.recipe-modal{padding:17px}}
+
 </style>
 <style id="daily-report-modern-style">#reportPage .daily-report-shell{padding:22px;border:1px solid rgba(201,166,92,.2);background:linear-gradient(160deg,#181a1d,#121416);border-radius:18px}#reportPage .daily-report-heading h2{margin:4px 0;font-size:26px;letter-spacing:-.6px;font-weight:650;color:#f4f4f2}#reportPage .report-eyebrow{font-size:10px;letter-spacing:2px;color:#c6a15a;margin:0;font-weight:700}#reportPage .report-muted{color:#92979b;font-size:12px;margin:4px 0}#reportPage .report-date-controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:18px 0 8px;align-items:end}#reportPage .report-date-controls label{grid-column:1/-1;font-size:10px;letter-spacing:1.4px;color:#aeb2b5;font-weight:700}#reportPage .report-date-controls input{grid-column:1/-1;min-width:0}#reportPage .report-date-controls button{margin:0;min-height:40px;border-radius:10px;font-size:12px}#reportPage .daily-report-content{margin-top:14px}#reportPage .daily-report-content .row{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}#reportPage .daily-report-content .panel{background:#1d2022;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:14px;margin:10px 0}#reportPage .daily-report-content .total{color:#e5bd72;font-size:20px;font-weight:700}#reportPage .payment-summary{margin-top:16px;padding:15px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:#1a1c1e}#reportPage .payment-heading{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;letter-spacing:1.1px;margin-bottom:12px}#reportPage .payment-grid{display:grid;grid-template-columns:1fr;gap:8px}#reportPage .payment-card{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:#222527}#reportPage .payment-card span{font-size:10px;color:#a9adaf;letter-spacing:1px;font-weight:700}#reportPage .payment-card strong{font-size:16px;color:#e6c273}#reportPage .report-export{width:100%;margin-top:14px;border-radius:10px}@media(min-width:700px){#reportPage .report-date-controls{grid-template-columns:minmax(180px,1fr) auto auto auto}#reportPage .report-date-controls label{grid-column:1/-1}#reportPage .report-date-controls input{grid-column:auto}#reportPage .payment-grid{grid-template-columns:repeat(3,1fr)}#reportPage .payment-card{display:block}#reportPage .payment-card strong{display:block;margin-top:8px}}</style>
 <style id="report-mini-analytics-style">#reportPage .report-chart-panel h3,#reportPage .report-top-products h3{font-size:11px;letter-spacing:1.3px;color:#aaa;margin:0 0 12px}.hourly-bars{height:120px;display:flex;align-items:flex-end;gap:3px;border-bottom:1px solid #383b3d}.hour-bar-wrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}.hour-bar{width:100%;max-width:14px;background:linear-gradient(#dfb86a,#9a7131);border-radius:3px 3px 0 0}.hour-bar-wrap span{font-size:8px;color:#85898b;height:10px}.top-product-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}.top-product-rank{color:#c9a35e;font-size:11px;width:20px}.top-product-name{flex:1;font-size:12px}.top-product-row strong{font-size:12px;color:#eee}</style>
@@ -2809,6 +2861,13 @@ td{border-color:#2c394b!important}
     ATTENDANCE
   </button>
 
+  <button id="dailyChecklistNavBtn" type="button" data-page="dailyChecklistPage" title="Daily Staff Checklist" aria-label="Daily Staff Checklist">
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 3.5v-1M16 3.5v-1M4 8h16M8 13l2.2 2.2L16 10"/>
+    </svg>
+    DAILY STAFF CHECKLIST
+  </button>
+
   <!-- SALES -->
   <button class="active" data-page="salesPage">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -2881,6 +2940,49 @@ td{border-color:#2c394b!important}
 </div>
 
   
+
+<section id="dailyChecklistPage" class="hidden daily-checklist-page">
+  <div class="checklist-topbar">
+    <div><h2>D’ WINGS CAFE</h2><div style="font-weight:800;letter-spacing:1.4px;margin-top:4px">DAILY STAFF CHECKLIST</div></div>
+    <div class="checklist-actions">
+      <button type="button" id="checklistHistoryBtn" class="secondary" aria-expanded="false">CHECKLIST HISTORY</button>
+      <button type="button" id="prepareTomorrowBtn" class="secondary">PREPARE TOMORROW'S LIST</button>
+      <button type="button" id="refreshDailyChecklistBtn" class="secondary">REFRESH</button>
+    </div>
+  </div>
+  <div id="checklistHistoryPanel" class="checklist-history-panel hidden" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;margin:0 0 16px;background:#151d29;border:1px solid var(--dw-line);border-radius:12px">
+    <label for="dailyChecklistDatePicker" style="font-weight:800;font-size:12px">VIEW SAVED CHECKLIST DATE</label>
+    <input type="date" id="dailyChecklistDatePicker" style="max-width:190px;min-height:40px">
+    <button type="button" id="loadChecklistDateBtn" class="secondary">LOAD DATE</button>
+    <span class="small" style="color:#9aa8ba">Viewing a saved date will not reset task progress.</span>
+  </div>
+  <div class="checklist-progress-grid">
+    <div class="checklist-progress-card"><div class="checklist-progress-label">DAILY PROGRESS</div><div id="dailyProgressNumber" class="checklist-progress-number">0 / 10</div><div class="checklist-progress-track"><div id="dailyProgressFill" class="checklist-progress-fill"></div></div></div>
+    <div class="checklist-progress-card"><div class="checklist-progress-label">SAUCE PROGRESS</div><div id="sauceProgressNumber" class="checklist-progress-number">0 / 0</div><div class="checklist-progress-track"><div id="sauceProgressFill" class="checklist-progress-fill"></div></div></div>
+  </div>
+  <section class="checklist-section"><h3>1. PREPARE SAUCE</h3><p class="checklist-section-subtitle">Prepare only the sauces selected by the cashier.</p><div id="staffSauceGrid" class="sauce-grid"><div class="checklist-empty">Loading sauce checklist...</div></div></section>
+  <section class="checklist-section"><h3>2. STORE PREPARATION CHECKLIST</h3><p class="checklist-section-subtitle">Check each task after it is completed.</p><div id="staffStoreTaskGrid" class="store-task-grid"><div class="checklist-empty">Loading store checklist...</div></div></section>
+  <section class="checklist-section"><h3>3. TO-BUY LIST</h3><p class="checklist-section-subtitle">Items added by the cashier for this date.</p><div id="staffToBuyList" class="buy-list"><div class="checklist-empty">Loading To-Buy list...</div></div></section>
+  <p id="dailyChecklistMessage" class="small" role="status" aria-live="polite"></p>
+</section>
+
+<section id="dailyChecklistPrepPage" class="hidden daily-checklist-prep-page">
+  <div class="checklist-topbar"><div><h2>PREPARE TOMORROW'S CHECKLIST</h2><div class="small">Select only sauces that need preparation.</div></div><button type="button" id="backToDailyChecklistBtn" class="secondary">BACK TO CHECKLIST</button></div>
+  <section class="checklist-section"><h3>1. SELECT SAUCE FLAVORS</h3><p class="checklist-section-subtitle">Choose any number from 0 to 15. Leave sauces unselected if stock is sufficient.</p><div id="cashierSauceSelectionGrid" class="cashier-flavor-grid"></div></section>
+  <section class="checklist-section"><h3>2. STORE PREPARATION CHECKLIST</h3><p class="checklist-section-subtitle">All 10 default tasks are included. You may add extra tasks.</p><div id="cashierDefaultTaskList" class="prep-task-list"></div><div class="prep-add-row"><input id="additionalTaskInput" type="text" maxlength="100" placeholder="Enter additional task"><button type="button" id="addAdditionalTaskBtn">ADD ANOTHER TASK</button></div><div id="cashierAdditionalTaskList" class="prep-task-list"></div></section>
+  <section class="checklist-section"><h3>3. TO-BUY LIST</h3><p class="checklist-section-subtitle">Enter item names only. No quantity or unit.</p><div class="prep-add-row"><input id="toBuyItemInput" type="text" maxlength="100" placeholder="Enter item name"><button type="button" id="addToBuyItemBtn">ADD ITEM</button></div><div id="cashierToBuyList" class="prep-buy-list"></div></section>
+  <div class="prep-save-row"><button type="button" id="cancelChecklistPrepBtn" class="secondary">CANCEL</button><button type="button" id="saveTomorrowChecklistBtn">SAVE TOMORROW'S LIST</button></div>
+  <p id="cashierChecklistMessage" class="small" role="status" aria-live="polite"></p>
+</section>
+
+<div id="recipePopup" class="recipe-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="recipePopupTitle">
+  <div class="recipe-modal"><div class="small" style="color:#aaa;letter-spacing:1px">SAUCE RECIPE</div><h2 id="recipePopupTitle"></h2><div id="recipePopupContent"></div><div style="display:flex;justify-content:flex-end;margin-top:20px"><button type="button" id="closeRecipePopupBtn" class="secondary">CLOSE RECIPE</button></div></div>
+</div>
+
+<div id="closingReminderPopup" class="closing-reminder-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="closingReminderTitle">
+  <div class="closing-reminder-modal"><h2 id="closingReminderTitle">DAILY CLOSING REMINDER</h2><div class="closing-reminder-time">11:00 PM</div><p class="small">Prepare the following day's staff checklist.</p><button type="button" id="openChecklistFromReminderBtn" style="width:100%;margin:8px 0">OPEN DAILY CHECKLIST</button><button type="button" id="dismissClosingReminderBtn" class="secondary" style="width:100%">REMIND ME LATER</button></div>
+</div>
+
 <section id="salesPage" class="hidden">
   <div class="row sales-terminal-heading" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
     <h2>Sales Terminal</h2>
@@ -13147,8 +13249,11 @@ document.getElementById("avatarSelection").classList.add("hidden");
 
 document.getElementById("app").classList.remove("hidden");
 document.getElementById("queuePage").classList.add("hidden");
-document.getElementById("salesPage").classList.remove("hidden");
-document.getElementById("app").classList.add("sales-nav-compact");
+const cashierDefaultPage = String(currentUserRole || "").toLowerCase() === "cashier";
+document.getElementById("salesPage").classList.toggle("hidden", cashierDefaultPage);
+document.getElementById("dailyChecklistPage").classList.toggle("hidden", !cashierDefaultPage);
+document.getElementById("dailyChecklistPrepPage").classList.add("hidden");
+document.getElementById("app").classList.toggle("sales-nav-compact", !cashierDefaultPage);
 cartPanelManuallyClosed = false;
 
 document.querySelector(".terminal-nav").style.display = "grid";
@@ -13158,6 +13263,8 @@ document.getElementById("reportPage").classList.add("hidden");
 document.getElementById("dashboardPage").classList.add("hidden");
 document.getElementById("employeeAttendancePage").classList.add("hidden");
 
+if(cashierDefaultPage){ dwLoadDailyChecklist(); }
+dwStartReminderTimer();
 loadTodayAttendance();
 const dashboardBtn = document.getElementById("dashboardBtn");
 
@@ -13172,7 +13279,7 @@ if(dashboardBtn){
 
 }
 document.querySelectorAll(".terminal-nav button").forEach(button => {
-  button.classList.toggle("active", button.dataset.page === "salesPage");
+  button.classList.toggle("active", button.dataset.page === (cashierDefaultPage ? "dailyChecklistPage" : "salesPage"));
 });
 
    document.getElementById("userLabel").textContent = "";
@@ -13593,6 +13700,8 @@ document.querySelectorAll(".terminal-nav button").forEach(button=>{
 
     [
       "salesPage",
+      "dailyChecklistPage",
+      "dailyChecklistPrepPage",
       "queuePage",
       "historyPage",
       "reportPage",
@@ -13629,6 +13738,8 @@ document.getElementById("employeeAttendanceBtn").addEventListener("click", () =>
 
   [
     "salesPage",
+    "dailyChecklistPage",
+    "dailyChecklistPrepPage",
     "queuePage",
     "historyPage",
     "reportPage",
@@ -13656,6 +13767,8 @@ document.getElementById("dashboardBtn").addEventListener("click", () => {
 
   [
     "salesPage",
+    "dailyChecklistPage",
+    "dailyChecklistPrepPage",
     "queuePage",
     "historyPage",
     "reportPage",
@@ -14327,6 +14440,233 @@ function renderInvRecipeDraft(){document.getElementById('invRecipeLines').innerH
 document.getElementById('invRecipeProduct').addEventListener('change',()=>{invRecipeDraft=invRecipesCache.filter(x=>x.productName===document.getElementById('invRecipeProduct').value).map(x=>({...x}));renderInvRecipeDraft();});
 document.getElementById('invSaveRecipe').addEventListener('click',async()=>{const productName=document.getElementById('invRecipeProduct').value;if(!productName||!invRecipeDraft.length){alert('Choose a product and add at least one ingredient.');return;}try{const old=invRecipesCache.filter(x=>x.productName===productName);await Promise.all(old.map(x=>deleteDoc(doc(db,'recipes',x.id))));await Promise.all(invRecipeDraft.map(x=>addDoc(collection(db,'recipes'),{productName,ingredientId:x.ingredientId,ingredientName:x.ingredientName,quantity:Number(x.quantity),unit:x.unit,updatedAt:serverTimestamp(),updatedBy:currentUserName||'Owner'})));invRecipeDraft=[];await loadInventoryModule();alert('Recipe saved. Product costing updated.');}catch(e){console.error(e);alert('Recipe could not be saved. Check Firestore permissions.');}});
 function renderInvCosting(){const rows=(menu||[]).map(p=>{const has=invRecipesCache.some(x=>x.productName===p.name),cost=invCost(p.name),profit=Number(p.price)-cost;return `<div class="inv-product-row"><span>${invSafe(p.name)}</span><span>${invMoney(p.price)}</span><span>${has?invMoney(cost):'—'}</span><span class="inv-profit">${has?invMoney(profit):'—'}</span><span>${has&&p.price?(profit/p.price*100).toFixed(1)+'%':'NOT SET'}</span></div>`}).join('');document.getElementById('invCostingTable').innerHTML='<div class="inv-product-row inv-product-head"><span>PRODUCT</span><span>SELLING PRICE</span><span>PRODUCT COST</span><span>GROSS PROFIT</span><span>MARGIN</span></div>'+rows;}
+
+
+// ================= DAILY STAFF CHECKLIST / SAUCE RECIPES =================
+const DW_SAUCE_FLAVORS = [
+  "CHEESE BLIZZ","LEMON PEPPER","ORANGE ZEST","PARMESAN","SALTED EGG",
+  "TERIYAKI","SWEET SOY","HONEY BUTTER","PLAIN","HONEY SRIRACHA",
+  "MANGO HABANERO","YANGNYEOM","SPICY HONEY GLAZED","BUFFALO","CHILI CHEESE"
+];
+const DW_DEFAULT_STORE_TASKS = [
+  "Dining tables","Condiments","Arrange chairs","Clean counter","Clean fryer area",
+  "Refill tissue and gloves","Restock cups and straws","Refill sauces and dips","Check freezer","Empty trash bins"
+];
+const DW_SAUCE_RECIPES = {
+  "CHEESE BLIZZ":{ingredients:["800 ml water","Cheese Powder"],steps:["Boil 800 ml of water.","Add Cheese Powder.","Mix thoroughly until fully dissolved."]},
+  "LEMON PEPPER":{ingredients:["Lemon Pepper Powder"],steps:["Use Lemon Pepper Powder.","No additional preparation required."]},
+  "ORANGE ZEST":{ingredients:["500 ml water","3 tablespoons Chili Powder","3 tablespoons sugar"],note:"Use CHILI POWDER — NOT CHILI FLAKES.",steps:["Add 500 ml of water.","Add 3 tablespoons of Chili Powder (NOT CHILI FLAKES).","Add 3 tablespoons of sugar.","Mix thoroughly and boil."]},
+  "PARMESAN":{ingredients:["Parmesan Powder"],steps:["Use Parmesan Powder.","No additional preparation required."]},
+  "SALTED EGG":{ingredients:["Prepared salted egg","Margarine","1 cup water","½ teaspoon orange food coloring","3 tablespoons Chili Flakes"],note:"Use CHILI FLAKES — NOT CHILI POWDER.",steps:["Prepare the salted egg.","Add margarine.","Add the prepared salted egg.","Pour in 1 cup of water and add ½ teaspoon of orange food coloring.","Add 3 tablespoons of Chili Flakes (NOT CHILI POWDER).","Mix thoroughly and boil."]},
+  "TERIYAKI":{ingredients:["Teriyaki Powder"],steps:["Use Teriyaki Powder.","No additional preparation required."]},
+  "SWEET SOY":{ingredients:["Margarine","1 cup soy sauce","2 cups water","2 cups brown sugar"],steps:["Add margarine.","Pour in 1 cup of soy sauce.","Add 2 cups of water.","Add 2 cups of brown sugar.","Mix thoroughly and boil."]},
+  "HONEY BUTTER":{ingredients:["Margarine","700 ml ketchup","200 ml honey","100 ml water"],steps:["Add margarine.","Pour in 700 ml of ketchup.","Add 200 ml of honey.","Add 100 ml of water.","Mix thoroughly and boil."]},
+  "PLAIN":{ingredients:["No additional ingredients required"],steps:["No additional ingredients required.","Serve plain."]},
+  "HONEY SRIRACHA":{ingredients:["Honey Sriracha sauce","Remaining honey from the Honey Sriracha bottle"],steps:["Pour Honey Sriracha sauce into a container.","Add the remaining honey from the Honey Sriracha bottle.","Mix thoroughly until well combined."]},
+  "MANGO HABANERO":{ingredients:["250 ml water","3 tablespoons Chili Powder","Mango Habanero Sauce"],steps:["Add 250 ml of water.","Add 3 tablespoons of Chili Powder.","Add Mango Habanero Sauce.","Mix thoroughly and boil."]},
+  "YANGNYEOM":{ingredients:["250 ml water","1 tablespoon soy sauce","2 tablespoons sugar","Yangnyeom Sauce"],steps:["Add 250 ml of water.","Add 1 tablespoon of soy sauce.","Add 2 tablespoons of sugar.","Add Yangnyeom Sauce.","Mix thoroughly and boil."]},
+  "SPICY HONEY GLAZED":{ingredients:["Margarine","700 ml hot sauce","200 ml honey","100 ml water"],steps:["Add margarine.","Pour in 700 ml of hot sauce.","Add 200 ml of honey.","Add 100 ml of water.","Mix thoroughly and boil."]},
+  "BUFFALO":{ingredients:["Margarine","600 ml hot sauce","300 ml ketchup","100 ml soy sauce","4 tablespoons Chili Powder","4 tablespoons sugar"],note:"Use CHILI POWDER — NOT CHILI FLAKES.",steps:["Add margarine.","Pour in 600 ml of hot sauce.","Add 300 ml of ketchup.","Add 100 ml of soy sauce.","Add 4 tablespoons of Chili Powder (NOT CHILI FLAKES).","Add 4 tablespoons of sugar.","Mix thoroughly and cook."]},
+  "CHILI CHEESE":{ingredients:["800 ml water","Chili Cheese Powder"],steps:["Boil 800 ml of water.","Add Chili Cheese Powder.","Mix thoroughly until fully dissolved."]}
+};
+let dwDailyChecklistData = null;
+let dwSelectedChecklistDate = "";
+let dwPrepSauces = [];
+let dwPrepExtraTasks = [];
+let dwPrepBuyItems = [];
+let dwReminderTimer = null;
+let dwLastReminderShownDate = "";
+const dwChecklistManilaDate = () => {const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Manila",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const get=t=>parts.find(x=>x.type===t)?.value||"00";return `${get("year")}-${get("month")}-${get("day")}`;};
+const dwAddDateDays = (dateString,days) => {const d=new Date(dateString+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
+const dwEscape = value => String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dwChecklistRef = date => doc(db,"daily_checklists",date);
+function dwChecklistMessage(message,isError=false){const el=document.getElementById("dailyChecklistMessage");if(el){el.textContent=message||"";el.style.color=isError?"#ff8b8b":"#9fd9a8";}}
+function dwPrepMessage(message,isError=false){const el=document.getElementById("cashierChecklistMessage");if(el){el.textContent=message||"";el.style.color=isError?"#ff8b8b":"#9fd9a8";}}
+function dwNormalizeTask(task,index){return typeof task==="string"?{id:"task_"+index,label:task,done:false}:{id:task.id||("task_"+index),label:String(task.label||""),done:task.done===true};}
+async function dwLoadDailyChecklist(date=dwSelectedChecklistDate||dwChecklistManilaDate()){
+  dwSelectedChecklistDate=date;
+  const picker=document.getElementById("dailyChecklistDatePicker");
+  if(picker)picker.value=date;
+  const grid=document.getElementById("staffSauceGrid");
+  if(grid)grid.innerHTML='<div class="checklist-empty">Loading checklist...</div>';
+  try{
+    const snap=await getDoc(dwChecklistRef(date));
+    dwDailyChecklistData=snap.exists()?{date,...snap.data()}:null;
+    dwRenderDailyChecklist();
+    dwChecklistMessage(snap.exists()?"Showing saved checklist for "+date+".":"No saved checklist found for "+date+".");
+  }catch(error){console.error("Daily checklist load failed",error);dwChecklistMessage("Unable to load checklist from Firebase. Check your connection and Firestore rules.",true);if(grid)grid.innerHTML='<div class="checklist-empty">Checklist could not be loaded.</div>';}
+}
+function dwRenderDailyChecklist(){
+  const data=dwDailyChecklistData;
+  const sauceGrid=document.getElementById("staffSauceGrid");
+  const taskGrid=document.getElementById("staffStoreTaskGrid");
+  const buyList=document.getElementById("staffToBuyList");
+  if(!data){
+    sauceGrid.innerHTML='<div class="checklist-empty" style="grid-column:1/-1">No checklist has been prepared for this date yet.</div>';
+    taskGrid.innerHTML='<div class="checklist-empty" style="grid-column:1/-1">No store preparation checklist has been saved.</div>';
+    buyList.innerHTML='<div class="checklist-empty">No items to buy.</div>';
+    dwUpdateProgress(0,0,0,0);return;
+  }
+  const selected=Array.isArray(data.selectedSauces)?data.selectedSauces:[];
+  const completed=new Set(Array.isArray(data.sauceCompleted)?data.sauceCompleted:[]);
+  const active=selected.filter(name=>!completed.has(name));
+  sauceGrid.innerHTML=active.length?active.map(name=>`<div class="sauce-task-card"><div class="sauce-task-check"><input type="checkbox" data-complete-sauce="${dwEscape(name)}" aria-label="Mark ${dwEscape(name)} prepared"><span class="sauce-task-name" title="${dwEscape(name)}">${dwEscape(name)}</span></div><button type="button" class="secondary" data-open-recipe="${dwEscape(name)}">SEE THE RECIPE</button></div>`).join(""):'<div class="checklist-empty" style="grid-column:1/-1">'+(selected.length?'All selected sauces are prepared.':'No sauces to prepare today.')+'</div>';
+  const tasks=(Array.isArray(data.storeTasks)?data.storeTasks:[]).map(dwNormalizeTask);
+  taskGrid.innerHTML=tasks.length?tasks.map((task,index)=>`<div class="store-task-card"><label><input type="checkbox" data-store-task-index="${index}" ${task.done?'checked':''}><span>${dwEscape(task.label)}</span></label></div>`).join(""):'<div class="checklist-empty" style="grid-column:1/-1">No store preparation tasks saved.</div>';
+  const items=Array.isArray(data.toBuyItems)?data.toBuyItems:[];
+  buyList.innerHTML=items.length?items.map(item=>`<div class="buy-list-item">${dwEscape(typeof item==='string'?item:item.label||item.name||'')}</div>`).join(""):'<div class="checklist-empty">No items to buy.</div>';
+  const defaultTasks=tasks.filter(x=>DW_DEFAULT_STORE_TASKS.includes(x.label));
+  const completedSelected=selected.filter(name=>completed.has(name)).length;
+  dwUpdateProgress(defaultTasks.filter(x=>x.done).length,10,completedSelected,selected.length);
+  sauceGrid.querySelectorAll('[data-open-recipe]').forEach(btn=>btn.addEventListener('click',()=>dwOpenRecipe(btn.dataset.openRecipe)));
+  sauceGrid.querySelectorAll('[data-complete-sauce]').forEach(input=>input.addEventListener('change',()=>dwCompleteSauce(input.dataset.completeSauce)));
+  taskGrid.querySelectorAll('[data-store-task-index]').forEach(input=>input.addEventListener('change',()=>dwCompleteStoreTask(Number(input.dataset.storeTaskIndex),input.checked)));
+}
+function dwUpdateProgress(doneTasks,totalTasks,doneSauces,totalSauces){
+  const dailyNumber=document.getElementById("dailyProgressNumber"),dailyFill=document.getElementById("dailyProgressFill"),sauceNumber=document.getElementById("sauceProgressNumber"),sauceFill=document.getElementById("sauceProgressFill");
+  if(dailyNumber)dailyNumber.textContent=`${doneTasks} / ${totalTasks||0}`;
+  if(dailyFill)dailyFill.style.width=(totalTasks?Math.min(100,doneTasks/totalTasks*100):0)+"%";
+  if(sauceNumber)sauceNumber.textContent=totalSauces?`${doneSauces} / ${totalSauces}`:"NO SAUCES";
+  if(sauceFill)sauceFill.style.width=(totalSauces?Math.min(100,doneSauces/totalSauces*100):0)+"%";
+}
+async function dwSaveChecklistPatch(patch){
+  const date=dwSelectedChecklistDate||dwChecklistManilaDate();
+  await setDoc(dwChecklistRef(date),{...patch},{merge:true});
+  const snap=await getDoc(dwChecklistRef(date));
+  dwDailyChecklistData=snap.exists()?{date,...snap.data()}:null;
+  dwRenderDailyChecklist();
+}
+async function dwCompleteSauce(name){
+  if(!dwDailyChecklistData)return;
+  const done=new Set(Array.isArray(dwDailyChecklistData.sauceCompleted)?dwDailyChecklistData.sauceCompleted:[]);done.add(name);
+  try{await dwSaveChecklistPatch({sauceCompleted:[...done]});dwChecklistMessage(name+" marked prepared.");}catch(error){console.error(error);dwChecklistMessage("Could not save sauce completion. Please try again.",true);dwRenderDailyChecklist();}
+}
+async function dwCompleteStoreTask(index,checked){
+  if(!dwDailyChecklistData)return;
+  const tasks=(Array.isArray(dwDailyChecklistData.storeTasks)?dwDailyChecklistData.storeTasks:[]).map(dwNormalizeTask);
+  if(!tasks[index])return;tasks[index].done=checked;
+  try{await dwSaveChecklistPatch({storeTasks:tasks});dwChecklistMessage("Store task progress saved.");}catch(error){console.error(error);dwChecklistMessage("Could not save task completion. Please try again.",true);dwRenderDailyChecklist();}
+}
+function dwOpenRecipe(name){
+  const recipe=DW_SAUCE_RECIPES[name];if(!recipe){alert("Recipe not found for "+name);return;}
+  document.getElementById("recipePopupTitle").textContent=name;
+  document.getElementById("recipePopupContent").innerHTML=`<h3>INGREDIENTS</h3><ul>${recipe.ingredients.map(x=>`<li>${dwEscape(x)}</li>`).join("")}</ul>${recipe.note?`<div class="recipe-note">${dwEscape(recipe.note)}</div>`:""}<h3>PREPARATION</h3><ol>${recipe.steps.map(x=>`<li>${dwEscape(x)}</li>`).join("")}</ol>`;
+  document.getElementById("recipePopup").classList.remove("hidden");
+}
+function dwCloseRecipe(){document.getElementById("recipePopup").classList.add("hidden");}
+function dwOpenDailyChecklist(date=dwSelectedChecklistDate||dwChecklistManilaDate()){
+  ["salesPage","queuePage","historyPage","reportPage","dashboardPage","employeeAttendancePage","inventoryPage","dailyChecklistPrepPage"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+  document.getElementById("dailyChecklistPage").classList.remove("hidden");
+  document.getElementById("app").classList.remove("sales-nav-compact");
+  document.querySelectorAll(".terminal-nav button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page==="dailyChecklistPage"));
+  dwLoadDailyChecklist(date);
+}
+function dwOpenPrepPage(){
+  if(!["owner","cashier"].includes(String(currentUserRole||"").toLowerCase())){alert("You do not have permission to prepare the checklist.");return;}
+  ["salesPage","queuePage","historyPage","reportPage","dashboardPage","employeeAttendancePage","inventoryPage","dailyChecklistPage"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+  document.getElementById("dailyChecklistPrepPage").classList.remove("hidden");document.getElementById("app").classList.remove("sales-nav-compact");
+  document.querySelectorAll(".terminal-nav button[data-page]").forEach(b=>b.classList.remove("active"));
+  dwLoadPrepDraft();
+}
+async function dwLoadPrepDraft(){
+  const tomorrow=dwAddDateDays(dwChecklistManilaDate(),1);dwPrepMessage("Loading checklist for "+tomorrow+"...");
+  try{
+    const snap=await getDoc(dwChecklistRef(tomorrow));const data=snap.exists()?snap.data():{};
+    dwPrepSauces=Array.isArray(data.selectedSauces)?[...data.selectedSauces]:[];
+    const tasks=Array.isArray(data.storeTasks)?data.storeTasks.map(dwNormalizeTask):DW_DEFAULT_STORE_TASKS.map((label,i)=>({id:"default_"+i,label,done:false}));
+    // Default tasks are always included; retain any custom tasks separately.
+    const defaultSet=new Set(DW_DEFAULT_STORE_TASKS);
+    dwPrepExtraTasks=tasks.filter(t=>!defaultSet.has(t.label)).map(t=>t.label);
+    dwPrepBuyItems=Array.isArray(data.toBuyItems)?data.toBuyItems.map(x=>typeof x==='string'?x:(x.label||x.name||'')).filter(Boolean):[];
+    dwRenderPrepDraft();dwPrepMessage("Preparing checklist for "+tomorrow+".");
+  }catch(error){console.error(error);dwPrepSauces=[];dwPrepExtraTasks=[];dwPrepBuyItems=[];dwRenderPrepDraft();dwPrepMessage("Could not load tomorrow's saved draft. Check Firebase access.",true);}
+}
+function dwRenderPrepDraft(){
+  const sauceGrid=document.getElementById("cashierSauceSelectionGrid");
+  sauceGrid.innerHTML=DW_SAUCE_FLAVORS.map(name=>`<div class="cashier-flavor-card"><label><input type="checkbox" data-prep-sauce="${dwEscape(name)}" ${dwPrepSauces.includes(name)?'checked':''}><span>${dwEscape(name)}</span></label></div>`).join("");
+  sauceGrid.querySelectorAll('[data-prep-sauce]').forEach(input=>input.addEventListener('change',()=>{const name=input.dataset.prepSauce;if(input.checked){if(!dwPrepSauces.includes(name))dwPrepSauces.push(name);}else{dwPrepSauces=dwPrepSauces.filter(x=>x!==name);}}));
+  document.getElementById("cashierDefaultTaskList").innerHTML=DW_DEFAULT_STORE_TASKS.map((label,i)=>`<div class="prep-list-row"><span>${dwEscape(label)}</span><span class="small">DEFAULT</span></div>`).join("");
+  document.getElementById("cashierAdditionalTaskList").innerHTML=dwPrepExtraTasks.length?dwPrepExtraTasks.map((label,i)=>`<div class="prep-list-row"><span>${dwEscape(label)}</span><button type="button" class="secondary" data-remove-extra-task="${i}">REMOVE</button></div>`).join(""):'<div class="small">No additional tasks.</div>';
+  document.querySelectorAll('[data-remove-extra-task]').forEach(btn=>btn.addEventListener('click',()=>{dwPrepExtraTasks.splice(Number(btn.dataset.removeExtraTask),1);dwRenderPrepDraft();}));
+  document.getElementById("cashierToBuyList").innerHTML=dwPrepBuyItems.length?dwPrepBuyItems.map((label,i)=>`<div class="prep-list-row"><span>${dwEscape(label)}</span><button type="button" class="secondary" data-remove-buy-item="${i}">REMOVE</button></div>`).join(""):'<div class="small">No items added.</div>';
+  document.querySelectorAll('[data-remove-buy-item]').forEach(btn=>btn.addEventListener('click',()=>{dwPrepBuyItems.splice(Number(btn.dataset.removeBuyItem),1);dwRenderPrepDraft();}));
+}
+function dwAddExtraTask(){const input=document.getElementById("additionalTaskInput"),value=input.value.trim();if(!value){alert("Enter an additional task first.");input.focus();return;}if(DW_DEFAULT_STORE_TASKS.some(x=>x.toLowerCase()===value.toLowerCase())||dwPrepExtraTasks.some(x=>x.toLowerCase()===value.toLowerCase())){alert("This task is already on the checklist.");return;}dwPrepExtraTasks.push(value);input.value="";dwRenderPrepDraft();}
+function dwAddBuyItem(){const input=document.getElementById("toBuyItemInput"),value=input.value.trim();if(!value){alert("Enter an item name first.");input.focus();return;}dwPrepBuyItems.push(value);input.value="";dwRenderPrepDraft();}
+async function dwSaveTomorrowChecklist(){
+  const button=document.getElementById("saveTomorrowChecklistBtn");if(button.disabled)return;
+  const date=dwAddDateDays(dwChecklistManilaDate(),1);
+  button.disabled=true;button.textContent="SAVING...";dwPrepMessage("Saving tomorrow's checklist...");
+  try{
+    const ref=dwChecklistRef(date);
+    const existing=await getDoc(ref);
+    const oldData=existing.exists()?existing.data():{};
+    const selectedSauces=[...new Set(dwPrepSauces)];
+    const oldCompleted=new Set(Array.isArray(oldData.sauceCompleted)?oldData.sauceCompleted:[]);
+    const sauceCompleted=selectedSauces.filter(name=>oldCompleted.has(name));
+    const oldTasks=Array.isArray(oldData.storeTasks)?oldData.storeTasks.map(dwNormalizeTask):[];
+    const oldDoneByLabel=new Map(oldTasks.map(task=>[task.label,task.done===true]));
+    const storeTasks=[
+      ...DW_DEFAULT_STORE_TASKS.map((label,i)=>({id:"default_"+i,label,done:oldDoneByLabel.get(label)===true})),
+      ...dwPrepExtraTasks.map((label,i)=>({id:"extra_"+i,label,done:oldDoneByLabel.get(label)===true}))
+    ];
+    const payload={date,selectedSauces,sauceCompleted,storeTasks,toBuyItems:[...dwPrepBuyItems]};
+    await setDoc(ref,payload);
+    dwPrepMessage("Tomorrow's checklist saved successfully for "+date+". Existing completion progress was preserved where tasks still match.");
+    alert("Tomorrow's checklist has been saved for "+date+".");
+    dwSelectedChecklistDate=date;
+    dwOpenDailyChecklist(date);
+  }catch(error){console.error("Checklist save failed",error);dwPrepMessage("Could not save. Check your internet connection and Firestore rules.",true);alert("Unable to save tomorrow's checklist: "+(error.message||error));}
+  finally{button.disabled=false;button.textContent="SAVE TOMORROW'S LIST";}
+}
+function dwShowClosingReminder(reminderDate){
+  if(dwLastReminderShownDate===reminderDate)return;dwLastReminderShownDate=reminderDate;
+  document.getElementById("closingReminderPopup").dataset.reminderDate=reminderDate;
+  document.getElementById("closingReminderPopup").classList.remove("hidden");
+}
+function dwHideClosingReminder(markHandled=true){const popup=document.getElementById("closingReminderPopup");if(markHandled){try{localStorage.setItem("dwingsChecklistReminderHandled",popup.dataset.reminderDate||dwChecklistManilaDate());}catch(e){}}popup.classList.add("hidden");}
+async function dwCheckClosingReminder(isNewSession=false){
+  if(!["owner","cashier"].includes(String(currentUserRole||"").toLowerCase()))return;
+  const now=new Date();const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Manila",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(now);const hour=Number(parts.find(x=>x.type==="hour")?.value||0);const minute=Number(parts.find(x=>x.type==="minute")?.value||0);const today=dwChecklistManilaDate();
+  let handled="",lastOpen="";try{handled=localStorage.getItem("dwingsChecklistReminderHandled")||"";lastOpen=localStorage.getItem("dwingsChecklistLastOpenDate")||"";}catch(e){}
+  let reminderDate="";
+  if(hour>=23){reminderDate=today;}
+  else if(isNewSession&&lastOpen&&lastOpen<today&&handled!==lastOpen){reminderDate=lastOpen;}
+  if(!reminderDate||handled===reminderDate||dwLastReminderShownDate===reminderDate)return;
+  try{const targetDate=dwAddDateDays(reminderDate,1);const snap=await getDoc(dwChecklistRef(targetDate));if(!snap.exists())dwShowClosingReminder(reminderDate);}catch(error){console.warn("Reminder checklist check skipped:",error);}
+  if(isNewSession){try{localStorage.setItem("dwingsChecklistLastOpenDate",today);}catch(e){}}
+}
+function dwStartReminderTimer(){if(dwReminderTimer)clearInterval(dwReminderTimer);dwCheckClosingReminder(true);dwReminderTimer=setInterval(()=>dwCheckClosingReminder(false),30000);}
+
+document.getElementById("prepareTomorrowBtn").addEventListener("click",dwOpenPrepPage);
+document.getElementById("refreshDailyChecklistBtn").addEventListener("click",()=>dwLoadDailyChecklist());
+document.getElementById("checklistHistoryBtn").addEventListener("click",()=>{
+  const panel=document.getElementById("checklistHistoryPanel");
+  const button=document.getElementById("checklistHistoryBtn");
+  const opening=panel.classList.contains("hidden");
+  panel.classList.toggle("hidden",!opening);
+  button.setAttribute("aria-expanded",String(opening));
+  if(opening){const picker=document.getElementById("dailyChecklistDatePicker");if(picker)picker.value=dwSelectedChecklistDate||dwChecklistManilaDate();}
+});
+document.getElementById("loadChecklistDateBtn").addEventListener("click",()=>{
+  const picker=document.getElementById("dailyChecklistDatePicker");
+  if(!picker||!picker.value){alert("Please select a checklist date.");return;}
+  dwOpenDailyChecklist(picker.value);
+  dwChecklistMessage("Loading saved checklist for "+picker.value+"...");
+});
+document.getElementById("dailyChecklistDatePicker").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();document.getElementById("loadChecklistDateBtn").click();}});
+document.getElementById("backToDailyChecklistBtn").addEventListener("click",dwOpenDailyChecklist);
+document.getElementById("cancelChecklistPrepBtn").addEventListener("click",dwOpenDailyChecklist);
+document.getElementById("addAdditionalTaskBtn").addEventListener("click",dwAddExtraTask);
+document.getElementById("additionalTaskInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();dwAddExtraTask();}});
+document.getElementById("addToBuyItemBtn").addEventListener("click",dwAddBuyItem);
+document.getElementById("toBuyItemInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();dwAddBuyItem();}});
+document.getElementById("saveTomorrowChecklistBtn").addEventListener("click",dwSaveTomorrowChecklist);
+document.getElementById("closeRecipePopupBtn").addEventListener("click",dwCloseRecipe);
+document.getElementById("recipePopup").addEventListener("click",e=>{if(e.target.id==="recipePopup")dwCloseRecipe();});
+document.getElementById("openChecklistFromReminderBtn").addEventListener("click",()=>{dwHideClosingReminder(true);dwOpenPrepPage();});
+document.getElementById("dismissClosingReminderBtn").addEventListener("click",()=>dwHideClosingReminder(true));
+document.getElementById("dailyChecklistNavBtn").addEventListener("click",dwOpenDailyChecklist);
 
 </script>
 
