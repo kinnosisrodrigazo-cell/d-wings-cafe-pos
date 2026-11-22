@@ -9184,8 +9184,6 @@ async function loadDashboardPayslips(){
 
 <!-- ATTENDANCE NATURAL SCROLL FIX -->
 <style id="dw-attendance-natural-scroll-fix">
-/* Keep Attendance on the document's normal vertical scroll instead of creating
-   a nested scroll container from the mobile section overflow clipping. */
 #app > #employeeAttendancePage:not(.hidden){
   height:auto!important;
   max-height:none!important;
@@ -9195,6 +9193,7 @@ async function loadDashboardPayslips(){
   overscroll-behavior-y:auto!important;
   touch-action:pan-y!important;
 }
+
 #employeeAttendancePage .staff-center-grid,
 #employeeAttendancePage .staff-left-column,
 #employeeAttendancePage .staff-right-column{
@@ -9203,10 +9202,28 @@ async function loadDashboardPayslips(){
   min-height:0!important;
   overflow:visible!important;
 }
+
+/* Allow both vertical page scrolling and horizontal schedule scrolling */
+#employeeAttendancePage .staff-schedule-table-wrap{
+  touch-action:pan-x pan-y!important;
+}
+
 @media screen and (max-width:850px) and (orientation:portrait){
-  html,body{height:auto!important;min-height:100%!important;overflow-y:auto!important;}
-  main{height:auto!important;min-height:0!important;overflow:visible!important;}
-  #app{height:auto!important;min-height:0!important;overflow:visible!important;}
+  html,body{
+    height:auto!important;
+    min-height:100%!important;
+    overflow-y:auto!important;
+  }
+  main{
+    height:auto!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  #app{
+    height:auto!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
   #app > #employeeAttendancePage:not(.hidden){
     display:block!important;
     width:100%!important;
@@ -9218,6 +9235,8 @@ async function loadDashboardPayslips(){
   }
 }
 </style>
+
+
 
 </body>
           </html>
