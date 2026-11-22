@@ -12153,6 +12153,19 @@ customNotes: item.customNotes || ""
   }
 
 currentUserRole = String(profile.role || "").toLowerCase();
+// CLEAR SCHEDULE is available to the owner only.
+const clearScheduleButton = document.getElementById("clearStaffScheduleBtn");
+const saveScheduleButton = document.getElementById("saveStaffScheduleBtn");
+if(clearScheduleButton){
+  clearScheduleButton.classList.toggle("hidden", currentUserRole !== "owner");
+}
+if(saveScheduleButton){
+  saveScheduleButton.style.flex = currentUserRole === "owner" ? "1" : "1 1 100%";
+}
+const scheduleActionRow = clearScheduleButton && clearScheduleButton.parentElement;
+if(scheduleActionRow){
+  scheduleActionRow.style.justifyContent = currentUserRole === "owner" ? "initial" : "center";
+}
 // Monthly attendance analytics and employee attendance history are owner-only.
 const monthlyAnalyticsPanel = document.getElementById("monthlyAttendanceAnalyticsPanel");
 const employeeHistoryPanel = document.getElementById("employeeAttendanceHistoryPanel");
