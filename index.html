@@ -2475,6 +2475,43 @@ td{border-color:#2c394b!important}
 }
 </style>
 
+
+<style id="dw-attendance-integration-style">
+#employeeAttendancePage .staff-center-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
+#employeeAttendancePage .staff-right-column{order:0!important}
+#employeeAttendancePage .staff-left-column{order:1!important}
+#employeeAttendancePage .staff-right-column,#employeeAttendancePage .staff-left-column{display:contents!important}
+#employeeAttendancePage .staff-right-column>.panel{grid-row:1}
+#employeeAttendancePage .staff-left-column>.panel:first-child{grid-row:2}
+#employeeAttendancePage .staff-left-column>.panel:nth-child(2){grid-row:3}
+#employeeAttendancePage .attendance-live-clock{margin:0 0 13px;padding:14px 12px;text-align:center;background:linear-gradient(145deg,#202833,#151b23);border:1px solid #344153;border-radius:12px}
+#employeeAttendancePage .attendance-live-time{font-size:clamp(25px,4vw,34px);font-weight:800;letter-spacing:.5px;font-variant-numeric:tabular-nums;color:#f2d49a}
+#employeeAttendancePage .attendance-live-date{margin-top:4px;color:#aeb9c8;font-size:11px;font-weight:750;letter-spacing:1px}
+#employeeAttendancePage .attendance-action-btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:8px 13px;border-radius:9px;border:1px solid #465365;background:#222d3a;color:#f3f5f8;font-size:12px;font-weight:800;letter-spacing:.45px;cursor:pointer}
+#employeeAttendancePage .attendance-action-btn small{font-size:10px;color:#aeb9c8;border:1px solid #536174;border-radius:5px;padding:3px 5px}
+#employeeAttendancePage .attendance-time-in{border-color:rgba(34,197,94,.42)}#employeeAttendancePage .attendance-time-in span{color:#72d69a}
+#employeeAttendancePage .attendance-time-out{border-color:rgba(231,173,62,.42)}#employeeAttendancePage .attendance-time-out span{color:#e7bd72}
+#employeeAttendancePage .attendance-action-btn:active{transform:translateY(1px)}
+#employeeAttendancePage .attendance-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#employeeAttendancePage .attendance-section-heading h3{margin:0 0 4px}
+#employeeAttendancePage .attendance-month-control{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:800;color:#aeb9c8}
+#employeeAttendancePage .attendance-month-control input{width:150px;min-height:36px}
+#employeeAttendancePage .attendance-history-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+#employeeAttendancePage .attendance-history-controls label{display:block;font-size:10px;font-weight:800;color:#aeb9c8;margin-bottom:5px}
+#employeeAttendancePage .attendance-history-controls select,#employeeAttendancePage .attendance-history-controls input{width:100%;min-width:0}
+#employeeAttendancePage .attendance-analytics-results,#employeeAttendancePage .attendance-history-results{margin-top:14px;min-width:0}
+#employeeAttendancePage .attendance-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+#employeeAttendancePage .attendance-stat{padding:12px;border:1px solid #354456;border-radius:10px;background:#202b38;min-width:0}
+#employeeAttendancePage .attendance-stat span{display:block;font-size:9px;color:#aeb9c8;font-weight:800;letter-spacing:.5px}
+#employeeAttendancePage .attendance-stat strong{display:block;margin-top:6px;font-size:20px;color:#f0d095;font-variant-numeric:tabular-nums}
+#employeeAttendancePage .attendance-table-wrap{width:100%;overflow-x:auto}
+#employeeAttendancePage .attendance-data-table{width:100%;border-collapse:collapse;min-width:560px;font-size:12px}
+#employeeAttendancePage .attendance-data-table th,#employeeAttendancePage .attendance-data-table td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.09);text-align:left;white-space:nowrap}
+#employeeAttendancePage .attendance-data-table th{color:#e7c783;background:#202a36;font-size:10px;letter-spacing:.5px}
+#employeeAttendancePage #manualAttendanceEditorPanel,#employeeAttendancePage #staffPayslipsAttendancePanel{margin:0}
+@media(max-width:600px){#employeeAttendancePage .attendance-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#employeeAttendancePage .attendance-history-controls{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
 <header style="display:none">
@@ -3186,39 +3223,6 @@ td{border-color:#2c394b!important}
         </div>
       </div>
 
-<!-- ATTENDANCE REMINDER -->
-<div class="panel">
-  <h3>ATTENDANCE REMINDER</h3>
-
-  <div id="staffAttendanceReminderSummary"
-       style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;">
-
-    <div style="background:#292929;padding:12px;border-radius:9px;">
-      <div style="font-size:11px;color:#aaa;">NO TIME IN</div>
-      <strong id="reminderNoTimeIn" style="font-size:22px;color:#ff4d5a;">0</strong>
-    </div>
-
-    <div style="background:#292929;padding:12px;border-radius:9px;">
-      <div style="font-size:11px;color:#aaa;">NO TIME OUT</div>
-      <strong id="reminderNoTimeOut" style="font-size:22px;color:#e7ad3e;">0</strong>
-    </div>
-
-    <div style="background:#292929;padding:12px;border-radius:9px;">
-      <div style="font-size:11px;color:#aaa;">LATE</div>
-      <strong id="reminderLate" style="font-size:22px;color:#168bff;">0</strong>
-    </div>
-
-    <div style="background:#292929;padding:12px;border-radius:9px;">
-      <div style="font-size:11px;color:#aaa;">ABSENT</div>
-      <strong id="reminderAbsent" style="font-size:22px;color:#ff4d5a;">0</strong>
-    </div>
-
-  </div>
-
-  <div id="staffAttendanceReminders">
-    <p class="small">Loading attendance reminders...</p>
-  </div>
-</div>
 
 
 
@@ -3229,6 +3233,10 @@ td{border-color:#2c394b!important}
 
       <div class="panel">
 
+        <div class="attendance-live-clock" aria-live="off">
+          <div id="attendanceLiveTime" class="attendance-live-time">--:--:-- --</div>
+          <div id="attendanceLiveDate" class="attendance-live-date">LOADING DATE...</div>
+        </div>
         <div class="staff-attendance-heading">
           <h3>STAFF ATTENDANCE</h3>
 
@@ -3238,14 +3246,14 @@ td{border-color:#2c394b!important}
         </div>
 
         <div id="dashboardAttendance">
-
+          <p class="small" style="margin:0 0 12px;color:#aeb9c8">STANDARD STAFF SHIFT: 3:00 PM – 12:00 AM (MIDNIGHT ON THE NEXT DATE)</p>
           <div style="margin-bottom:15px">
-            <label>SCAN STAFF BARCODE</label>
+            <label>EMPLOYEE BARCODE</label>
 
             <input
               type="text"
               id="attendanceBarcodeInput"
-              placeholder="Scan staff barcode here"
+              placeholder="Type or scan employee barcode..."
               autocomplete="off"
               style="width:100%;padding:12px"
             >
@@ -3254,13 +3262,13 @@ td{border-color:#2c394b!important}
                  style="display:none;margin-top:12px"></div>
           </div>
 
-          <div class="row" style="gap:10px">
-<button type="button" id="timeInBtn" style="flex:1;background:#2563eb;color:#ffffff">
-  F1 - TIME IN
+          <div class="row" style="display:flex;gap:8px;width:100%;align-items:center">
+<button type="button" id="timeInBtn" class="attendance-action-btn attendance-time-in" style="flex:1;min-width:0;padding:12px 5px;font-size:12px;white-space:nowrap">
+  <span>TIME IN</span><small>F1</small>
 </button>
 
-<button type="button" id="timeOutBtn" style="flex:1;background:#22c55e;color:#000000">
-  F2 - TIME OUT
+<button type="button" id="timeOutBtn" class="attendance-action-btn attendance-time-out" style="flex:1;min-width:0;padding:12px 5px;font-size:12px;white-space:nowrap">
+  <span>TIME OUT</span><small>F2</small>
 </button>
           </div>
 
@@ -3356,6 +3364,32 @@ td{border-color:#2c394b!important}
     </div>
 
   </div>
+
+
+
+  <section class="panel attendance-analytics-panel" id="monthlyAttendanceAnalyticsPanel">
+    <div class="attendance-section-heading">
+      <div><h3>MONTHLY ATTENDANCE ANALYTICS</h3><p class="small">Owner: all employees · Staff: own attendance only</p></div>
+      <label class="attendance-month-control" for="attendanceAnalyticsMonth">MONTH <input type="month" id="attendanceAnalyticsMonth"></label>
+    </div>
+    <button type="button" id="loadAttendanceAnalyticsBtn" class="secondary">VIEW MONTHLY ANALYTICS</button>
+    <div id="monthlyAttendanceAnalytics" class="attendance-analytics-results"><p class="small">Select a month to view attendance analytics.</p></div>
+  </section>
+
+  <section class="panel attendance-history-panel" id="employeeAttendanceHistoryPanel">
+    <h3>EMPLOYEE ATTENDANCE HISTORY</h3>
+    <p class="small">Owner can view every employee. Staff can view only their own records.</p>
+    <div id="ownerAttendanceHistoryControls" class="attendance-history-controls">
+      <label for="attendanceHistoryEmployeeSelect">EMPLOYEE</label>
+      <select id="attendanceHistoryEmployeeSelect"><option value="ALL">ALL EMPLOYEES</option></select>
+    </div>
+    <div class="attendance-history-controls">
+      <div><label for="attendanceHistoryFrom">FROM DATE</label><input type="date" id="attendanceHistoryFrom"></div>
+      <div><label for="attendanceHistoryTo">TO DATE</label><input type="date" id="attendanceHistoryTo"></div>
+    </div>
+    <button type="button" id="loadEmployeeAttendanceHistoryBtn" class="secondary">LOAD ATTENDANCE HISTORY</button>
+    <div id="employeeAttendanceHistoryResults" class="attendance-history-results"><p class="small">Choose a date range and load attendance history.</p></div>
+  </section>
 
 </section>
 
@@ -3607,6 +3641,9 @@ td{border-color:#2c394b!important}
 
     </div>
 
+    <label for="manualAttendanceReason">REASON FOR CORRECTION (REQUIRED)</label>
+    <textarea id="manualAttendanceReason" rows="2" maxlength="300" style="width:100%" placeholder="Explain why this attendance record needs correction..."></textarea>
+
     <button
       type="button"
       id="loadManualAttendanceBtn"
@@ -3629,7 +3666,7 @@ td{border-color:#2c394b!important}
   </div>
 
   <!-- INDIVIDUAL PAYSLIPS -->
-  <div class="panel">
+  <div class="panel" id="staffPayslipsAttendancePanel">
     <h3>STAFF PAYSLIPS</h3>
     <div id="dashboardPayslips">
       <p class="small">Loading staff payslips...</p>
@@ -4002,6 +4039,12 @@ let pendingSaleRef = null;
 let lastSavedSaleForPrint = null;
 let currentUserRole = null;
 let currentUserName = "";
+let currentAuthUid = "";
+let currentAuthEmail = "";
+let currentUserProfile = {};
+let currentEmployeeAttendanceId = null;
+let currentEmployeeAttendanceProfile = null;
+const hiddenPayslipIds = new Set((()=>{try{return JSON.parse(localStorage.getItem("dw_hidden_payslip_ids")||"[]");}catch(_){return [];}})());
 let teamChatUnsubscribe = null;
 let todayAttendanceUnsubscribe = null;
 
@@ -4019,7 +4062,6 @@ let staffScheduleDraft = {};
 let staffScheduleEmployees = [];
 let staffScheduleLoaded = false;
   let staffWeeklyAttendance = {};
-  let staffAttendanceReminderApprovals = {};
  function getScheduleWeekDates(){
 
   const today = new Date();
@@ -4163,14 +4205,10 @@ async function loadStaffWeeklyAttendance(dates) {
     staffScheduleDraft = snapshot.exists()
       ? (snapshot.data().assignments || {})
       : {};
-staffAttendanceReminderApprovals = snapshot.exists()
-  ? (snapshot.data().reminderApprovals || {})
-  : {};
     // LOAD ATTENDANCE FOR THE SELECTED WEEK
     await loadStaffWeeklyAttendance(dates);
 
     renderStaffWeeklySchedule();
-    renderStaffAttendanceReminders();
 
   }catch(error){
 
@@ -4506,145 +4544,6 @@ select.style.border = "none";
     });
 }
 
-// RENDER WEEKLY STAFF ATTENDANCE REMINDERS
-function renderStaffAttendanceReminders(){
-
-  const reminderList =
-    document.getElementById("staffAttendanceReminders");
-
-  if(!reminderList) return;
-
-  const dates = getScheduleWeekDates();
-  const today = getManilaDateTime().date;
-  const reminders = [];
-
-  staffScheduleEmployees.forEach(employee => {
-
-    const assignment =
-      staffScheduleDraft[employee.id] || {};
-
-    dates.forEach(date => {
-
-      if(date > today || assignment[date] !== "WORK"){
-        return;
-      }
-
-      const attendance =
-        staffWeeklyAttendance[`${employee.id}_${date}`] || {};
-
-      const types = [];
-
-if(attendance.status === "ABSENT"){
-
-  types.push("ABSENT");
-
-}else if(!attendance.timeIn){
-
-// NO TIME IN: only after 3 PM
-if(
-  date < today ||
-  (date === today && getManilaDateTime().time >= "15:00:00")
-){
-  types.push("NO TIME IN");
-}
-
-}else if(!attendance.timeOut){
-
-  // NO TIME OUT: only after the shift has ended
-  if(date < today){
-    types.push("NO TIME OUT");
-  }
-
-}
-
-      if(Number(attendance.lateMinutes || 0) > 0){
-        types.push("LATE");
-      }
-
-      types.forEach(type => {
-
-        reminders.push({
-          employeeId: employee.id,
-          employeeName: employee.name,
-          date,
-          type
-        });
-
-      });
-
-    });
-
-  });
-
-  // UPDATE COUNTERS
-  ["NO TIME IN", "NO TIME OUT", "LATE", "ABSENT"]
-    .forEach(type => {
-
-      const count = reminders.filter(
-        reminder => reminder.type === type
-      ).length;
-
-      const counterIds = {
-        "NO TIME IN": "reminderNoTimeIn",
-        "NO TIME OUT": "reminderNoTimeOut",
-        "LATE": "reminderLate",
-        "ABSENT": "reminderAbsent"
-      };
-
-      const counter =
-        document.getElementById(counterIds[type]);
-
-      if(counter) counter.textContent = count;
-
-    });
-
-  if(!reminders.length){
-
-    reminderList.innerHTML =
-      '<p class="small">No pending attendance reminders.</p>';
-
-    return;
-  }
-
-  const isOwner =
-    String(currentUserRole || "").toLowerCase() === "owner";
-
-  reminderList.innerHTML = reminders.map(reminder => `
-
-    <div style="
-      background:#292929;
-      padding:12px;
-      border-radius:9px;
-      margin-bottom:8px;
-      border-left:3px solid ${
-        reminder.type === "LATE" ? "#168bff" :
-        reminder.type === "NO TIME OUT" ? "#e7ad3e" :
-        "#ff4d5a"
-      };
-    ">
-
-      <div style="font-weight:bold">
-        ${escapeScheduleHtml(reminder.employeeName)}
-      </div>
-
-      <div style="font-size:12px;color:#aaa;margin:5px 0">
-        ${reminder.date} · ${reminder.type}
-      </div>
-
-<div style="
-  color:#f0b84b;
-  font-size:12px;
-  font-weight:bold;
-  margin-top:8px;
-">
-  ⚠ ATTENDANCE NEEDS REVIEW
-</div>
-
-    </div>
-  `).join("");
-
-}
-
 async function loadScheduleEmployees(){
 
   const scheduleEl =
@@ -4766,7 +4665,6 @@ if(!auth.currentUser){
     );
 await loadWeeklySchedule();
     
-renderStaffAttendanceReminders();
     alert("Weekly staff schedule saved successfully!");
 
   }catch(error){
@@ -8479,7 +8377,7 @@ async function loadDashboardPayslips(){
 
         ${payslips.map(staff => `
 
-          <div class="panel" style="margin:0">
+          <div class="panel" data-payslip-card="${escapeHTML(staff.id)}" style="margin:0">
 
             <h3 style="margin-top:0">
               ${escapeHTML(staff.name)}
@@ -8535,6 +8433,7 @@ async function loadDashboardPayslips(){
             >
               PRINT / SAVE AS PDF
             </button>
+            <button type="button" class="secondary" data-hide-payslip="${escapeHTML(staff.id)}" style="width:100%;margin-top:7px">HIDE PAYSLIP</button>
 
           </div>
 
@@ -8543,6 +8442,19 @@ async function loadDashboardPayslips(){
       </div>
 
     `;
+
+    // VISIBILITY ONLY: hiding a payslip never deletes payroll or attendance data.
+    const hiddenPayslipRows = payslips.filter(staff => hiddenPayslipIds.has(staff.id));
+    payslipEl.querySelectorAll("[data-payslip-card]").forEach(card => {
+      card.classList.toggle("hidden", hiddenPayslipIds.has(card.dataset.payslipCard));
+    });
+    const hiddenPayslipPanel = document.createElement("div");
+    hiddenPayslipPanel.id = "hiddenPayslipItems";
+    hiddenPayslipPanel.style.marginTop = "14px";
+    hiddenPayslipPanel.innerHTML = hiddenPayslipRows.length
+      ? '<h4>HIDDEN PAYSLIPS</h4>' + hiddenPayslipRows.map(staff => `<div class="row"><span>${escapeHTML(staff.name)}</span><button type="button" class="secondary" data-unhide-payslip="${escapeHTML(staff.id)}">UNHIDE</button></div>`).join("")
+      : '<p class="small">No hidden payslips.</p>';
+    payslipEl.appendChild(hiddenPayslipPanel);
 
     // INDIVIDUAL PRINT BUTTONS
     payslipEl.querySelectorAll("[data-print-payslip]").forEach(button => {
@@ -9701,8 +9613,10 @@ async function recordAttendance(type){
           employeeId: employee.id,
           employeeName: employee.name,
           date: date,
+          shiftDate: date,
           timeIn: time,
           timeOut: null,
+          timeOutDate: null,
           scheduledStart: "15:00",
           lateMinutes: lateInfo.lateMinutes,
           lateDeduction: lateInfo.lateDeduction,
@@ -9777,7 +9691,12 @@ async function recordAttendance(type){
 
         // SAVE TIME OUT TO THE CORRECT ATTENDANCE DOCUMENT
         transaction.update(targetRef, {
+          // Keep the attendance document under the original shift-start date.
+          date: attendanceDateUsed,
+          shiftDate: attendanceDateUsed,
           timeOut: time,
+          timeOutDate: date,
+          timeOutAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
 
@@ -9793,6 +9712,10 @@ async function recordAttendance(type){
         : "");
 
     await loadTodayAttendance();
+    if(String(currentUserRole||"").toLowerCase()==="owner"){
+      if(typeof loadMonthlyAttendanceAnalytics === "function") await loadMonthlyAttendanceAnalytics();
+      if(typeof loadEmployeeAttendanceHistory === "function") await loadEmployeeAttendanceHistory();
+    }
 
     document.getElementById("attendanceBarcodeInput").value = "";
     scannedAttendanceEmployee = null;
@@ -9910,7 +9833,6 @@ async function markStaffAbsent(employeeId, employeeName, date){
     await loadStaffWeeklyAttendance(getScheduleWeekDates());
     
     renderStaffWeeklySchedule();
-    renderStaffAttendanceReminders();
     await loadTodayAttendance();
 
   }catch(error){
@@ -9940,10 +9862,14 @@ function loadTodayAttendance(){
     document.getElementById("attendanceHistorySection");
 
   if(historySection){
-    historySection.style.display = isOwner ? "" : "none";
+    historySection.style.display = "none";
   }
 
   if(!attendanceList) return;
+  if(!isOwner && !currentEmployeeAttendanceId){
+    attendanceList.innerHTML = "<p class='small'>Your staff login is not linked to an employee record. Please ask the owner to link it.</p>";
+    return;
+  }
 
   attendanceList.innerHTML =
     "<p class='small'>Loading attendance...</p>";
@@ -9954,10 +9880,9 @@ function loadTodayAttendance(){
     todayAttendanceUnsubscribe = null;
   }
 
-  const attendanceQuery = query(
-    collection(db, "attendance"),
-    where("date", "==", date)
-  );
+  const attendanceQuery = isOwner
+    ? query(collection(db, "attendance"), where("date", "==", date))
+    : query(collection(db, "attendance"), where("employeeId", "==", currentEmployeeAttendanceId));
 
   // LISTEN FOR LIVE FIRESTORE UPDATES
   todayAttendanceUnsubscribe = onSnapshot(
@@ -9970,11 +9895,15 @@ function loadTodayAttendance(){
         return;
       }
 
-      const records = snapshot.docs
-        .map(docSnap => docSnap.data())
-        .sort((a, b) =>
-          (a.employeeName || "").localeCompare(b.employeeName || "")
-        );
+      let records = snapshot.docs.map(docSnap => docSnap.data());
+      if(!isOwner){
+        records = records.filter(record => record.employeeId === currentEmployeeAttendanceId && record.date === date);
+      }
+      records.sort((a, b) => (a.employeeName || "").localeCompare(b.employeeName || ""));
+      if(!records.length){
+        attendanceList.innerHTML = "<p class='small'>No attendance records for your account today.</p>";
+        return;
+      }
 
       attendanceList.innerHTML = `
         <div style="overflow-x:auto">
@@ -10208,12 +10137,18 @@ async function saveManualAttendance(){
 
   const enteredTimeOut =
     document.getElementById("manualAttendanceTimeOut").value;
+  const editReason = String(document.getElementById("manualAttendanceReason")?.value || "").trim();
   console.log("TIME IN VALUE:", JSON.stringify(enteredTimeIn));
 console.log("TIME IN TYPE:", typeof enteredTimeIn);
 console.log("TIME OUT VALUE:", JSON.stringify(enteredTimeOut));
 
   if(!employeeId || !date){
     message.textContent = "Please select an employee and date.";
+    return;
+  }
+  if(!editReason){
+    message.textContent = "A reason is required before saving an attendance correction.";
+    document.getElementById("manualAttendanceReason")?.focus();
     return;
   }
 
@@ -10333,10 +10268,22 @@ if(finalTimeOut && finalTimeOut < finalTimeIn){
         date
       );
 
+      const auditEntry = {
+        previousTimeIn: existing.timeIn || null,
+        previousTimeOut: existing.timeOut || null,
+        previousTimeOutDate: existing.timeOutDate || null,
+        newTimeIn: finalTimeIn,
+        newTimeOut: finalTimeOut,
+        newTimeOutDate: finalTimeOut ? finalTimeOutDate : null,
+        reason: editReason,
+        editedBy: auth.currentUser.uid,
+        editedAt: new Date().toISOString()
+      };
       const attendanceData = {
         employeeId: employeeId,
         employeeName: employee.name || "Unknown",
         date: date,
+        shiftDate: date,
 timeIn: finalTimeIn,
 timeOut: finalTimeOut,
 timeOutDate: finalTimeOut ? finalTimeOutDate : null,
@@ -10346,6 +10293,8 @@ timeOutDate: finalTimeOut ? finalTimeOutDate : null,
         status: "PRESENT",
         manualEditedBy: auth.currentUser.uid,
         manualEditedAt: serverTimestamp(),
+        manualEditReason: editReason,
+        manualEditHistory: [...(Array.isArray(existing.manualEditHistory) ? existing.manualEditHistory : []), auditEntry],
         updatedAt: serverTimestamp()
       };
 
@@ -10362,7 +10311,8 @@ timeOutDate: finalTimeOut ? finalTimeOutDate : null,
     });
 
     message.textContent =
-      `Attendance saved successfully for ${employee.name || "employee"}.`;
+      `Attendance saved successfully for ${employee.name || "employee"}. Shift date: ${date}.`;
+    document.getElementById("manualAttendanceReason").value = "";
 
     // REFRESH TODAY'S ATTENDANCE IF APPLICABLE
     if(date === getManilaDateTime().date){
@@ -10381,6 +10331,8 @@ timeOutDate: finalTimeOut ? finalTimeOutDate : null,
     if(typeof loadDashboardPayslips === "function"){
       await loadDashboardPayslips();
     }
+    if(typeof loadMonthlyAttendanceAnalytics === "function") await loadMonthlyAttendanceAnalytics();
+    if(typeof loadEmployeeAttendanceHistory === "function") await loadEmployeeAttendanceHistory();
 
   }catch(error){
 
@@ -10412,8 +10364,9 @@ document.getElementById("saveManualAttendanceBtn")
 // LOAD ATTENDANCE HISTORY
 async function loadAttendanceHistory(){
 
-  if(String(currentUserRole || "").toLowerCase() !== "owner"){
-    alert("Owner only.");
+  const isOwner = String(currentUserRole || "").toLowerCase() === "owner";
+  if(!isOwner && !currentEmployeeAttendanceId){
+    alert("Your staff login is not linked to an employee record. Please ask the owner to link it.");
     return;
   }
 
@@ -10434,10 +10387,9 @@ async function loadAttendanceHistory(){
 
   try{
 
-    const attendanceQuery = query(
-      collection(db, "attendance"),
-      where("date", "==", selectedDate)
-    );
+    const attendanceQuery = isOwner
+      ? query(collection(db, "attendance"), where("date", "==", selectedDate))
+      : query(collection(db, "attendance"), where("employeeId", "==", currentEmployeeAttendanceId), where("date", "==", selectedDate));
 
     const snapshot = await getDocs(attendanceQuery);
 
@@ -12120,6 +12072,9 @@ customNotes: item.customNotes || ""
   }
 
   const profile = userSnap.data();
+  currentAuthUid = user.uid;
+  currentAuthEmail = String(user.email || "").toLowerCase();
+  currentUserProfile = profile || {};
 
   if(profile.active !== true ||
      !["owner","cashier"].includes(profile.role)){
@@ -12129,11 +12084,23 @@ customNotes: item.customNotes || ""
   }
 
 currentUserRole = String(profile.role || "").toLowerCase();
+// Monthly attendance analytics and employee attendance history are owner-only.
+const monthlyAnalyticsPanel = document.getElementById("monthlyAttendanceAnalyticsPanel");
+const employeeHistoryPanel = document.getElementById("employeeAttendanceHistoryPanel");
+if(monthlyAnalyticsPanel) monthlyAnalyticsPanel.classList.toggle("hidden", currentUserRole !== "owner");
+if(employeeHistoryPanel) employeeHistoryPanel.classList.toggle("hidden", currentUserRole !== "owner");
 const inventoryNavButton = document.getElementById("inventoryBtn"); if(inventoryNavButton) inventoryNavButton.classList.toggle("hidden", currentUserRole !== "owner");
 document.getElementById("teamChatButton").style.display = "block";
 startTeamChat();
 currentUserName = profile.name || profile.fullName || profile.displayName ||
   (user.email ? user.email.split("@")[0] : "Team Member");
+await resolveCurrentEmployeeAttendanceProfile();
+const analyticsMonthInput = document.getElementById("attendanceAnalyticsMonth");
+if(analyticsMonthInput && !analyticsMonthInput.value) analyticsMonthInput.value = getManilaDateTime().date.slice(0,7);
+const historyFromInput = document.getElementById("attendanceHistoryFrom");
+const historyToInput = document.getElementById("attendanceHistoryTo");
+if(historyFromInput && !historyFromInput.value) historyFromInput.value = getManilaDateTime().date.slice(0,7) + "-01";
+if(historyToInput && !historyToInput.value) historyToInput.value = getManilaDateTime().date;
 updateManualOrderModeUI();
     
 // MANUAL ATTENDANCE EDITOR - OWNER ONLY
@@ -12146,9 +12113,22 @@ if(manualAttendancePanel){
     String(currentUserRole || "").toLowerCase() !== "owner"
   );
 }
+const payslipPanel = document.getElementById("staffPayslipsAttendancePanel");
+if(payslipPanel){
+  payslipPanel.classList.toggle("hidden", String(currentUserRole || "").toLowerCase() !== "owner");
+}
+const ownerHistoryControls = document.getElementById("ownerAttendanceHistoryControls");
+if(ownerHistoryControls){
+  ownerHistoryControls.classList.toggle("hidden", String(currentUserRole || "").toLowerCase() !== "owner");
+}
 if(String(currentUserRole || "").toLowerCase() === "owner"){
   loadManualAttendanceEmployees();
+  loadAttendanceHistoryEmployeeOptions();
+} else {
+  const employeeSelect = document.getElementById("attendanceHistoryEmployeeSelect");
+  if(employeeSelect) employeeSelect.disabled = true;
 }
+if(typeof loadMonthlyAttendanceAnalytics === "function") loadMonthlyAttendanceAnalytics();
 // OWNER DASHBOARD ACCESS
 const dashboardBtn = document.getElementById("dashboardBtn");
 
@@ -13248,6 +13228,7 @@ document.querySelectorAll(".terminal-nav button").forEach(button => {
 
     renderProducts();
 
+
   } catch (error) {
     console.error("Staff presence error:", error);
     alert("Unable to connect to staff status. Please try again.");
@@ -13723,7 +13704,7 @@ document.getElementById("employeeAttendanceBtn").addEventListener("click", () =>
 
 });
 // OWNER DASHBOARD BUTTON
-document.getElementById("dashboardBtn").addEventListener("click", () => {
+document.getElementById("dashboardBtn").addEventListener("click", async () => {
 
   if(currentUserRole !== "owner") return;
 
@@ -13744,7 +13725,8 @@ document.getElementById("dashboardPage").classList.remove("hidden");
 document.getElementById("app").classList.remove("sales-nav-compact");
 window.scrollTo(0, 0);
 loadDashboardPayroll();
-loadDashboardPayslips();
+// Load payslips as the dashboard opens so the loading state is tied to the visible page.
+await loadDashboardPayslips();
 startDashboardRealtime();
 
 document.querySelectorAll(".terminal-nav button").forEach(button => {
@@ -14284,7 +14266,168 @@ document.getElementById("closeSettingsBtn").onclick = () => {
   modal.classList.add("hidden");
   modal.style.display = "none";
 };
-  // ATTENDANCE BUTTONS
+  // ==============================================
+// D' WINGS ATTENDANCE UPGRADE
+// Shift-date anchored overnight attendance: 3 PM to 12 AM
+// ==============================================
+
+async function resolveCurrentEmployeeAttendanceProfile(){
+  currentEmployeeAttendanceId = null;
+  currentEmployeeAttendanceProfile = null;
+  if(String(currentUserRole || "").toLowerCase() === "owner") return null;
+  try{
+    const explicitId = currentUserProfile.employeeId || currentUserProfile.staffId || currentUserProfile.employee_id || null;
+    if(explicitId){
+      const linkedSnap = await getDoc(doc(db,"employees",String(explicitId)));
+      if(linkedSnap.exists() && linkedSnap.data().active === true){
+        currentEmployeeAttendanceId = linkedSnap.id;
+        currentEmployeeAttendanceProfile = {id:linkedSnap.id,...linkedSnap.data()};
+        return currentEmployeeAttendanceProfile;
+      }
+    }
+    const employeesSnap = await getDocs(collection(db,"employees"));
+    const uidFields = ["authUid","userUid","userId","uid","firebaseUid","linkedUid"];
+    const emailFields = ["email","loginEmail","userEmail"];
+    const employeeRows=employeesSnap.docs.map(d=>({id:d.id,...d.data()})).filter(employee=>employee.active===true);
+    let match = employeeRows.find(employee=>{
+      if(uidFields.some(field=>employee[field] && String(employee[field]) === currentAuthUid)) return true;
+      if(currentAuthEmail && emailFields.some(field=>employee[field] && String(employee[field]).toLowerCase() === currentAuthEmail)) return true;
+      return false;
+    });
+    if(!match){
+      const loginName=String(currentUserProfile.name||currentUserProfile.fullName||currentUserProfile.displayName||currentUserName||"").trim().toLowerCase();
+      const nameMatches=loginName?employeeRows.filter(employee=>String(employee.name||"").trim().toLowerCase()===loginName):[];
+      if(nameMatches.length===1) match=nameMatches[0];
+    }
+    if(match){currentEmployeeAttendanceId=match.id;currentEmployeeAttendanceProfile=match;return match;}
+  }catch(error){console.error("Employee attendance profile link error:",error);}
+  return null;
+}
+
+function updateAttendanceLiveClock(){
+  const timeEl=document.getElementById("attendanceLiveTime");
+  const dateEl=document.getElementById("attendanceLiveDate");
+  if(!timeEl || !dateEl) return;
+  const now=new Date();
+  timeEl.textContent=new Intl.DateTimeFormat("en-PH",{timeZone:"Asia/Manila",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:true}).format(now);
+  dateEl.textContent=new Intl.DateTimeFormat("en-PH",{timeZone:"Asia/Manila",weekday:"long",month:"long",day:"numeric",year:"numeric"}).format(now).toUpperCase();
+}
+
+function dwAttendanceEscape(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function dwShiftDate(record){return String(record.shiftDate || record.date || "");}
+function dwAttendanceDuration(record){
+  if(!record.timeIn || !record.timeOut) return 0;
+  const startDate=dwShiftDate(record);
+  const endDate=record.timeOutDate || (record.timeOut < record.timeIn ? (()=>{const [y,m,d]=startDate.split("-").map(Number);return new Date(Date.UTC(y,m-1,d+1)).toISOString().slice(0,10);})() : startDate);
+  const start=new Date(`${startDate}T${record.timeIn}+08:00`).getTime();
+  const end=new Date(`${endDate}T${record.timeOut}+08:00`).getTime();
+  return Number.isFinite(start)&&Number.isFinite(end)&&end>=start ? (end-start)/3600000 : 0;
+}
+
+async function getAttendanceRecordsForCurrentUser(){
+  const isOwner=String(currentUserRole||"").toLowerCase()==="owner";
+  if(!isOwner && !currentEmployeeAttendanceId) await resolveCurrentEmployeeAttendanceProfile();
+  if(!isOwner && !currentEmployeeAttendanceId) throw new Error("EMPLOYEE_LINK_MISSING");
+  const attendanceQuery=isOwner ? collection(db,"attendance") : query(collection(db,"attendance"),where("employeeId","==",currentEmployeeAttendanceId));
+  const snap=await getDocs(attendanceQuery);
+  return snap.docs.map(d=>({id:d.id,...d.data()}));
+}
+
+async function loadAttendanceHistoryEmployeeOptions(){
+  if(String(currentUserRole||"").toLowerCase()!=="owner") return;
+  const select=document.getElementById("attendanceHistoryEmployeeSelect");
+  if(!select) return;
+  try{
+    const snap=await getDocs(collection(db,"employees"));
+    const employees=snap.docs.map(d=>({id:d.id,...d.data()})).filter(e=>e.active===true).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+    select.innerHTML='<option value="ALL">ALL EMPLOYEES</option>'+employees.map(e=>`<option value="${dwAttendanceEscape(e.id)}">${dwAttendanceEscape(e.name||"Unnamed")}</option>`).join("");
+  }catch(error){console.error("Attendance history employee list error:",error);select.innerHTML='<option value="ALL">ALL EMPLOYEES</option>';}
+}
+
+async function loadMonthlyAttendanceAnalytics(){
+  if(String(currentUserRole||"").toLowerCase()!=="owner") return;
+  const host=document.getElementById("monthlyAttendanceAnalytics");
+  const monthInput=document.getElementById("attendanceAnalyticsMonth");
+  if(!host||!monthInput) return;
+  if(!monthInput.value){const m=getManilaDateTime().date.slice(0,7);monthInput.value=m;}
+  host.innerHTML='<p class="small">Loading monthly attendance...</p>';
+  try{
+    const isOwner=String(currentUserRole||"").toLowerCase()==="owner";
+    const records=await getAttendanceRecordsForCurrentUser();
+    const prefix=monthInput.value;
+    let monthRows=records.filter(r=>dwShiftDate(r).startsWith(prefix));
+    if(isOwner){
+      const grouped={};
+      monthRows.forEach(r=>{const id=r.employeeId||"unknown";if(!grouped[id])grouped[id]={name:r.employeeName||"Unknown",rows:[]};grouped[id].rows.push(r);});
+      const groups=Object.values(grouped).sort((a,b)=>a.name.localeCompare(b.name));
+      const totalPresent=monthRows.filter(r=>r.timeIn&&String(r.status||"").toUpperCase()!=="ABSENT").length;
+      const totalAbsent=monthRows.filter(r=>String(r.status||"").toUpperCase()==="ABSENT").length;
+      const totalLate=monthRows.filter(r=>Number(r.lateMinutes||0)>0).length;
+      const totalHours=monthRows.reduce((sum,r)=>sum+dwAttendanceDuration(r),0);
+      host.innerHTML=`<div class="attendance-stat-grid"><div class="attendance-stat"><span>SHIFT RECORDS</span><strong>${monthRows.length}</strong></div><div class="attendance-stat"><span>PRESENT</span><strong>${totalPresent}</strong></div><div class="attendance-stat"><span>ABSENT</span><strong>${totalAbsent}</strong></div><div class="attendance-stat"><span>LATE</span><strong>${totalLate}</strong></div></div><div class="attendance-stat"><span>TOTAL HOURS WORKED</span><strong>${totalHours.toFixed(1)} hrs</strong></div><div class="attendance-table-wrap"><table class="attendance-data-table"><thead><tr><th>EMPLOYEE</th><th>SHIFTS</th><th>PRESENT</th><th>ABSENT</th><th>LATE</th><th>HOURS</th></tr></thead><tbody>${groups.map(g=>{const rows=g.rows;return `<tr><td>${dwAttendanceEscape(g.name)}</td><td>${rows.length}</td><td>${rows.filter(r=>r.timeIn&&String(r.status||"").toUpperCase()!=="ABSENT").length}</td><td>${rows.filter(r=>String(r.status||"").toUpperCase()==="ABSENT").length}</td><td>${rows.filter(r=>Number(r.lateMinutes||0)>0).length}</td><td>${rows.reduce((a,r)=>a+dwAttendanceDuration(r),0).toFixed(1)}</td></tr>`;}).join("")||'<tr><td colspan="6">No attendance records for this month.</td></tr>'}</tbody></table></div>`;
+    }else{
+      const present=monthRows.filter(r=>r.timeIn&&String(r.status||"").toUpperCase()!=="ABSENT").length;
+      const absent=monthRows.filter(r=>String(r.status||"").toUpperCase()==="ABSENT").length;
+      const late=monthRows.filter(r=>Number(r.lateMinutes||0)>0).length;
+      const hours=monthRows.reduce((sum,r)=>sum+dwAttendanceDuration(r),0);
+      host.innerHTML=`<div class="attendance-stat-grid"><div class="attendance-stat"><span>SHIFT RECORDS</span><strong>${monthRows.length}</strong></div><div class="attendance-stat"><span>PRESENT</span><strong>${present}</strong></div><div class="attendance-stat"><span>ABSENT</span><strong>${absent}</strong></div><div class="attendance-stat"><span>LATE</span><strong>${late}</strong></div></div><div class="attendance-stat"><span>TOTAL HOURS WORKED</span><strong>${hours.toFixed(1)} hrs</strong></div><div class="attendance-table-wrap"><table class="attendance-data-table"><thead><tr><th>SHIFT DATE</th><th>TIME IN</th><th>TIME OUT</th><th>TIME OUT DATE</th><th>STATUS</th></tr></thead><tbody>${monthRows.sort((a,b)=>dwShiftDate(b).localeCompare(dwShiftDate(a))).map(r=>`<tr><td>${dwAttendanceEscape(dwShiftDate(r))}</td><td>${dwAttendanceEscape(r.timeIn||"—")}</td><td>${dwAttendanceEscape(r.timeOut||"—")}</td><td>${dwAttendanceEscape(r.timeOutDate||"—")}</td><td>${String(r.status||"").toUpperCase()==="ABSENT"?"ABSENT":r.timeOut?"COMPLETED":r.timeIn?"WORKING":"—"}</td></tr>`).join("")||'<tr><td colspan="5">No attendance records for this month.</td></tr>'}</tbody></table></div>`;
+    }
+  }catch(error){console.error("Monthly attendance analytics error:",error);host.innerHTML=error.message==="EMPLOYEE_LINK_MISSING"?'<p class="small">Your staff login is not linked to an employee record. Please ask the owner to link your account.</p>':'<p class="small">Unable to load attendance analytics. Check Firestore permissions and try again.</p>';}
+}
+
+async function loadEmployeeAttendanceHistory(){
+  if(String(currentUserRole||"").toLowerCase()!=="owner") return;
+  const host=document.getElementById("employeeAttendanceHistoryResults");
+  if(!host) return;
+  host.innerHTML='<p class="small">Loading employee attendance history...</p>';
+  try{
+    const isOwner=String(currentUserRole||"").toLowerCase()==="owner";
+    const from=document.getElementById("attendanceHistoryFrom").value;
+    const to=document.getElementById("attendanceHistoryTo").value;
+    const selectedEmployee=document.getElementById("attendanceHistoryEmployeeSelect")?.value||"ALL";
+    if(from&&to&&from>to){host.innerHTML='<p class="small">FROM DATE cannot be later than TO DATE.</p>';return;}
+    let records=await getAttendanceRecordsForCurrentUser();
+    records=records.filter(r=>{const d=dwShiftDate(r);return (!from||d>=from)&&(!to||d<=to);});
+    if(isOwner&&selectedEmployee!=="ALL") records=records.filter(r=>r.employeeId===selectedEmployee);
+    records.sort((a,b)=>dwShiftDate(b).localeCompare(dwShiftDate(a))||(a.employeeName||"").localeCompare(b.employeeName||""));
+    host.innerHTML=records.length?`<div class="attendance-table-wrap"><table class="attendance-data-table"><thead><tr><th>SHIFT DATE</th><th>EMPLOYEE</th><th>TIME IN</th><th>TIME OUT</th><th>TIME OUT DATE</th><th>STATUS</th></tr></thead><tbody>${records.map(r=>`<tr><td>${dwAttendanceEscape(dwShiftDate(r))}</td><td>${dwAttendanceEscape(r.employeeName||"—")}</td><td>${dwAttendanceEscape(r.timeIn||"—")}</td><td>${dwAttendanceEscape(r.timeOut||"—")}</td><td>${dwAttendanceEscape(r.timeOutDate||"—")}</td><td>${String(r.status||"").toUpperCase()==="ABSENT"?"ABSENT":r.timeOut?"COMPLETED":r.timeIn?"WORKING":"—"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="small">No attendance records found for the selected dates.</p>';
+  }catch(error){console.error("Employee attendance history error:",error);host.innerHTML=error.message==="EMPLOYEE_LINK_MISSING"?'<p class="small">Your staff login is not linked to an employee record. Please ask the owner to link your account.</p>':'<p class="small">Unable to load attendance history. Check Firestore permissions and try again.</p>';}
+}
+
+function upgradeAttendanceLayout(){
+  const page=document.getElementById("employeeAttendancePage");
+  const grid=page?.querySelector(".staff-center-grid");
+  if(grid){grid.style.display="grid";grid.style.gridTemplateColumns="minmax(0,1fr)";}
+  const manual=document.getElementById("manualAttendanceEditorPanel");
+  const payslips=document.getElementById("staffPayslipsAttendancePanel");
+  const analytics=document.getElementById("monthlyAttendanceAnalyticsPanel");
+  if(page&&grid){
+    if(manual) page.insertBefore(manual,analytics||null);
+    if(payslips) page.insertBefore(payslips,analytics||null);
+  }
+  const oldHistory=document.getElementById("attendanceHistorySection");
+  if(oldHistory) oldHistory.style.display="none";
+  updateAttendanceLiveClock();
+  if(!window.dwAttendanceClockInterval) window.dwAttendanceClockInterval=setInterval(updateAttendanceLiveClock,1000);
+}
+
+// Buttons for the added analytics/history modules.
+document.getElementById("loadAttendanceAnalyticsBtn")?.addEventListener("click",loadMonthlyAttendanceAnalytics);
+document.getElementById("attendanceAnalyticsMonth")?.addEventListener("change",loadMonthlyAttendanceAnalytics);
+document.getElementById("loadEmployeeAttendanceHistoryBtn")?.addEventListener("click",loadEmployeeAttendanceHistory);
+document.getElementById("attendanceHistoryEmployeeSelect")?.addEventListener("change",loadEmployeeAttendanceHistory);
+
+// Payslip visibility controls only hide/unhide rendered cards; no records are deleted.
+document.getElementById("dashboardPayslips")?.addEventListener("click",event=>{
+  const hide=event.target.closest("[data-hide-payslip]");
+  const unhide=event.target.closest("[data-unhide-payslip]");
+  if(hide){hiddenPayslipIds.add(hide.dataset.hidePayslip);try{localStorage.setItem("dw_hidden_payslip_ids",JSON.stringify([...hiddenPayslipIds]));}catch(_){}const card=hide.closest("[data-payslip-card]");if(card)card.classList.add("hidden");const panel=document.getElementById("hiddenPayslipItems");if(panel){const id=hide.dataset.hidePayslip;const name=card?.querySelector("h3")?.textContent||id;const row=document.createElement("div");row.className="row";row.innerHTML=`<span>${dwAttendanceEscape(name)}</span><button type="button" class="secondary" data-unhide-payslip="${dwAttendanceEscape(id)}">UNHIDE</button>`;panel.appendChild(row);const empty=panel.querySelector(".small");if(empty)empty.remove();} }
+  if(unhide){const id=unhide.dataset.unhidePayslip;hiddenPayslipIds.delete(id);try{localStorage.setItem("dw_hidden_payslip_ids",JSON.stringify([...hiddenPayslipIds]));}catch(_){}const card=document.querySelector(`[data-payslip-card="${CSS.escape(id)}"]`);if(card)card.classList.remove("hidden");unhide.closest(".row")?.remove();const panel=document.getElementById("hiddenPayslipItems");if(panel&&!panel.querySelector("[data-unhide-payslip]"))panel.innerHTML='<p class="small">No hidden payslips.</p>';}
+});
+
+upgradeAttendanceLayout();
+
+// ATTENDANCE BUTTONS
 document.getElementById("timeInBtn")?.addEventListener("click", () => {
   recordAttendance("TIME IN");
 });
@@ -14300,6 +14443,7 @@ const attendancePage = document.getElementById("employeeAttendancePage");
 
 if(!attendancePage || attendancePage.classList.contains("hidden")) return;
 
+  if(event.repeat) return;
   if(event.key === "F1"){
     event.preventDefault();
     recordAttendance("TIME IN");
