@@ -14706,7 +14706,19 @@ let dwLastReminderShownDate = "";
 const dwChecklistManilaDate = () => {const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Manila",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const get=t=>parts.find(x=>x.type===t)?.value||"00";return `${get("year")}-${get("month")}-${get("day")}`;};
 const dwAddDateDays = (dateString,days) => {const d=new Date(dateString+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
 const dwEscape = value => String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const dwChecklistRef = date => doc(db,"daily_checklists",date);
+const dwChecklistRef = date => {
+  let safeDate = date;
+
+  if (date instanceof Date) {
+    safeDate = date.toISOString().slice(0, 10);
+  }
+
+  if (typeof safeDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(safeDate)) {
+    safeDate = dwChecklistManilaDate();
+  }
+
+  return doc(db, "daily_checklists", safeDate);
+};
 function dwChecklistMessage(message,isError=false){const el=document.getElementById("dailyChecklistMessage");if(el){el.textContent=message||"";el.style.color=isError?"#ff8b8b":"#9fd9a8";}}
 function dwPrepMessage(message,isError=false){const el=document.getElementById("cashierChecklistMessage");if(el){el.textContent=message||"";el.style.color=isError?"#ff8b8b":"#9fd9a8";}}
 function dwNormalizeTask(task,index){return typeof task==="string"?{id:"task_"+index,label:task,done:false}:{id:task.id||("task_"+index),label:String(task.label||""),done:task.done===true};}
