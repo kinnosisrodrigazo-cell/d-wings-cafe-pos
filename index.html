@@ -2359,8 +2359,14 @@ td{border-color:#2c394b!important}
   min-height: 22px !important;
   stroke: currentColor !important;
 }
-#app.sales-nav-compact > .terminal-nav button span {
-  display: none !important;
+@media (max-width: 600px) {
+  #app.sales-nav-compact > .terminal-nav button span {
+    display: block !important;
+    font-size: 9px !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
 }
 
 #app.sales-nav-compact > section:not(.hidden) {
