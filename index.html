@@ -9950,12 +9950,12 @@ async function recordAttendance(type){
 
     }else{
 
-      console.error("Attendance recording error:", error);
+console.error("Attendance recording error:", error);
 
-      message.textContent =
-        "Unable to record attendance. Please try again.";
+message.textContent =
+  "Attendance failed: " + (error.message || error.code || "Unknown error");
 
-    }
+}
   }
 }
 
