@@ -1943,7 +1943,12 @@ td{border-color:#2c394b!important}
   #app:not(.hidden) > section.hidden{display:none !important}
   #app:not(.hidden) > section:not(.hidden){display:block !important}
   #app > .terminal-nav #settingsBtn,
-  #app > .terminal-nav #logoutBtn{font-size:0 !important}
+  #app > .terminal-nav #logoutBtn{
+  font-size:9px !important;
+  line-height:1.2 !important;
+  flex-direction:column !important;
+  white-space:normal !important;
+}
   #app > .terminal-nav #settingsBtn svg,
   #app > .terminal-nav #logoutBtn svg{display:block !important;visibility:visible !important;opacity:1 !important}
 }
