@@ -2192,9 +2192,43 @@ td{border-color:#2c394b!important}
  #app:not(.hidden)>section:not(.hidden){grid-column:2!important;grid-row:1!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;justify-self:stretch!important;align-self:start!important}
 }
 @media(min-width:601px) and (max-width:850px){#app:not(.hidden){grid-template-columns:66px minmax(0,1fr)!important}#app:not(.hidden)>.terminal-nav{width:66px!important;min-width:66px!important;max-width:66px!important}}
-@media(max-width:600px){#app:not(.hidden){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;width:100%!important}#app:not(.hidden)>.terminal-nav{order:0!important;width:100%!important;min-width:0!important;max-width:100%!important}#app:not(.hidden)>section:not(.hidden){order:1!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important}}
-</style>
+@media(max-width:600px){
+  #app:not(.hidden){
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:8px!important;
+    width:100%!important;
+  }
 
+  #app:not(.hidden)>.terminal-nav{
+    order:0!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    grid-auto-flow:row!important;
+    gap:6px!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  #app:not(.hidden)>.terminal-nav>button{
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+
+  #app:not(.hidden)>section:not(.hidden){
+    order:1!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+  }
+}
+</style>
 
 <style id="cart-side-by-side-fix">
 #cartPanel.hidden {
@@ -2463,8 +2497,7 @@ td{border-color:#2c394b!important}
   #app.sales-nav-compact > .terminal-nav {
     position: static !important;
     display: grid !important;
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    width: 100% !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;    width: 100% !important;
     min-width: 0 !important;
     max-width: none !important;
   }
