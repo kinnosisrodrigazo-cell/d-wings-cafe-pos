@@ -1639,31 +1639,11 @@ header img {
 }
 
 
-/* TEAM CHAT - DRAGGABLE BUTTON AND WINDOW */
-#teamChatButton{display:none;position:fixed;top:50%;left:15px;bottom:auto;right:auto;z-index:900;width:52px;height:52px;border-radius:50%;font-size:23px;padding:0;background:#000;border:1px solid #444;color:#e7ad3e;cursor:grab;touch-action:none;user-select:none}
-#teamChatButton:active{cursor:grabbing}
-#teamChatBadge{display:none;position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 4px;border-radius:20px;background:#e53935;color:#fff;font-size:11px;font-weight:bold;line-height:19px;text-align:center;border:2px solid #111}
-#teamChatPanel{display:none;position:fixed;top:50%;left:80px;right:auto;bottom:auto;z-index:1300;width:min(360px,calc(100vw - 30px));height:430px;max-height:calc(100vh - 30px);min-height:280px;background:#171717;border:1px solid #555;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.55);overflow:hidden;flex-direction:column;transform:translateY(-50%)}
-#teamChatPanel.open{display:flex}
-#teamChatPanel > div:first-child{cursor:grab;touch-action:none;user-select:none}
-#teamChatPanel > div:first-child:active{cursor:grabbing}
-#teamChatMessages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
-.team-chat-message{max-width:88%;padding:9px 11px;border-radius:11px;background:#303030;overflow-wrap:anywhere;align-self:flex-start}
-.team-chat-message.mine{background:#57421e;align-self:flex-end}
-.team-chat-meta{font-size:10px;color:#c5c5c5;margin-bottom:4px}
-.team-chat-text{font-size:13px;white-space:pre-wrap;line-height:1.35}
-#teamChatInputRow{display:flex;gap:7px;padding:10px;border-top:1px solid #444;align-items:center}
-#teamChatInput{margin:0;min-width:0;flex:1;padding:11px;font-size:13px}
-#teamChatSend{padding:10px 13px;white-space:nowrap}
-@media(max-width:600px){#teamChatPanel{width:calc(100vw - 20px);max-height:calc(100vh - 20px)}}
 /* DASHBOARD WIDTH */
 #dashboardPage{
   min-width:0 !important;
   width:auto !important;
 }
-
-
-
 
 
 /* =====================================================
@@ -1727,8 +1707,7 @@ td{border-color:#2c394b!important}
 #login .pos-logo{max-width:190px;filter:drop-shadow(0 12px 24px rgba(242,173,61,.13))}
 #login>div{background:linear-gradient(145deg,#1b2635,#101720)!important;border:1px solid #344257!important;border-radius:22px!important;box-shadow:0 25px 70px rgba(0,0,0,.42)!important}
 #login h2{color:var(--dw-accent-2)!important;font-weight:800!important;letter-spacing:.2px}
-#teamChatPanel{background:#131c29;border:1px solid #35445a}
-#teamChatButton{background:#1b2635;border:1px solid #45546a;color:var(--dw-accent-2)}
+
 
 @media(max-width:1100px){
   .sales-layout{grid-template-columns:minmax(0,1fr) minmax(285px,.8fr)}
@@ -2153,17 +2132,6 @@ td{border-color:#2c394b!important}
     flex: 0 0 22px !important;
   }
 
-  #teamChatButton {
-    position: relative !important;
-  }
-
-  #teamChatBadge {
-    position: absolute !important;
-    top: 2px !important;
-    right: 5px !important;
-  }
-}
-
   
 /* Crisp stock-box icon in the sidebar */
 #inventoryBtn svg { display: block !important; width: 21px !important; height: 21px !important; flex: 0 0 21px !important; stroke: currentColor !important; fill: none !important; }
@@ -2352,15 +2320,7 @@ td{border-color:#2c394b!important}
 #app.sales-nav-compact > .terminal-nav button span {
   display: none !important;
 }
-#app.sales-nav-compact > .terminal-nav #teamChatButton::before {
-  content: "💬";
-  display: block;
-  font-size: 21px;
-  line-height: 1;
-}
-#app.sales-nav-compact > .terminal-nav #teamChatButton #teamChatBadge {
-  display: none !important;
-}
+
 #app.sales-nav-compact > section:not(.hidden) {
   grid-column: 2 !important;
   width: 100% !important;
@@ -2712,21 +2672,7 @@ td{border-color:#2c394b!important}
   </div>
 </div>
   
-<!-- TEAM CHAT PANEL -->
-<div id="teamChatPanel" aria-label="Team chat">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#222;border-bottom:1px solid #444">
-    <div>
-      <strong style="color:#e7ad3e">D’ WINGS TEAM CHAT</strong>
-      <div class="small" style="font-size:10px">Owner and Cashiers</div>
-    </div>
-    <button id="teamChatClose" type="button" class="secondary" style="padding:5px 10px;font-size:18px">×</button>
-  </div>
-  <div id="teamChatMessages"><p class="small">Loading messages...</p></div>
-  <div id="teamChatInputRow">
-    <input id="teamChatInput" type="text" maxlength="500" placeholder="Type a message..." autocomplete="off">
-    <button id="teamChatSend" type="button">SEND</button>
-  </div>
-</div>
+
 
 <!-- SETTINGS WINDOW -->
 <div id="settingsModal" class="hidden" style="
@@ -3025,12 +2971,6 @@ td{border-color:#2c394b!important}
     DAILY SALES REPORT
   </button>
 
-  <!-- TEAM CHAT -->
-  <button id="teamChatButton" type="button" title="Team Chat">
-    💬
-    <span id="teamChatBadge">0</span>
-    TEAM CHAT
-  </button>
 
   <button data-page="inventoryPage" id="inventoryBtn" type="button" title="Inventory & Recipe Costing" aria-label="Inventory & Costing">
     <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -4166,7 +4106,6 @@ let currentUserProfile = {};
 let currentEmployeeAttendanceId = null;
 let currentEmployeeAttendanceProfile = null;
 const hiddenPayslipIds = new Set((()=>{try{return JSON.parse(localStorage.getItem("dw_hidden_payslip_ids")||"[]");}catch(_){return [];}})());
-let teamChatUnsubscribe = null;
 let todayAttendanceUnsubscribe = null;
 
   // UNLI UPGRADE STATE
@@ -12284,8 +12223,6 @@ const employeeHistoryPanel = document.getElementById("employeeAttendanceHistoryP
 if(monthlyAnalyticsPanel) monthlyAnalyticsPanel.classList.toggle("hidden", currentUserRole !== "owner");
 if(employeeHistoryPanel) employeeHistoryPanel.classList.toggle("hidden", currentUserRole !== "owner");
 const inventoryNavButton = document.getElementById("inventoryBtn"); if(inventoryNavButton) inventoryNavButton.classList.toggle("hidden", currentUserRole !== "owner");
-document.getElementById("teamChatButton").style.display = "block";
-startTeamChat();
 currentUserName = profile.name || profile.fullName || profile.displayName ||
   (user.email ? user.email.split("@")[0] : "Team Member");
 await resolveCurrentEmployeeAttendanceProfile();
@@ -13431,264 +13368,9 @@ document.querySelectorAll(".terminal-nav button").forEach(button => {
   }
 };
 
-
-// ===================================
-// D' WINGS CAFE - REAL-TIME TEAM CHAT
-// ===================================
-let teamChatSending = false;
-let teamChatUnreadCount = 0;
-let teamChatHasInitialSnapshot = false;
-
-function updateTeamChatBadge(){
-  const badge = document.getElementById("teamChatBadge");
-  if(!badge) return;
-  badge.textContent = teamChatUnreadCount > 99 ? "99+" : String(teamChatUnreadCount);
-  badge.style.display = teamChatUnreadCount > 0 ? "block" : "none";
-}
-
-function playTeamChatNotification(){
-  try{
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if(!AudioContextClass) return;
-    const audio = new AudioContextClass();
-    const oscillator = audio.createOscillator();
-    const gain = audio.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(880,audio.currentTime);
-    oscillator.frequency.setValueAtTime(660,audio.currentTime + 0.12);
-    gain.gain.setValueAtTime(0.0001,audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.16,audio.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001,audio.currentTime + 0.28);
-    oscillator.connect(gain);
-    gain.connect(audio.destination);
-    oscillator.start();
-    oscillator.stop(audio.currentTime + 0.3);
-    oscillator.onended = () => audio.close();
-  }catch(error){
-    console.warn("Chat notification sound unavailable:",error);
-  }
-}
-
-function renderTeamChat(snapshot){
-  const container = document.getElementById("teamChatMessages");
-  if(!container) return;
-
-  const wasNearBottom =
-    container.scrollHeight - container.scrollTop - container.clientHeight < 70;
-
-  container.innerHTML = "";
-
-  if(snapshot.empty){
-    container.innerHTML = '<p class="small" style="text-align:center">No messages yet. Say hello to the team!</p>';
-    return;
-  }
-
-  snapshot.docs.slice().reverse().forEach(messageDoc => {
-    const message = messageDoc.data();
-    const isMine = message.senderUid === auth.currentUser?.uid;
-
-    const bubble = document.createElement("div");
-    bubble.className = "team-chat-message" + (isMine ? " mine" : "");
-
-    const meta = document.createElement("div");
-    meta.className = "team-chat-meta";
-    const sentAt = message.createdAt?.toDate
-      ? message.createdAt.toDate().toLocaleTimeString("en-PH",{
-          timeZone:"Asia/Manila",hour:"2-digit",minute:"2-digit"
-        })
-      : "Sending...";
-    meta.textContent = `${message.senderName || "Team Member"} · ${message.senderRole || "STAFF"} · ${sentAt}`;
-
-    const body = document.createElement("div");
-    body.className = "team-chat-text";
-    body.textContent = message.text || "";
-
-    bubble.append(meta,body);
-    container.appendChild(bubble);
-  });
-
-  if(wasNearBottom || snapshot.docs.length <= 1){
-    container.scrollTop = container.scrollHeight;
-  }
-}
-
-function startTeamChat(){
-  if(teamChatUnsubscribe) return;
-  teamChatHasInitialSnapshot = false;
-
-  const messagesQuery = query(
-    collection(db,"teamChatMessages"),
-    orderBy("createdAt","desc"),
-    limit(100)
-  );
-
-  teamChatUnsubscribe = onSnapshot(messagesQuery, snapshot => {
-    if(teamChatHasInitialSnapshot){
-      const panelOpen = document.getElementById("teamChatPanel")?.classList.contains("open");
-      const incomingMessages = snapshot.docChanges().filter(change =>
-        change.type === "added" &&
-        change.doc.data().senderUid !== auth.currentUser?.uid
-      );
-      if(incomingMessages.length && !panelOpen){
-        teamChatUnreadCount += incomingMessages.length;
-        updateTeamChatBadge();
-        playTeamChatNotification();
-      }
-    }else{
-      teamChatHasInitialSnapshot = true;
-    }
-    renderTeamChat(snapshot);
-  }, error => {
-    console.error("Team chat listener error:",error);
-    document.getElementById("teamChatMessages").innerHTML =
-      '<p class="small">Unable to load chat. Please check Firestore permissions.</p>';
-  });
-}
-
-async function sendTeamChatMessage(){
-  const input = document.getElementById("teamChatInput");
-  const sendButton = document.getElementById("teamChatSend");
-  const text = input.value.trim();
-
-  if(!text || teamChatSending || !auth.currentUser) return;
-
-  teamChatSending = true;
-  sendButton.disabled = true;
-
-  try{
-    await addDoc(collection(db,"teamChatMessages"),{
-      text,
-      senderUid:auth.currentUser.uid,
-      senderName:currentUserName || auth.currentUser.email || "Team Member",
-      senderRole:String(currentUserRole || "staff").toUpperCase(),
-      createdAt:serverTimestamp()
-    });
-    input.value = "";
-    input.focus();
-  }catch(error){
-    console.error("Send chat message error:",error);
-    alert("Unable to send message. Please check your internet connection and Firestore rules.");
-  }finally{
-    teamChatSending = false;
-    sendButton.disabled = false;
-  }
-}
-
-// Drag support: the button and chat window can be moved independently.
-const teamChatButton = document.getElementById("teamChatButton");
-const teamChatPanel = document.getElementById("teamChatPanel");
-let teamChatButtonWasDragged = false;
-
-function enableTeamChatDragging(element, dragHandle, storageKey, isButton = false){
-  if(!element || !dragHandle) return;
-
-  try{
-    const savedPosition = JSON.parse(localStorage.getItem(storageKey) || "null");
-    if(savedPosition && Number.isFinite(savedPosition.left) && Number.isFinite(savedPosition.top)){
-      element.style.left = savedPosition.left + "px";
-      element.style.top = savedPosition.top + "px";
-      element.style.right = "auto";
-      element.style.bottom = "auto";
-      if(!isButton) element.style.transform = "none";
-    }
-  }catch(error){ console.warn("Unable to restore Team Chat position:",error); }
-
-  let dragging = false;
-  let moved = false;
-  let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
-  let activePointerId = null;
-
-  dragHandle.addEventListener("pointerdown", event => {
-    if(event.pointerType === "mouse" && event.button !== 0) return;
-    if(!isButton && event.target.closest("button,input")) return;
-    const rect = element.getBoundingClientRect();
-    dragging = true;
-    moved = false;
-    activePointerId = event.pointerId;
-    startX = event.clientX;
-    startY = event.clientY;
-    initialLeft = rect.left;
-    initialTop = rect.top;
-    try{ dragHandle.setPointerCapture(event.pointerId); }catch(error){}
-    event.preventDefault();
-  });
-
-  dragHandle.addEventListener("pointermove", event => {
-    if(!dragging || event.pointerId !== activePointerId) return;
-    const dx = event.clientX - startX;
-    const dy = event.clientY - startY;
-    if(Math.abs(dx) + Math.abs(dy) > 4) moved = true;
-    if(!moved) return;
-
-    const maxLeft = Math.max(0, window.innerWidth - element.offsetWidth);
-    const maxTop = Math.max(0, window.innerHeight - element.offsetHeight);
-    element.style.left = Math.max(0, Math.min(maxLeft, initialLeft + dx)) + "px";
-    element.style.top = Math.max(0, Math.min(maxTop, initialTop + dy)) + "px";
-    element.style.right = "auto";
-    element.style.bottom = "auto";
-    if(!isButton) element.style.transform = "none";
-  });
-
-  function finishDrag(event){
-    if(!dragging || (event && event.pointerId !== activePointerId)) return;
-    dragging = false;
-    activePointerId = null;
-    if(!moved) return;
-    const rect = element.getBoundingClientRect();
-    try{
-      localStorage.setItem(storageKey, JSON.stringify({left:rect.left, top:rect.top}));
-    }catch(error){ console.warn("Unable to save Team Chat position:",error); }
-    if(isButton) teamChatButtonWasDragged = true;
-  }
-
-  dragHandle.addEventListener("pointerup", finishDrag);
-  dragHandle.addEventListener("pointercancel", finishDrag);
-}
-
-enableTeamChatDragging(teamChatButton, teamChatButton, "dwingsChatButtonPosition", true);
-enableTeamChatDragging(teamChatPanel, teamChatPanel.firstElementChild, "dwingsChatPanelPosition");
-
-teamChatButton.addEventListener("click", event => {
-  if(teamChatButtonWasDragged){
-    teamChatButtonWasDragged = false;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    return;
-  }
-  const panel = document.getElementById("teamChatPanel");
-  panel.classList.toggle("open");
-  if(panel.classList.contains("open")){
-    teamChatUnreadCount = 0;
-    updateTeamChatBadge();
-    document.getElementById("teamChatInput").focus();
-  }
-});
-
-document.getElementById("teamChatClose").addEventListener("click",() => {
-  document.getElementById("teamChatPanel").classList.remove("open");
-});
-
-document.getElementById("teamChatSend").addEventListener("click",sendTeamChatMessage);
-document.getElementById("teamChatInput").addEventListener("keydown",event => {
-  if(event.key === "Enter"){
-    event.preventDefault();
-    sendTeamChatMessage();
-  }
-});
-
 onAuthStateChanged(auth, async user => {
   if (!user) {
 
-    if(teamChatUnsubscribe){
-      teamChatUnsubscribe();
-      teamChatUnsubscribe = null;
-    }
-    document.getElementById("teamChatPanel")?.classList.remove("open");
-    document.getElementById("teamChatButton").style.display = "none";
-    teamChatUnreadCount = 0;
-    teamChatHasInitialSnapshot = false;
-    updateTeamChatBadge();
-    document.getElementById("teamChatMessages").innerHTML = '<p class="small">Sign in to view team messages.</p>';
     currentUserName = "";
     currentUserRole = null;
     manualOrderMode = false;
