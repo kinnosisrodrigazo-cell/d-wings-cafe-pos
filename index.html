@@ -8379,6 +8379,7 @@ async function loadDashboardPayslips(){
       let daysWorked = 0;
       let lateDeductions = 0;
       let incentivePay = 0;
+      const lateAttendanceDetails = [];
 
       const currentDate = new Date(weekStart + "T12:00:00");
 
@@ -8408,9 +8409,18 @@ async function loadDashboardPayslips(){
 
           daysWorked++;
 
-          lateDeductions += Number(
-            attendance.lateDeduction
-          ) || 0;
+          const recordedLateMinutes = Number(attendance.lateMinutes) || 0;
+          const recordedLateDeduction = Number(attendance.lateDeduction) || 0;
+          lateDeductions += recordedLateDeduction;
+
+          if(recordedLateMinutes > 0 || recordedLateDeduction > 0){
+            lateAttendanceDetails.push({
+              date,
+              timeIn: attendance.timeIn || "—",
+              lateMinutes: recordedLateMinutes,
+              deduction: recordedLateDeduction
+            });
+          }
 
           // DAILY COMPLETED SALES
           const dailySales =
@@ -8467,6 +8477,7 @@ async function loadDashboardPayslips(){
           incentivePay,
           totalEarnings,
           lateDeductions,
+          lateAttendanceDetails,
           netPay
         });
 
@@ -8618,12 +8629,22 @@ async function loadDashboardPayslips(){
             <title>Staff Payslip - ${escapeHTML(staff.name)}</title>
 
             <meta name="viewport" content="width=device-width, initial-scale=1">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
 
             <style>
               *{
                 box-sizing:border-box;
               }
 
+              .payslip-actions{
+                display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+                max-width:750px;margin:0 auto 16px;padding:10px;
+              }
+              .payslip-actions button{
+                border:0;border-radius:8px;padding:11px 16px;font-weight:700;
+                cursor:pointer;background:#171717;color:#e7bd63;
+              }
+              .payslip-actions button:disabled{opacity:.55;cursor:wait}
               body{
                 font-family:Arial,sans-serif;
                 color:#222;
@@ -8780,6 +8801,7 @@ async function loadDashboardPayslips(){
               }
 
               @media print{
+                .payslip-actions{display:none!important}
                 body{
                   padding:0;
                 }
@@ -9107,6 +9129,11 @@ async function loadDashboardPayslips(){
 </head>
 
           <body>
+            <div class="payslip-actions">
+              <button type="button" id="downloadPayslipPng">DOWNLOAD PNG</button>
+              <button type="button" id="sharePayslipPng">SHARE PNG</button>
+              <button type="button" onclick="window.print()">PRINT / SAVE PDF</button>
+            </div>
 
             <div class="payslip">
 
@@ -9209,6 +9236,37 @@ async function loadDashboardPayslips(){
                 </strong>
               </div>
 
+              <div class="section-title">Late Attendance Details</div>
+              <table class="late-details-table" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px">
+                <thead>
+                  <tr style="background:#f4f4f4">
+                    <th style="text-align:left;padding:9px 6px;border-bottom:1px solid #ddd">DATE</th>
+                    <th style="text-align:left;padding:9px 6px;border-bottom:1px solid #ddd">TIME IN</th>
+                    <th style="text-align:right;padding:9px 6px;border-bottom:1px solid #ddd">LATE</th>
+                    <th style="text-align:right;padding:9px 6px;border-bottom:1px solid #ddd">DEDUCTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${staff.lateAttendanceDetails.length ? staff.lateAttendanceDetails.map(item => `
+                    <tr>
+                      <td style="padding:9px 6px;border-bottom:1px solid #eee">${escapeHTML(item.date)}</td>
+                      <td style="padding:9px 6px;border-bottom:1px solid #eee">${escapeHTML(item.timeIn)}</td>
+                      <td style="padding:9px 6px;text-align:right;border-bottom:1px solid #eee">${item.lateMinutes} min</td>
+                      <td style="padding:9px 6px;text-align:right;border-bottom:1px solid #eee;color:#c34b4b">${peso(item.deduction)}</td>
+                    </tr>
+                  `).join("") : `
+                    <tr><td colspan="4" style="padding:10px 6px;text-align:center;color:#777">No late attendance recorded this pay period.</td></tr>
+                  `}
+                </tbody>
+                <tfoot>
+                  <tr style="font-weight:bold;background:#f7f7f7">
+                    <td colspan="2" style="padding:10px 6px">TOTAL</td>
+                    <td style="padding:10px 6px;text-align:right">${staff.lateAttendanceDetails.reduce((sum,item)=>sum+item.lateMinutes,0)} min</td>
+                    <td style="padding:10px 6px;text-align:right;color:#c34b4b">${peso(staff.lateDeductions)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+
               <div class="net">
                 <span class="net-label">NET PAY</span>
                 <span class="net-amount">
@@ -9294,14 +9352,61 @@ async function loadDashboardPayslips(){
 
 
 
+<script>
+(function(){
+  const target = document.querySelector('.payslip');
+  const downloadButton = document.getElementById('downloadPayslipPng');
+  const shareButton = document.getElementById('sharePayslipPng');
+  const fileName = 'D-Wings-Payslip-${escapeHTML(staff.name).replace(/[^a-z0-9_-]/gi,'-')}.png';
+  async function makePng(){
+    if(typeof window.html2canvas !== 'function'){
+      throw new Error('PNG renderer did not load. Please check your internet connection and try again.');
+    }
+    const logo = target.querySelector('.logo');
+    if(logo && !logo.complete){ await new Promise(resolve => { logo.onload=resolve; logo.onerror=resolve; }); }
+    const canvas = await window.html2canvas(target, {backgroundColor:'#ffffff',scale:2,useCORS:true,allowTaint:false,logging:false});
+    const blob = await new Promise(resolve => canvas.toBlob(resolve,'image/png'));
+    if(!blob) throw new Error('Could not create the PNG file.');
+    return new File([blob],fileName,{type:'image/png'});
+  }
+  downloadButton.addEventListener('click',async()=>{
+    downloadButton.disabled=true;
+    try{
+      const file=await makePng();
+      const url=URL.createObjectURL(file);
+      const a=document.createElement('a');a.href=url;a.download=fileName;
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+    }catch(error){alert(error.message||'Unable to download payslip PNG.');}
+    finally{downloadButton.disabled=false;}
+  });
+  shareButton.addEventListener('click',async()=>{
+    shareButton.disabled=true;
+    try{
+      const file=await makePng();
+      if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+        await navigator.share({files:[file],title:'D’ Wings Cafe Payslip',text:'Employee payslip'});
+      }else{
+        const url=URL.createObjectURL(file);
+        const a=document.createElement('a');a.href=url;a.download=fileName;
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),1500);
+        alert('PNG downloaded. Open Messenger and attach the downloaded PNG file directly.');
+      }
+    }catch(error){
+      if(error.name!=='AbortError') alert(error.message||'Unable to share payslip PNG. You can use DOWNLOAD PNG instead.');
+    }finally{shareButton.disabled=false;}
+  });
+})();
+<\/script>
 </body>
           </html>
 
         `;
 
         printWindow.onload = () => {
+          // Do not auto-print: keep the PNG download/share controls available.
           printWindow.focus();
-          printWindow.print();
         };
 
         printWindow.document.open();
